@@ -2,6 +2,7 @@
 
 export const gameData = {
   classes: [
+    // Keep class names consistent (used as keys)
     {
       name: 'Light',
       baseTonnage: 30,
@@ -41,20 +42,53 @@ export const gameData = {
     // { step: 5, die: 'd14', sides: 14, armorCost: 10, structureCost: 10 }, // Example if needed
   ],
   weapons: [
-    // ... weapon data ...
-    { id: 'w1', name: 'Light Cannon', tonnage: 3, slots: 1, traits: ['AP 1'] },
-    { id: 'w2', name: 'Heavy Machine Gun', tonnage: 2, slots: 1, traits: ['AI', 'Suppressive'] },
-    { id: 'w3', name: 'Missile Pod', tonnage: 5, slots: 2, traits: ['Indirect', 'Limited 3'] },
+    // --- Example: Auto-Cannon with class-based stats ---
+    {
+      id: 'w_autocannon', // Use a more descriptive ID
+      name: 'Auto-Cannon',
+      // Tonnage is now an object keyed by class name
+      tonnage: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 6 },
+      // Damage Rating is also an object keyed by class name
+      damageRating: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 6 },
+      traits: ['AP 1'],
+      rangeCategory: 'Medium',
+    },
+    // --- Update ALL other weapons similarly ---
+    {
+      id: 'w_hmg',
+      name: 'Heavy Machine Gun',
+      tonnage: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 }, // Example scaling
+      damageRating: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 }, // Example scaling
+      traits: ['AI', 'Suppressive'],
+      rangeCategory: 'Short',
+    },
+    {
+      id: 'w_missile_pod',
+      name: 'Missile Pod',
+      tonnage: { Light: 5, Medium: 5, Heavy: 6, 'Ultra-Heavy': 6 }, // Example scaling
+      damageRating: { Light: 4, Medium: 4, Heavy: 5, 'Ultra-Heavy': 5 }, // Example scaling
+      traits: ['Indirect', 'Limited 3'],
+      rangeCategory: 'Long',
+    },
+    {
+      id: 'w_laser_lance',
+      name: 'Laser Lance',
+      tonnage: { Light: 4, Medium: 4, Heavy: 5, 'Ultra-Heavy': 5 }, // Example scaling
+      damageRating: { Light: 4, Medium: 4, Heavy: 5, 'Ultra-Heavy': 5 }, // Example scaling
+      traits: ['Melee', 'Accurate'],
+      rangeCategory: 'Melee',
+    },
+    // ... Add ALL your weapons with the new structure ...
   ],
   upgrades: [
-    // ... upgrade data ...
-    { id: 'u1', name: 'Advanced Optics', tonnage: 1, slots: 1, traits: ['+1 Accuracy Ranged'] },
-    { id: 'u3', name: 'Jump Jets', tonnage: 4, slots: 1, traits: ['Jump Movement'] },
-    // Note: Removed 'Reinforced Armor' upgrade as we handle it via checkbox now.
-    // If other upgrades modify dice, they'll need specific logic later.
+    // --- Ensure you have your COMPLETE list of upgrades here ---
+    { id: 'u1', name: 'Advanced Optics', tonnage: 1, traits: ['+1 Accuracy Ranged'] },
+    { id: 'u3', name: 'Jump Jets', tonnage: 4, traits: ['Jump Movement'] },
+    { id: 'u4', name: 'ECM Suite', tonnage: 2, traits: ['Enemy -1 Accuracy Targeting'] },
+    // Add all other upgrades...
   ],
   motiveTypes: [
-    // ... motive type data ...
+    // --- Ensure you have your COMPLETE list of motive types here ---
     {
       id: 'm1',
       name: 'Standard Biped',
@@ -69,6 +103,35 @@ export const gameData = {
       tonnageModifier: 0,
       slotModifier: 0,
     },
+    {
+      id: 'm3',
+      name: 'Standard Wheeled',
+      classApplicability: ['Light', 'Medium', 'Heavy'],
+      tonnageModifier: 0,
+      slotModifier: 0,
+    },
+    {
+      id: 'bh1',
+      name: 'Agile Walker (BH)',
+      classApplicability: ['Light', 'Medium'],
+      tonnageModifier: 2,
+      slotModifier: 0,
+    }, // Example BH
+    {
+      id: 'bh2',
+      name: 'Heavy Treads (BH)',
+      classApplicability: ['Heavy', 'Ultra-Heavy'],
+      tonnageModifier: 0,
+      slotModifier: -1,
+    }, // Example BH
+    {
+      id: 'bh3',
+      name: 'Grav Skimmer (BH)',
+      classApplicability: ['Light', 'Medium', 'Heavy'],
+      tonnageModifier: 5,
+      slotModifier: -1,
+    }, // Example BH
+    // Add all other motive types...
   ],
 }
 
