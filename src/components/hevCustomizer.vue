@@ -79,12 +79,11 @@ const calculateNthWeaponCost = (weaponData, n, className) => {
   const totalPenaltyForNth = penaltyMultiplier * penaltyAmount
   return baseCost + totalPenaltyForNth
 }
-// NEW Helper: Calculate Tonnage Cost for a SPECIFIC modification
+// Helper: Calculate Tonnage Cost for a SPECIFIC modification
 const getModificationCost = (baseDie, modification, costType = 'armor') => {
   const step = getEffectiveDieStep(baseDie, modification)
   const dieData = findDieByStep(step)
   if (!dieData) return 0
-  // Use specific cost if available, else default to armorCost
   return costType === 'structure'
     ? (dieData.structureCost ?? dieData.armorCost ?? 0)
     : (dieData.armorCost ?? 0)
@@ -101,7 +100,7 @@ const baseStructureDieObject = computed(() =>
   findDieObject(selectedClass.value?.defaultStructureDie),
 )
 
-// Costs calculated based on current modification state
+// Armor/Structure Costs computed in parent for summary
 const armorCost = computed(() =>
   getModificationCost(baseArmorDieObject.value, armorModification.value, 'armor'),
 )
@@ -131,7 +130,7 @@ const weaponDetails = computed(() => {
         groupTonnage += calculateNthWeaponCost(weaponData, i, currentClassName)
       }
       totalTonnage += groupTonnage
-      totalSlots += quantity // Each weapon is 1 slot
+      totalSlots += quantity
     } else {
       console.warn(`Weapon data incomplete or missing for ID: ${weaponId}`)
     }
@@ -140,7 +139,7 @@ const weaponDetails = computed(() => {
 })
 const upgradeDetails = computed(() => {
   const totalTonnage = selectedUpgrades.value.reduce((sum, up) => sum + (up?.tonnage || 0), 0)
-  const totalSlots = selectedUpgrades.value.length // Each upgrade is 1 slot
+  const totalSlots = selectedUpgrades.value.length
   return { totalTonnage, totalSlots }
 })
 const usedSlots = computed(() => weaponDetails.value.totalSlots + upgradeDetails.value.totalSlots)
@@ -230,27 +229,22 @@ const removeUpgrade = (index) => {
   selectedUpgrades.value.splice(index, 1)
 }
 
-// UPDATED: Check Tonnage Limit BEFORE adding weapon
 const handleWeaponAdd = (event) => {
   const selectedWeaponId = event.target.value
   if (selectedWeaponId) {
     const weaponToAdd = props.gameRules.weapons.find((w) => w.id === selectedWeaponId)
     if (!weaponToAdd) return
-
-    const potentialSlots = usedSlots.value + 1 // Assume 1 slot per weapon
+    const potentialSlots = usedSlots.value + 1
     if (potentialSlots > maxSlots.value) {
       toast.error(`Cannot add ${weaponToAdd.name}: Exceeds maximum slots (${maxSlots.value}).`)
       if (weaponSelectRef.value) weaponSelectRef.value.value = ''
       return
     }
-
-    // Check Tonnage Limit
     const currentClassName = selectedClass.value?.name
     if (!currentClassName) return
     const currentCount = selectedWeapons.value.filter((w) => w.id === weaponToAdd.id).length
     const costOfThisWeapon = calculateNthWeaponCost(weaponToAdd, currentCount + 1, currentClassName)
     const potentialTonnage = totalUnitTonnageUsed.value + costOfThisWeapon
-
     if (potentialTonnage > baseTonnage.value) {
       toast.error(
         `Cannot add ${weaponToAdd.name}: Exceeds maximum tonnage (${baseTonnage.value}T). Cost of this weapon: ${costOfThisWeapon}T.`,
@@ -258,27 +252,23 @@ const handleWeaponAdd = (event) => {
       if (weaponSelectRef.value) weaponSelectRef.value.value = ''
       return
     }
-
     addWeapon(weaponToAdd)
     if (weaponSelectRef.value) {
       weaponSelectRef.value.value = ''
     }
   }
 }
-// UPDATED: Check Tonnage Limit BEFORE adding upgrade
 const handleUpgradeAdd = (event) => {
   const selectedUpgradeId = event.target.value
   if (selectedUpgradeId) {
     const upgradeToAdd = props.gameRules.upgrades.find((u) => u.id === selectedUpgradeId)
     if (!upgradeToAdd) return
-
-    const potentialSlots = usedSlots.value + 1 // Assume 1 slot per upgrade
+    const potentialSlots = usedSlots.value + 1
     if (potentialSlots > maxSlots.value) {
       toast.error(`Cannot add ${upgradeToAdd.name}: Exceeds maximum slots (${maxSlots.value}).`)
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
       return
     }
-
     const costOfThisUpgrade = upgradeToAdd.tonnage || 0
     const potentialTonnage = totalUnitTonnageUsed.value + costOfThisUpgrade
     if (potentialTonnage > baseTonnage.value) {
@@ -288,7 +278,6 @@ const handleUpgradeAdd = (event) => {
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
       return
     }
-
     addUpgrade(upgradeToAdd)
     if (upgradeSelectRef.value) {
       upgradeSelectRef.value.value = ''
@@ -368,7 +357,7 @@ const loadHevForEditing = (unitData) => {
   }
 }
 
-// Submit HEV - check limits before emitting
+// Submit HEV - check limits, calculate final effective dice
 const submitHev = () => {
   if (isOverTonnage.value) {
     toast.error('Cannot add HE-V: Tonnage limit exceeded.')
@@ -383,8 +372,14 @@ const submitHev = () => {
     return
   }
 
-  const finalArmorDie = effectiveArmorDie.value // Use computed property
-  const finalStructDie = effectiveStructureDie.value // Use computed property
+  // *** CORRECTED: Calculate final dice objects here using available state ***
+  const finalArmorStep = getEffectiveDieStep(baseArmorDieObject.value, armorModification.value)
+  const finalStructStep = getEffectiveDieStep(
+    baseStructureDieObject.value,
+    structureModification.value,
+  )
+  const finalArmorDie = findDieByStep(finalArmorStep)
+  const finalStructDie = findDieByStep(finalStructStep)
 
   const hevData = {
     unitName: unitName.value,
@@ -422,9 +417,8 @@ watch(selectedClass, (newClass, oldClass) => {
   }
 })
 
-// NEW: Watch Armor Modification for Tonnage Check
 watch(armorModification, (newValue, oldValue) => {
-  if (oldValue === undefined || !selectedClass.value) return // Avoid initial/load checks
+  if (oldValue === undefined || !selectedClass.value) return
   const currentTotal = totalUnitTonnageUsed.value
   const oldArmorCost = getModificationCost(baseArmorDieObject.value, oldValue, 'armor')
   const newArmorCost = getModificationCost(baseArmorDieObject.value, newValue, 'armor')
@@ -435,13 +429,12 @@ watch(armorModification, (newValue, oldValue) => {
     )
     nextTick(() => {
       armorModification.value = oldValue
-    }) // Revert
+    })
   }
 })
 
-// NEW: Watch Structure Modification for Tonnage Check
 watch(structureModification, (newValue, oldValue) => {
-  if (oldValue === undefined || !selectedClass.value) return // Avoid initial/load checks
+  if (oldValue === undefined || !selectedClass.value) return
   const currentTotal = totalUnitTonnageUsed.value
   const oldStructureCost = getModificationCost(baseStructureDieObject.value, oldValue, 'structure')
   const newStructureCost = getModificationCost(baseStructureDieObject.value, newValue, 'structure')
@@ -452,7 +445,7 @@ watch(structureModification, (newValue, oldValue) => {
     )
     nextTick(() => {
       structureModification.value = oldValue
-    }) // Revert
+    })
   }
 })
 
