@@ -1,0 +1,326 @@
+/* src/components/HevCustomizer.css */
+
+/* --- Styles Specific to HevCustomizer --- */
+
+.hev-customizer {
+  position: relative;
+}
+
+.selection-box {
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background: var(--light-grey);
+}
+
+.selection-box select {
+  margin-bottom: 1rem;
+}
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--medium-grey);
+  border-radius: var(--border-radius);
+  background: #fff;
+  min-height: 40px;
+}
+
+.item-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--medium-grey);
+  font-size: 0.95rem;
+}
+.item-list li:last-child {
+  border-bottom: none;
+}
+.item-list li i {
+  color: var(--text-muted);
+  width: 100%;
+  text-align: center;
+  padding: 0.5rem 0;
+  font-style: italic;
+}
+.item-list li span {
+  flex-grow: 1;
+  margin-right: 0.5rem;
+}
+
+.summary.card {
+  margin-top: 2rem;
+  background: #eef7ee;
+  border-left: 5px solid var(--success-color);
+  padding: 1rem 1.5rem;
+}
+.summary p {
+  margin: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  border-bottom: 1px dashed var(--medium-grey);
+  padding-bottom: 0.5rem;
+}
+.summary p:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.summary p.error {
+  border-bottom: none;
+  padding-bottom: 0;
+  padding-top: 0.3rem;
+  margin-top: 0.3rem;
+  justify-content: center;
+}
+.summary p strong {
+  font-weight: 600;
+  margin-left: 1rem;
+  text-align: right;
+  white-space: nowrap;
+}
+.summary hr.summary-hr {
+  border: 0;
+  border-top: 1px solid var(--success-color);
+  opacity: 0.5;
+  margin: 1rem 0;
+}
+.summary p.error strong {
+  color: var(--danger-color) !important;
+}
+
+.btn-add-hev {
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 0.75rem 1.2rem;
+}
+
+.form-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.form-inline > .form-group {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 0;
+}
+
+/* --- Styles for Dice Controls --- */
+.form-dice {
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.form-dice > .dice-control.card {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background-color: #fff;
+  box-shadow: none;
+  border: 1px solid var(--medium-grey);
+  margin-bottom: 0;
+}
+
+.dice-control label:first-of-type {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--dark-grey);
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.dice-details-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  min-height: 30px;
+}
+
+.bubble-display {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px; /* Gap between bubbles/dividers */
+  line-height: 1;
+  justify-content: flex-start; /* Align left */
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 0.25rem;
+  min-width: 170px; /* Keep fixed width */
+  overflow: hidden;
+}
+
+.bubble {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  /* Default border is Green */
+  border: 1.5px solid var(--success-color);
+  background-color: transparent;
+  vertical-align: middle;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* --- Re-add Threshold Divider Styles --- */
+.threshold-divider {
+  display: inline-block;
+  width: 2px; /* Width of the divider line */
+  height: 14px; /* Match bubble height approx */
+  margin: 0 1px; /* Adjust spacing around divider */
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+/* Correct colors for dividers */
+.divider-yellow {
+  background-color: #ffc107;
+} /* Yellow at 25% dmg index */
+.divider-red {
+  background-color: #dc3545;
+} /* Red at 50% dmg index */
+.divider-black {
+  background-color: #000000;
+} /* Black at 75% dmg index */
+/* --- End Threshold Divider Styles --- */
+
+/* Bubble Color Override Styles - Based on ZONE */
+.bubble.bubble-yellow {
+  border-color: #ffc107; /* 25-50% damage */
+}
+.bubble.bubble-red {
+  /* Represents 50-75% damage zone */
+  border-color: var(--danger-color);
+}
+.bubble.bubble-black {
+  /* Represents 75%+ damage zone */
+  border-color: #000000;
+}
+/* --- End Bubble Color Styles --- */
+
+.placeholder-text-inline {
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  width: 100%;
+  text-align: left;
+}
+
+/* Style for Modification Select */
+.modification-select {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  flex-grow: 1;
+  min-width: 90px;
+  margin: 0 0.25rem;
+}
+.modification-select option:disabled {
+  color: var(--text-muted);
+  background-color: var(--light-grey);
+}
+
+/* Style for Die Cost */
+.die-cost {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--dark-grey);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 0.25rem;
+}
+
+/* Style for Base Die Label */
+.base-die-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+/* --- End Dice Control Styles --- */
+
+/* --- Threshold Description Styles --- */
+.threshold-descriptions {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border-color);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  overflow: hidden;
+}
+.threshold-descriptions p {
+  margin: 0.25rem 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+}
+.threshold-descriptions p strong {
+  margin-right: 0.3em;
+  display: inline-block;
+  min-width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Color coding for descriptions */
+.threshold-desc-yellow strong {
+  color: #b38600;
+} /* Yellow text for 25% dmg description */
+.threshold-desc-red strong {
+  color: var(--danger-color);
+} /* Red text for 50% dmg description */
+.threshold-desc-black strong {
+  color: #000000;
+} /* Black text for 75% dmg description */
+/* --- End Threshold Description Styles --- */
+
+/* --- Form Placeholders --- */
+.form-group-placeholder {
+  min-width: 200px;
+  flex: 1;
+}
+.placeholder-input {
+  height: calc(0.6rem * 2 + 1rem + 2px);
+  border: 1px solid transparent;
+  background-color: transparent;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+}
+
+.action-buttons {
+  margin-top: 1.5rem;
+}
+
+.error {
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.slot-limit-message {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: right;
+  margin-top: 0.5rem;
+  padding-right: 0.5rem;
+}
+select:disabled {
+  background-color: var(--medium-grey);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
