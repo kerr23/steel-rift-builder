@@ -161,9 +161,9 @@ const onModificationChange = (event) => {
       </select>
 
       <!-- Cost -->
-      <span class="die-cost">({{ cost }}T)</span>
-      <!-- Base Die Label (Optional) -->
-      <span class="base-die-label">(Base: {{ baseDie?.die || 'N/A' }})</span>
+      <!-- <span class="die-cost">({{ cost }}T)</span> -->
+      <!-- Base Die Label (Optional)
+      <span class="base-die-label">(Base: {{ baseDie?.die || 'N/A' }})</span> -->
     </div>
 
     <!-- Threshold Descriptions (Only for Structure) -->

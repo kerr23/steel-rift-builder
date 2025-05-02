@@ -133,6 +133,24 @@ export const gameData = {
     }, // Example BH
     // Add all other motive types...
   ],
+
+  traitDefinitions: {
+    // Weapon Traits
+    'AP 1': "Armor Penetrating 1: Reduce the target's Armor value by 1 before rolling damage.",
+    AI: 'Anti-Infantry: Gains bonuses or special effects when targeting infantry units.',
+    Suppressive: 'Can make Suppressive Fire attacks, potentially pinning enemy infantry.',
+    Indirect: 'Can target units outside of line of sight, often with penalties.',
+    'Limited 3': 'This weapon system can only be fired 3 times per battle.',
+    Melee: 'This weapon can only be used during melee combat actions.',
+    Accurate:
+      'Improves the chance to hit with this weapon (e.g., reroll misses, bonus to hit roll).',
+    // Add definitions for ALL weapon traits you use in your gameData.weapons list
+    // ...
+
+    // Note: You might want separate definitions for Upgrade Traits if needed,
+    // but the current request is only for weapon traits.
+  },
+  // *** END Trait Definitions ***
 }
 
 // Helper function to find the maximum die step available
