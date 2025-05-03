@@ -183,4 +183,4 @@ const onModificationChange = (event) => {
 
 <!-- Link to the SAME CSS file used by HevCustomizer, as styles are related -->
 <!-- Or create a dedicated DiceTrack.css if preferred -->
-<style src="./HevCustomizer.css" scoped></style>
+<style src="./hevCustomizer.css" scoped></style>

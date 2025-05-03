@@ -883,4 +883,4 @@ defineExpose({ resetForm, loadHevForEditing })
   </section>
 </template>
 
-<style src="./HevCustomizer.css" scoped></style>
+<style src="./hevCustomizer.css" scoped></style>
