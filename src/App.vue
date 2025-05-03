@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue' // Removed unused 'watch'
 // Correct import capitalization
 import HevCustomizer from './components/hevCustomizer.vue'
 import { gameData as importedGameData } from './gameData.js'
@@ -26,15 +26,18 @@ const toggleTheme = () => {
 // Load theme on component mount
 onMounted(() => {
   const savedTheme = localStorage.getItem('appTheme')
+  // Check for saved theme, otherwise check system preference
   if (savedTheme) {
     applyTheme(savedTheme)
   } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    applyTheme('dark')
+    applyTheme('dark') // Default to dark if system prefers dark and no setting saved
   } else {
-    applyTheme('light')
+    applyTheme('light') // Default to light
   }
 
+  // Optional: Listen for system preference changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+    // Only change if no theme preference is explicitly saved by the user
     if (!localStorage.getItem('appTheme')) {
       applyTheme(event.matches ? 'dark' : 'light')
     }
@@ -130,6 +133,24 @@ const getModificationText = (baseDie, effectiveDie) => {
   if (effectiveDie.step < baseDie.step) return ' <span class="modification-text">(Stripped)</span>'
   return ''
 }
+
+// === Helper Function for Trait Display (Print) ===
+const formatTraitForDisplayPrint = (trait, className) => {
+  if (!trait || !trait.name) return ''
+  const name = trait.name
+  const value = trait.value
+
+  if (value === null || value === undefined) {
+    return name
+  }
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    const classValue = className ? (value[className] ?? '?') : '?'
+    return `${name}(${classValue})`
+  } else {
+    return `${name}(${value})`
+  }
+}
+// === END Trait Helper ===
 // --- END Print Formatting Helpers ---
 
 // --- Main Print Formatting Function ---
@@ -160,6 +181,7 @@ const formatForPrint = () => {
             .print-movement-subsection { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--medium-grey); }
             .print-movement-subsection p { /* Inherits base .class-section p styles */ }
             .print-movement-subsection p strong { min-width: 100px; } /* Match width */
+
 
             /* Defense Section Styles */
             .defense-section { display: flex; flex-direction: column; }
@@ -272,19 +294,23 @@ const formatForPrint = () => {
       }
 
       // Collect Unique Weapon & Upgrade Traits
-      const uniqueUnitTraits = new Set()
+      const uniqueUnitTraitNames = new Set() // Changed variable name
       if (unit.selectedWeapons && unit.selectedWeapons.length > 0) {
         unit.selectedWeapons.forEach((weaponInstance) => {
           const weaponData = gameRulesData.weapons.find((w) => w.id === weaponInstance.id)
           if (weaponData?.traits?.length) {
-            weaponData.traits.forEach((trait) => uniqueUnitTraits.add(trait))
+            weaponData.traits.forEach((traitObj) => {
+              // Iterate objects
+              if (traitObj && traitObj.name) uniqueUnitTraitNames.add(traitObj.name) // Add name
+            })
           }
         })
       }
       if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
         unit.selectedUpgrades.forEach((upgradeInstance) => {
           if (upgradeInstance?.traits?.length) {
-            upgradeInstance.traits.forEach((trait) => uniqueUnitTraits.add(trait))
+            // Assuming upgrade traits are still simple strings
+            upgradeInstance.traits.forEach((traitStr) => uniqueUnitTraitNames.add(traitStr))
           }
         })
       }
@@ -385,7 +411,11 @@ const formatForPrint = () => {
           if (weaponData) {
             const damage = weaponData.damageRating?.[unitClassName] ?? '?'
             const range = weaponData.rangeCategory || 'N/A'
-            const traits = weaponData.traits?.length ? weaponData.traits.join(', ') : 'None'
+            // Format traits using the helper
+            const traits =
+              (weaponData.traits || [])
+                .map((traitObj) => formatTraitForDisplayPrint(traitObj, unitClassName))
+                .join(', ') || 'None'
             htmlBody += `<tr>
                                         <td>${weaponData.name || 'Unknown'}</td>
                                         <td>${range}</td>
@@ -414,7 +444,8 @@ const formatForPrint = () => {
         unit.selectedUpgrades.forEach((upgrade) => {
           if (upgrade && upgrade.name) {
             const traits = upgrade.traits?.join(', ') ?? 'None'
-            const tonnage = upgrade.tonnage?.[unitClassName] ?? '?' // Use class-specific tonnage
+            // Use class-specific tonnage
+            const tonnage = upgrade.tonnage?.[unitClassName] ?? '?'
             htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span><span class="item-stats">(${tonnage}T / 1S)</span><span class="item-traits">Tr:[${traits}]</span></div></li>`
           } else {
             htmlBody += `<li><i>Unknown Upgrade</i></li>`
@@ -436,15 +467,17 @@ const formatForPrint = () => {
                               </div>`
       }
 
-      // Trait Definitions Section
-      if (uniqueUnitTraits.size > 0) {
+      // Trait Definitions Section (Uses BASE names)
+      if (uniqueUnitTraitNames.size > 0) {
+        // Use updated variable name
         htmlBody += `<div class="equipment-section trait-definitions-section">
                                <h4 class="section-title">Trait Key</h4>
                                <ul class="trait-list">`
-        const sortedTraits = Array.from(uniqueUnitTraits).sort()
-        sortedTraits.forEach((trait) => {
-          const definition = gameRulesData.traitDefinitions?.[trait] || 'Definition not found.'
-          htmlBody += `<li><strong>${trait}:</strong> ${definition}</li>`
+        const sortedTraits = Array.from(uniqueUnitTraitNames).sort()
+        sortedTraits.forEach((traitName) => {
+          // Iterate base names
+          const definition = gameRulesData.traitDefinitions?.[traitName] || 'Definition not found.'
+          htmlBody += `<li><strong>${traitName}:</strong> ${definition}</li>` // Display base name
         })
         htmlBody += `</ul></div>`
       }
