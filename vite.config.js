@@ -17,7 +17,7 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url' // Import necessary functions from node:url
 
 export default defineConfig({
-  base: '/steel-rift-builder/',
+  base: '/',
   plugins: [vue()],
   resolve: {
     alias: {
