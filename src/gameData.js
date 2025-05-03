@@ -38,14 +38,13 @@ export const gameData = {
   ],
   dice: [
     // Added 'sides' property
-    { step: 0, die: 'd4', sides: 4, armorCost: 1, structureCost: 1 },
-    { step: 1, die: 'd6', sides: 6, armorCost: 2, structureCost: 2 },
-    { step: 2, die: 'd8', sides: 8, armorCost: 4, structureCost: 4 },
-    { step: 3, die: 'd10', sides: 10, armorCost: 6, structureCost: 6 },
-    { step: 4, die: 'd12', sides: 12, armorCost: 8, structureCost: 8 },
+    { step: 0, die: 'd4', sides: 4, armorCost: 4, structureCost: 4 },
+    { step: 1, die: 'd6', sides: 6, armorCost: 6, structureCost: 6 },
+    { step: 2, die: 'd8', sides: 8, armorCost: 8, structureCost: 8 },
+    { step: 3, die: 'd10', sides: 10, armorCost: 10, structureCost: 10 },
+    { step: 4, die: 'd12', sides: 12, armorCost: 12, structureCost: 12 },
   ],
   weapons: [
-    // Weapon traits are now objects { name: 'TraitName', value?: X | { L:Y, M:Z ... } }
     {
       id: 'w_autocannon',
       name: 'Auto-Cannon',
