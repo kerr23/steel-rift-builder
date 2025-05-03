@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 // Correct import capitalization
 import HevCustomizer from './components/hevCustomizer.vue'
 import { gameData as importedGameData } from './gameData.js'
@@ -26,18 +26,15 @@ const toggleTheme = () => {
 // Load theme on component mount
 onMounted(() => {
   const savedTheme = localStorage.getItem('appTheme')
-  // Check for saved theme, otherwise check system preference
   if (savedTheme) {
     applyTheme(savedTheme)
   } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    applyTheme('dark') // Default to dark if system prefers dark and no setting saved
+    applyTheme('dark')
   } else {
-    applyTheme('light') // Default to light
+    applyTheme('light')
   }
 
-  // Optional: Listen for system preference changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
-    // Only change if no theme preference is explicitly saved by the user
     if (!localStorage.getItem('appTheme')) {
       applyTheme(event.matches ? 'dark' : 'light')
     }
@@ -139,7 +136,7 @@ const getModificationText = (baseDie, effectiveDie) => {
 const formatForPrint = () => {
   console.log('Formatting for print...')
   try {
-    // --- CSS Styles (Updated Classification & Movement subsection) ---
+    // --- CSS Styles (Includes Print Alignment Fix & Movement Subsection) ---
     const cssStyles = `
             body { font-family: Consolas, Menlo, 'DejaVu Sans Mono', 'Courier New', monospace; line-height: 1.4; margin: 0; padding: 0; color: #212529; background-color: #fff; font-size: 14px; }
             * { box-sizing: border-box; }
@@ -155,34 +152,14 @@ const formatForPrint = () => {
             .form-section { flex: 1; min-width: 230px; display: flex; flex-direction: column; }
             .section-title { font-size: 0.9rem; color: var(--secondary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 0.2rem; margin-bottom: 0.5rem; font-weight: 500; }
 
-            /* === UPDATED Classification Section Styles === */
-            .class-section p {
-                 margin: 0.1rem 0;
-                 font-size: 0.85rem;
-                 display: flex;
-             }
-             .class-section p strong {
-                 font-weight: bold;
-                 min-width: 100px; /* Alignment for all labels in this section */
-                 display: inline-block;
-                 margin-right: 0.5em;
-             }
-            /* === END Classification Styles === */
+            /* Classification Section Styles */
+             .class-section p { margin: 0.1rem 0; font-size: 0.85rem; display: flex; }
+             .class-section p strong { font-weight: bold; min-width: 100px; display: inline-block; margin-right: 0.5em; }
 
-             /* === NEW Styles for Movement Subsection within Classification === */
-            .print-movement-subsection {
-                margin-top: 0.5rem; /* Space above the subsection */
-                padding-top: 0.5rem; /* Space below the line */
-                border-top: 1px dashed var(--medium-grey); /* Decorative line */
-            }
-            .print-movement-subsection p {
-                 /* Inherits base .class-section p styles */
-            }
-            .print-movement-subsection p strong {
-                 /* Inherits base .class-section p strong styles */
-                 min-width: 100px; /* Make sure width matches other labels */
-            }
-            /* === END Movement Subsection Styles === */
+             /* Movement Subsection Styles */
+            .print-movement-subsection { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--medium-grey); }
+            .print-movement-subsection p { /* Inherits base .class-section p styles */ }
+            .print-movement-subsection p strong { min-width: 100px; } /* Match width */
 
             /* Defense Section Styles */
             .defense-section { display: flex; flex-direction: column; }
@@ -214,9 +191,9 @@ const formatForPrint = () => {
             .print-weapon-table { width: 100%; border-collapse: collapse; margin-top: 0.4rem; font-size: 0.8rem; }
             .print-weapon-table th, .print-weapon-table td { border: 1px solid var(--border-color); padding: 0.2rem 0.4rem; text-align: left; vertical-align: top; }
             .print-weapon-table th { background-color: var(--light-grey); font-weight: 600; white-space: nowrap; }
-            .print-weapon-table th:nth-child(2), .print-weapon-table td:nth-child(2) { text-align: center; width: 12%; white-space: nowrap; } /* Range */
-            .print-weapon-table th:nth-child(3), .print-weapon-table td:nth-child(3) { text-align: center; width: 12%; white-space: nowrap; } /* Damage */
-            .print-weapon-table td:nth-child(4) { font-size: 0.75rem; color: var(--text-muted); } /* Traits */
+            .print-weapon-table th:nth-child(2), .print-weapon-table td:nth-child(2) { text-align: center; width: 12%; white-space: nowrap; }
+            .print-weapon-table th:nth-child(3), .print-weapon-table td:nth-child(3) { text-align: center; width: 12%; white-space: nowrap; }
+            .print-weapon-table td:nth-child(4) { font-size: 0.75rem; color: var(--text-muted); }
             .print-weapon-table .placeholder-row td { text-align: center; padding: 0.4rem; font-style: italic; color: var(--text-muted); }
             .item-list { list-style: none; padding: 0; margin: 0.4rem 0 0 0; border: 1px solid var(--border-color); border-radius: var(--border-radius); }
             .item-list li { display: flex; justify-content: space-between; align-items: baseline; padding: 0.2rem 0.4rem; border-bottom: 1px solid var(--medium-grey); font-size: 0.8rem; }
@@ -319,7 +296,7 @@ const formatForPrint = () => {
       htmlBody += `<h3 class="unit-title">${unit.unitName || 'Unnamed HE-V'}</h3>`
       htmlBody += `<div class="section-wrapper class-defense-wrapper">` // Wrapper Class/Defense
 
-      // Classification Section HTML (Movement Included)
+      // Classification Section HTML (Movement included)
       htmlBody += `<div class="form-section class-section">
                            <h4 class="section-title">Classification</h4>
                            <p><strong>Class:</strong> <span>${unitClassName}</span></p>
@@ -344,7 +321,7 @@ const formatForPrint = () => {
                             <div class="print-defense-layout-container">
                                 <!-- Dodge Target Row for Print -->
                                 <div class="dodge-target-row-print">
-                                    <span class="print-defense-label">Dodge:</span> <!-- Renamed -->
+                                    <span class="print-defense-label">Dodge:</span>
                                     <span class="dodge-value-print">${unitDodgeTarget}</span>
                                 </div>
                                 <!-- Armor Row -->
@@ -353,6 +330,7 @@ const formatForPrint = () => {
                                     ${generateBubbleHtml(unit.effectiveArmorDie?.sides ?? 0, false)}
                                     <span class="mod-cost-group">
                                         ${getModificationText(baseArmorDie, unit.effectiveArmorDie)}
+                                        <!-- Tonnage Cost Removed -->
                                     </span>
                                 </div>
                                 <!-- Structure Row -->
@@ -361,6 +339,7 @@ const formatForPrint = () => {
                                     ${generateBubbleHtml(unit.effectiveStructureDie?.sides ?? 0, true)}
                                      <span class="mod-cost-group">
                                         ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
+                                        <!-- Tonnage Cost Removed -->
                                      </span>
                                 </div>`
       // Threshold descriptions
@@ -435,7 +414,7 @@ const formatForPrint = () => {
         unit.selectedUpgrades.forEach((upgrade) => {
           if (upgrade && upgrade.name) {
             const traits = upgrade.traits?.join(', ') ?? 'None'
-            const tonnage = upgrade.tonnage ?? '?'
+            const tonnage = upgrade.tonnage?.[unitClassName] ?? '?' // Use class-specific tonnage
             htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span><span class="item-stats">(${tonnage}T / 1S)</span><span class="item-traits">Tr:[${traits}]</span></div></li>`
           } else {
             htmlBody += `<li><i>Unknown Upgrade</i></li>`

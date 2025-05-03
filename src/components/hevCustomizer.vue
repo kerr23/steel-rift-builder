@@ -74,7 +74,6 @@ const calculateNthWeaponCost = (weaponData, n, className) => {
 // == Base Stats ==
 const baseTonnage = computed(() => selectedClass.value?.baseTonnage ?? 0)
 const baseSlots = computed(() => selectedClass.value?.baseSlots ?? 0)
-// REMOVED motiveTonnageModifier computed property
 const motiveSlotModifier = computed(() => selectedMotiveType.value?.slotModifier ?? 0)
 const maxSlots = computed(() => (baseSlots.value || 0) + motiveSlotModifier.value)
 
@@ -98,7 +97,7 @@ const dodgeTarget = computed(() => {
     case 'Ultra-Heavy':
       return '6+'
     default:
-      return '?' // Should not happen
+      return '?'
   }
 })
 
@@ -135,7 +134,7 @@ const effectiveStructureStep = computed(() => {
 const effectiveStructureDie = computed(() => findDieByStep(effectiveStructureStep.value))
 const structureCost = computed(
   () => effectiveStructureDie.value?.structureCost ?? effectiveStructureDie.value?.armorCost ?? 0,
-) // Fallback to armorCost
+)
 const structureSides = computed(() => effectiveStructureDie.value?.sides ?? 0)
 const canStripStructure = computed(
   () => baseStructureDieObject.value && baseStructureDieObject.value.step > 0,
@@ -146,17 +145,14 @@ const canReinforceStructure = computed(
 
 // == Structure Thresholds (Renamed Markers) ==
 const structureMarker_25_Percent = computed(() => {
-  // Previously structureMarkerIndexYellow
   const s = structureSides.value
   return s > 0 ? s - Math.floor(s * 0.75) + 1 : 0
 })
 const structureMarker_50_Percent = computed(() => {
-  // Previously structureMarkerIndexOrange
   const s = structureSides.value
   return s > 0 ? s - Math.floor(s * 0.5) + 1 : 0
 })
 const structureMarker_75_Percent = computed(() => {
-  // Previously structureMarkerIndexRed
   const s = structureSides.value
   return s > 0 ? s - Math.floor(s * 0.25) + 1 : 0
 })
@@ -165,23 +161,17 @@ const structureMarker_75_Percent = computed(() => {
 const baseMovementSpeed = computed(() => {
   return selectedClass.value?.baseMovement ?? 0
 })
-
 const hasJumpJets = computed(() => {
-  // Check if any selected upgrade has the ID 'u3' (or whatever your Jump Jet ID is)
   return selectedUpgrades.value.some((upg) => upg.id === 'u3')
 })
-
 const jumpMovementSpeed = computed(() => {
-  if (!hasJumpJets.value) {
-    return 0 // No jump jets, no jump speed
-  }
+  if (!hasJumpJets.value) return 0
   const baseMove = baseMovementSpeed.value
-  // Map base movement to jump movement (one step down)
   if (baseMove === 12) return 10
   if (baseMove === 10) return 8
   if (baseMove === 8) return 6
   if (baseMove === 6) return 4
-  return 0 // Should not happen with defined classes, but good fallback
+  return 0
 })
 
 // == Weapon/Upgrade/Total Calculations ==
@@ -213,11 +203,22 @@ const weaponDetails = computed(() => {
   })
   return { totalTonnage, totalSlots }
 })
+
+// UPDATED upgradeDetails
 const upgradeDetails = computed(() => {
-  const totalTonnage = selectedUpgrades.value.reduce((sum, up) => sum + (up?.tonnage || 0), 0)
-  const totalSlots = selectedUpgrades.value.length
+  const currentClassName = selectedClass.value?.name
+  let totalTonnage = 0
+  if (currentClassName) {
+    totalTonnage = selectedUpgrades.value.reduce((sum, up) => {
+      // Access class-specific tonnage, default to 0 if not found
+      const cost = up?.tonnage?.[currentClassName] ?? 0
+      return sum + cost
+    }, 0)
+  }
+  const totalSlots = selectedUpgrades.value.length // Slots remain 1 per upgrade
   return { totalTonnage, totalSlots }
 })
+
 const usedSlots = computed(() => weaponDetails.value.totalSlots + upgradeDetails.value.totalSlots)
 
 // UPDATED totalUnitTonnageUsed calculation
@@ -226,8 +227,7 @@ const totalUnitTonnageUsed = computed(
     armorCost.value +
     structureCost.value +
     weaponDetails.value.totalTonnage +
-    upgradeDetails.value.totalTonnage,
-  // REMOVED: + motiveTonnageModifier.value
+    upgradeDetails.value.totalTonnage, // This now uses the calculated class-specific total
 )
 const remainingUnitTonnage = computed(() => baseTonnage.value - totalUnitTonnageUsed.value)
 
@@ -235,8 +235,8 @@ const remainingUnitTonnage = computed(() => baseTonnage.value - totalUnitTonnage
 const isValidUnit = computed(() => {
   return (
     !!selectedClass.value &&
-    !!effectiveArmorDie.value && // Check effective die now
-    !!effectiveStructureDie.value && // Check effective die now
+    !!effectiveArmorDie.value &&
+    !!effectiveStructureDie.value &&
     !!selectedMotiveType.value
   )
 })
@@ -282,14 +282,21 @@ const formattedWeapons = computed(() => {
     }
   })
 })
+// UPDATED formattedUpgrades
 const formattedUpgrades = computed(() => {
   const selectedUpgradeIds = selectedUpgrades.value.map((upg) => upg.id)
+  const currentClassName = selectedClass.value?.name // Get current class
+
   return props.gameRules.upgrades
     .filter((upg) => !selectedUpgradeIds.includes(upg.id))
-    .map((upg) => ({
-      title: `${upg.name} (${upg.tonnage}T / 1S) - [${upg.traits?.join(', ') ?? ''}]`,
-      value: upg.id,
-    }))
+    .map((upg) => {
+      // Get class-specific tonnage for display, default to '?' if no class selected
+      const cost = currentClassName ? (upg.tonnage?.[currentClassName] ?? '?') : '?'
+      return {
+        title: `${upg.name} (${cost}T / 1S) - [${upg.traits?.join(', ') ?? ''}]`,
+        value: upg.id,
+      }
+    })
 })
 // --- END Computed Properties ---
 
@@ -340,31 +347,51 @@ const handleWeaponAdd = (event) => {
     }
   }
 }
+
+// UPDATED handleUpgradeAdd
 const handleUpgradeAdd = (event) => {
   const selectedUpgradeId = event.target.value
   if (selectedUpgradeId) {
     const upgradeToAdd = props.gameRules.upgrades.find((u) => u.id === selectedUpgradeId)
     if (!upgradeToAdd) return
+
     const potentialSlots = usedSlots.value + 1
     if (potentialSlots > maxSlots.value) {
       toast.error(`Cannot add ${upgradeToAdd.name}: Exceeds maximum slots (${maxSlots.value}).`)
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
       return
     }
-    const costOfThisUpgrade = upgradeToAdd.tonnage || 0
-    const currentUsedWithoutArmorStructure =
-      totalUnitTonnageUsed.value - armorCost.value - structureCost.value
-    const potentialTotal =
-      currentUsedWithoutArmorStructure + armorCost.value + structureCost.value + costOfThisUpgrade
 
-    if (potentialTotal > baseTonnage.value) {
+    const currentClassName = selectedClass.value?.name
+    if (!currentClassName) {
+      toast.error(`Cannot add ${upgradeToAdd.name}: Please select a HE-V class first.`)
+      if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
+      return
+    }
+
+    // Calculate class-specific cost
+    const costOfThisUpgrade = upgradeToAdd.tonnage?.[currentClassName] ?? 0 // Default to 0 if undefined
+    if (
+      upgradeToAdd.tonnage === undefined ||
+      upgradeToAdd.tonnage[currentClassName] === undefined
+    ) {
+      // Check if the tonnage object or the class-specific key is missing
+      console.error(`Tonnage not defined for ${upgradeToAdd.name} on ${currentClassName} class.`)
+      toast.error(`Cannot add ${upgradeToAdd.name}: Tonnage configuration error.`)
+      if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
+      return
+    }
+
+    const potentialTonnage = totalUnitTonnageUsed.value + costOfThisUpgrade
+
+    if (potentialTonnage > baseTonnage.value) {
       toast.error(
         `Cannot add ${upgradeToAdd.name}: Exceeds maximum tonnage (${baseTonnage.value}T). Cost of this upgrade: ${costOfThisUpgrade}T.`,
       )
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
       return
     }
-    addUpgrade(upgradeToAdd)
+    addUpgrade(upgradeToAdd) // Add the full upgrade object
     if (upgradeSelectRef.value) {
       upgradeSelectRef.value.value = ''
     }
@@ -599,7 +626,6 @@ defineExpose({ resetForm, loadHevForEditing })
           <!-- Dodge Target Display -->
           <div class="defense-row dodge-target-row">
             <label class="defense-label">Dodge:</label>
-            <!-- Renamed label -->
             <span class="dodge-value">{{ dodgeTarget }}</span>
           </div>
 
@@ -849,7 +875,6 @@ defineExpose({ resetForm, loadHevForEditing })
           <span class="summary-label">Structure Cost:</span
           ><strong class="summary-value">{{ structureCost }}T</strong>
         </div>
-        <!-- UPDATED Motive Mods display -->
         <div class="summary-item">
           <span class="summary-label">Motive Slots:</span
           ><strong class="summary-value"
