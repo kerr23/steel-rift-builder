@@ -148,6 +148,8 @@ export const gameData = {
       name: 'Advanced Optics',
       tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
       // traits: REMOVED
+      description: 'Provides +1 Accuracy to all ranged attacks.',
+      // allowedClasses: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy'] // Example: Allowed for all (or omit this line)
     },
     {
       id: 'u3',

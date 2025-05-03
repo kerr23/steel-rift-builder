@@ -1,13 +1,13 @@
 <script setup>
 // Import necessary functions from Vue
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue' // Removed defineProps, defineEmits, defineExpose
 import { useToast } from 'vue-toastification'
 // NO import from ../gameData.js needed here
 
 // --- Initialize Toast ---
 const toast = useToast()
 
-// --- Props Definition ---
+// --- Props Definition (Still use the macro) ---
 const props = defineProps({
   gameRules: {
     // Receives game data via props
@@ -16,7 +16,7 @@ const props = defineProps({
   },
 })
 
-// --- Emits Definition ---
+// --- Emits Definition (Still use the macro) ---
 const emit = defineEmits(['add-hev'])
 
 // --- Component State ---
@@ -25,27 +25,28 @@ const selectedClass = ref(null)
 const selectedWeapons = ref([])
 const selectedUpgrades = ref([])
 const selectedMotiveType = ref(null)
-const armorModification = ref('standard')
-const structureModification = ref('standard')
+const armorModification = ref('standard') // 'stripped', 'standard', 'reinforced'
+const structureModification = ref('standard') // 'stripped', 'standard', 'reinforced'
 
 // Refs for selects
 const weaponSelectRef = ref(null)
 const upgradeSelectRef = ref(null)
 
 // --- Game Data Access ---
+// CORRECTED maxDieStep calculation: Calculate directly from props
 const maxDieStep = computed(() => {
   if (!props.gameRules?.dice || props.gameRules.dice.length === 0) {
     console.error('gameRules.dice is missing or empty in HevCustomizer props!')
-    return -1
+    return -1 // Return a default or error value
   }
+  // Calculate directly using Math.max on the steps from the prop
   try {
     return Math.max(...props.gameRules.dice.map((d) => d.step))
   } catch (e) {
     console.error('Error calculating maxDieStep:', e, props.gameRules.dice)
-    return -1
+    return -1 // Fallback on error
   }
 })
-// const allDice = computed(() => props.gameRules?.dice || [])
 
 // --- Modification Options ---
 const modificationOptions = ref([
@@ -56,11 +57,12 @@ const modificationOptions = ref([
 
 // --- Helper Functions ---
 const findDieObject = (dieString) => {
+  // Use props.gameRules directly
   if (!props.gameRules?.dice) return null
   return props.gameRules.dice.find((d) => d.die === dieString)
 }
 const findDieByStep = (step) => {
-  if (step < 0 || !props.gameRules?.dice) return null
+  if (step < 0 || !props.gameRules?.dice) return null // Use props.gameRules
   return props.gameRules.dice.find((d) => d.step === step)
 }
 const calculateNthWeaponCost = (weaponData, n, className) => {
@@ -87,13 +89,16 @@ const formatTraitForDisplay = (trait, className) => {
   const value = trait.value
 
   if (value === null || value === undefined) {
-    return name
+    return name // e.g., "Kinetic"
   }
+
   if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    // Class-dependent value
     const classValue = className ? (value[className] ?? '?') : '?'
-    return `${name}(${classValue})`
+    return `${name}(${classValue})` // e.g., "AP(2)"
   } else {
-    return `${name}(${value})`
+    // Simple fixed value (string or number)
+    return `${name}(${value})` // e.g., "Blast(3")", "Limited(3)"
   }
 }
 // --- END Helper Functions ---
@@ -255,7 +260,7 @@ const totalUnitTonnageUsed = computed(
     armorCost.value +
     structureCost.value +
     weaponDetails.value.totalTonnage +
-    upgradeDetails.value.totalTonnage,
+    upgradeDetails.value.totalTonnage, // This now uses the calculated class-specific total
 )
 const remainingUnitTonnage = computed(() => baseTonnage.value - totalUnitTonnageUsed.value)
 
@@ -316,12 +321,27 @@ const formattedWeapons = computed(() => {
   })
 })
 
-// UPDATED formattedUpgrades (Traits removed from display)
+// UPDATED formattedUpgrades (Added class restriction filter, removed trait display)
 const formattedUpgrades = computed(() => {
   const selectedUpgradeIds = selectedUpgrades.value.map((upg) => upg.id)
   const currentClassName = selectedClass.value?.name
 
-  return props.gameRules.upgrades
+  // Start with all upgrades
+  let availableUpgrades = props.gameRules.upgrades
+
+  // Filter based on class restrictions if a class is selected
+  if (currentClassName) {
+    availableUpgrades = availableUpgrades.filter((upg) => {
+      // Keep if allowedClasses is not defined OR if current class is included
+      return !upg.allowedClasses || upg.allowedClasses.includes(currentClassName)
+    })
+  } else {
+    // If no class selected, show no upgrades as available
+    availableUpgrades = []
+  }
+
+  // Filter out already selected upgrades and format the remaining ones
+  return availableUpgrades
     .filter((upg) => !selectedUpgradeIds.includes(upg.id))
     .map((upg) => {
       const cost = currentClassName ? (upg.tonnage?.[currentClassName] ?? '?') : '?'
@@ -586,9 +606,8 @@ watch(structureModification, (newValue, oldValue) => {
 })
 // --- END Watchers ---
 
-// --- Expose Methods ---
+// --- Expose Methods (Still use the macro) ---
 defineExpose({ resetForm, loadHevForEditing })
-// --- END Expose Methods ---
 </script>
 
 <template>
@@ -851,7 +870,8 @@ defineExpose({ resetForm, loadHevForEditing })
               "
               disabled
             >
-              -- No upgrades available --
+              -- No upgrades available for this class --
+              <!-- Message updated -->
             </option>
             <option v-if="!selectedClass" disabled>-- Select Class First --</option>
           </select>

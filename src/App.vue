@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+// Correct import capitalization
 import HevCustomizer from './components/hevCustomizer.vue'
 import { gameData as importedGameData } from './gameData.js'
 
 // --- Theme State ---
-const currentTheme = ref('light')
+const currentTheme = ref('light') // Default theme
 
+// Function to set the theme class and save preference
 const applyTheme = (theme) => {
   currentTheme.value = theme
   localStorage.setItem('appTheme', theme)
@@ -16,20 +18,26 @@ const applyTheme = (theme) => {
   }
 }
 
+// Function to toggle the theme
 const toggleTheme = () => {
   applyTheme(currentTheme.value === 'light' ? 'dark' : 'light')
 }
 
+// Load theme on component mount
 onMounted(() => {
   const savedTheme = localStorage.getItem('appTheme')
+  // Check for saved theme, otherwise check system preference
   if (savedTheme) {
     applyTheme(savedTheme)
   } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    applyTheme('dark')
+    applyTheme('dark') // Default to dark if system prefers dark and no setting saved
   } else {
-    applyTheme('light')
+    applyTheme('light') // Default to light
   }
+
+  // Optional: Listen for system preference changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+    // Only change if no theme preference is explicitly saved by the user
     if (!localStorage.getItem('appTheme')) {
       applyTheme(event.matches ? 'dark' : 'light')
     }
@@ -126,7 +134,7 @@ const getModificationText = (baseDie, effectiveDie) => {
   return ''
 }
 
-// Helper Function for Trait Display (Print)
+// === Helper Function for Trait Display (Print) ===
 const formatTraitForDisplayPrint = (trait, className) => {
   if (!trait || !trait.name) return ''
   const name = trait.name
@@ -142,6 +150,7 @@ const formatTraitForDisplayPrint = (trait, className) => {
     return `${name}(${value})`
   }
 }
+// === END Trait Helper ===
 // --- END Print Formatting Helpers ---
 
 // --- Main Print Formatting Function ---
@@ -165,7 +174,7 @@ const formatForPrint = () => {
             .class-section p { margin: 0.1rem 0; font-size: 0.85rem; display: flex; }
             .class-section p strong { font-weight: bold; min-width: 100px; display: inline-block; margin-right: 0.5em; }
             .print-movement-subsection { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--medium-grey); }
-            .print-movement-subsection p {}
+            .print-movement-subsection p { /* Inherits base .class-section p styles */ }
             .print-movement-subsection p strong { min-width: 100px; }
             .defense-section { display: flex; flex-direction: column; }
             .print-defense-layout-container { display: flex; flex-direction: column; gap: 0.4rem; border: 1px solid var(--medium-grey); padding: 0.5rem; border-radius: var(--border-radius); flex-grow: 1; }
@@ -205,7 +214,7 @@ const formatForPrint = () => {
             .item-info-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3em; flex-grow: 1; }
             .item-name { font-weight: 500; margin-right: 0.2em; }
             .item-stats { font-size: 0.9em; color: var(--secondary-color); margin-right: 0.2em; }
-            .item-traits { font-size: 0.85em; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            /* .item-traits removed as it was only used for upgrades */
             .trait-definitions-section { margin-top: 1rem; }
             .trait-definitions-section .section-title { margin-bottom: 0.3rem; }
             .trait-list { list-style: none; padding: 0.4rem 0.6rem; margin: 0; font-size: 0.75rem; line-height: 1.4; border: 1px solid var(--medium-grey); border-radius: var(--border-radius); background-color: var(--light-grey); }
@@ -216,6 +225,12 @@ const formatForPrint = () => {
             .motive-benefit-section .section-title { margin-bottom: 0.3rem; }
             .motive-benefit-display { font-size: 0.8rem; line-height: 1.4; padding: 0.4rem 0.6rem; border: 1px solid var(--medium-grey); border-radius: var(--border-radius); background-color: var(--light-grey); }
             .motive-benefit-display strong { font-weight: bold; color: var(--dark-grey); margin-right: 0.4em; }
+            .upgrade-description-section { margin-top: 1rem; }
+            .upgrade-description-section .section-title { margin-bottom: 0.3rem; }
+            .upgrade-description-list { list-style: none; padding: 0.4rem 0.6rem; margin: 0; font-size: 0.75rem; line-height: 1.4; border: 1px solid var(--medium-grey); border-radius: var(--border-radius); background-color: var(--light-grey); }
+            .upgrade-description-list li { margin-bottom: 0.25rem; }
+            .upgrade-description-list li:last-child { margin-bottom: 0; }
+            .upgrade-description-list li strong { font-weight: bold; color: var(--dark-grey); margin-right: 0.4em; }
             @media print { body { margin: 0; padding: 0; background-color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; } .print-container { max-width: 100%; margin: 8mm; padding: 0; box-shadow: none; border: none; } .no-print { display: none !important; } .unit-card { border: 1px solid #ccc; margin-bottom: 8mm; } }
             .no-print { position: fixed; top: 10px; right: 10px; padding: 5px 10px; background-color: #ddd; border: 1px solid #aaa; border-radius: 4px; cursor: pointer; z-index: 1000;}
         `
@@ -275,10 +290,13 @@ const formatForPrint = () => {
           }
         })
       }
-      // Removed collection of upgrade traits
+      // Removed upgrade trait collection
 
       // Get Motive Benefit Description
       const motiveDescription = unit.selectedMotiveType?.description || null
+
+      // Collect Upgrades WITH Descriptions
+      const upgradesWithDescriptions = unit.selectedUpgrades?.filter((upg) => upg.description) || []
 
       htmlBody += `<div class="unit-card">`
       htmlBody += `<h3 class="unit-title">${unit.unitName || 'Unnamed HE-V'}</h3>`
@@ -318,7 +336,6 @@ const formatForPrint = () => {
                                     ${generateBubbleHtml(unit.effectiveArmorDie?.sides ?? 0, false)}
                                     <span class="mod-cost-group">
                                         ${getModificationText(baseArmorDie, unit.effectiveArmorDie)}
-                                        <!-- Tonnage Cost Removed -->
                                     </span>
                                 </div>
                                 <!-- Structure Row -->
@@ -327,7 +344,6 @@ const formatForPrint = () => {
                                     ${generateBubbleHtml(unit.effectiveStructureDie?.sides ?? 0, true)}
                                      <span class="mod-cost-group">
                                         ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
-                                        <!-- Tonnage Cost Removed -->
                                      </span>
                                 </div>`
       // Threshold descriptions
@@ -405,7 +421,7 @@ const formatForPrint = () => {
         unit.selectedUpgrades.forEach((upgrade) => {
           if (upgrade && upgrade.name) {
             const tonnage = upgrade.tonnage?.[unitClassName] ?? '?'
-            // Removed Trait display
+            // Removed Trait display from here
             htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span><span class="item-stats">(${tonnage}T / 1S)</span></div></li>`
           } else {
             htmlBody += `<li><i>Unknown Upgrade</i></li>`
@@ -436,6 +452,18 @@ const formatForPrint = () => {
         sortedTraits.forEach((traitName) => {
           const definition = gameRulesData.traitDefinitions?.[traitName] || 'Definition not found.'
           htmlBody += `<li><strong>${traitName}:</strong> ${definition}</li>`
+        })
+        htmlBody += `</ul></div>`
+      }
+
+      // Upgrade Description Section
+      if (upgradesWithDescriptions.length > 0) {
+        htmlBody += `<div class="equipment-section upgrade-description-section">
+                               <h4 class="section-title">Upgrade Details</h4>
+                               <ul class="upgrade-description-list">`
+        upgradesWithDescriptions.sort((a, b) => a.name.localeCompare(b.name))
+        upgradesWithDescriptions.forEach((upgrade) => {
+          htmlBody += `<li><strong>${upgrade.name}:</strong> ${upgrade.description}</li>`
         })
         htmlBody += `</ul></div>`
       }
