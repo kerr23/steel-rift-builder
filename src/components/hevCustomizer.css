@@ -3,11 +3,13 @@
 /* --- Global Component Styles --- */
 .hev-customizer.card {
   padding: 1.25rem;
+  background-color: var(--card-bg-color); /* Theme aware */
+  border-color: var(--border-color); /* Theme aware */
 }
 
 .component-title {
   text-align: center;
-  color: var(--secondary-color);
+  color: var(--secondary-color); /* Theme aware */
   margin-bottom: 1.25rem;
   font-weight: 500;
   font-size: 1.5rem;
@@ -15,8 +17,8 @@
 
 .section-title {
   font-size: 1.05rem;
-  color: var(--secondary-color);
-  border-bottom: 1px solid var(--border-color);
+  color: var(--secondary-color); /* Theme aware */
+  border-bottom: 1px solid var(--border-color); /* Theme aware */
   padding-bottom: 0.3rem;
   margin-bottom: 0.75rem;
   font-weight: 500;
@@ -56,16 +58,18 @@
 .movement-info {
   margin-top: 0.75rem; /* Space above movement info */
   padding-top: 0.5rem; /* Space below last form group */
-  border-top: 1px dashed var(--border-color); /* Separator line */
+  border-top: 1px dashed var(--border-color); /* Theme aware separator */
 }
 .movement-info p {
   margin: 0.15rem 0;
   font-size: 0.9rem;
+  color: var(--text-color); /* Theme aware */
 }
 .movement-info p strong {
   display: inline-block;
   min-width: 80px; /* Align labels */
   font-weight: 600;
+  color: var(--text-color); /* Theme aware */
 }
 .movement-info .text-muted {
   color: var(--text-muted-color); /* Use variable */
@@ -86,7 +90,8 @@
   border: 1px solid var(--medium-grey); /* Use variable */
   border-radius: var(--border-radius);
   padding: 0.75rem;
-  background-color: var(--card-bg-color); /* Ensure container matches card bg if needed */
+  background-color: var(--input-bg-color); /* Match input background slightly */
+  /* Use theme variable for background if needed: var(--card-bg-color); or var(--light-grey) / var(--dark-grey) */
 }
 
 .defense-row {
@@ -100,10 +105,7 @@
 .dodge-target-row {
   padding-bottom: 0.6rem; /* Add some space below dodge */
   margin-bottom: 0.6rem; /* Add some space below dodge */
-  border-bottom: 1px dashed var(--medium-grey); /* Separator line */
-}
-.dodge-target-row .defense-label {
-  /* Inherits updated label styles */
+  border-bottom: 1px dashed var(--medium-grey); /* Theme aware separator */
 }
 .dodge-value {
   font-size: 1rem; /* Make value slightly larger */
@@ -120,7 +122,7 @@
   width: 75px; /* Use fixed width for perfect alignment */
   min-width: 75px; /* Fallback */
   text-align: left; /* Align text to the left */
-  color: var(--text-color); /* Use variable */
+  color: var(--text-color); /* Theme aware */
   font-size: 0.9rem;
   flex-shrink: 0;
   margin-right: 0.5rem; /* Add space between label and bubbles */
@@ -231,6 +233,7 @@ html.dark-theme .defense-row .modification-select option {
   padding: 0;
   display: flex;
   align-items: flex-start;
+  color: var(--text-color); /* Theme aware */
 }
 .threshold-descriptions p strong {
   min-width: 55px;
@@ -244,13 +247,13 @@ html.dark-theme .defense-row .modification-select option {
 /* Threshold Description Text Colors */
 .threshold-desc-green strong {
   color: var(--success-color);
-}
+} /* 25% Text -> Green */
 .threshold-desc-yellow strong {
   color: var(--warning-color);
-} /* Use warning var */
+} /* 50% Text -> Yellow */
 .threshold-desc-red strong {
   color: var(--danger-color);
-}
+} /* 75% Text -> Red */
 /* --- END Defense Section Layout --- */
 
 /* --- Placeholder Section --- */
@@ -301,7 +304,7 @@ html.dark-theme .defense-row .modification-select option {
   flex-direction: column;
 }
 
-/* UPDATED: Ensure select uses theme variables */
+/* Ensure select uses theme variables */
 .selection-control select {
   margin-bottom: 0.3rem;
   background-color: var(--input-bg-color); /* Use variable */
@@ -336,12 +339,12 @@ html.dark-theme .selection-control select option {
   min-height: 35px;
 }
 .item-list li.selected-item {
-  padding: 0.35rem 0.6rem;
+  padding: 0.4rem 0.6rem; /* Slightly more padding */
   font-size: 0.85rem;
-  gap: 0.4rem;
+  gap: 0.5rem; /* Increased gap slightly */
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* Align items to top for multi-line content */
   border-bottom: 1px solid var(--medium-grey); /* Use variable */
 }
 .item-list li:last-child {
@@ -355,7 +358,7 @@ html.dark-theme .selection-control select option {
   padding: 0.5rem 0;
   font-style: italic;
 }
-/* Styles for single-line item display */
+/* Styles for weapon's single-line display */
 .single-line-item .item-info-line {
   display: flex;
   flex-wrap: wrap;
@@ -365,7 +368,7 @@ html.dark-theme .selection-control select option {
   overflow: hidden;
 }
 
-/* UPDATED: Use theme variables for text colors */
+/* Use theme variables for text colors */
 .single-line-item .item-name {
   font-weight: 500;
   color: var(--text-color); /* Use main text color */
@@ -385,6 +388,35 @@ html.dark-theme .selection-control select option {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* === Styles for Selected Upgrades === */
+.item-list li.upgrade-item {
+  align-items: flex-start; /* Ensure button aligns well with multi-line text */
+}
+.upgrade-info {
+  display: flex;
+  flex-direction: column; /* Stack name and description */
+  flex-grow: 1; /* Take available space */
+  margin-right: 0.5rem; /* Space before remove button */
+}
+.upgrade-item .item-name {
+  /* Use existing item-name class for consistency */
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.15rem; /* Add small space below name */
+}
+.upgrade-description {
+  font-size: 0.75rem; /* Smaller font for description */
+  color: var(--text-muted-color); /* Muted color */
+  margin: 0; /* Remove default paragraph margin */
+  line-height: 1.3; /* Adjust line height */
+}
+.upgrade-item .btn-remove {
+  align-self: center; /* Vertically center button next to multi-line text */
+  margin-top: 2px; /* Fine-tune vertical alignment */
+}
+/* === END Selected Upgrades Styles === */
+
 /* --- END Equipment Sections --- */
 
 /* --- Form Placeholders --- */

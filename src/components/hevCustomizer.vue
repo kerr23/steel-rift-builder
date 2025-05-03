@@ -25,28 +25,28 @@ const selectedClass = ref(null)
 const selectedWeapons = ref([])
 const selectedUpgrades = ref([])
 const selectedMotiveType = ref(null)
-const armorModification = ref('standard') // 'stripped', 'standard', 'reinforced'
-const structureModification = ref('standard') // 'stripped', 'standard', 'reinforced'
+const armorModification = ref('standard')
+const structureModification = ref('standard')
 
 // Refs for selects
 const weaponSelectRef = ref(null)
 const upgradeSelectRef = ref(null)
 
 // --- Game Data Access ---
-// CORRECTED maxDieStep calculation: Calculate directly from props
 const maxDieStep = computed(() => {
   if (!props.gameRules?.dice || props.gameRules.dice.length === 0) {
     console.error('gameRules.dice is missing or empty in HevCustomizer props!')
-    return -1 // Return a default or error value
+    return -1
   }
-  // Calculate directly using Math.max on the steps from the prop
   try {
     return Math.max(...props.gameRules.dice.map((d) => d.step))
   } catch (e) {
     console.error('Error calculating maxDieStep:', e, props.gameRules.dice)
-    return -1 // Fallback on error
+    return -1
   }
 })
+// REMOVED unused allDice computed property
+// const allDice = computed(() => props.gameRules?.dice || [])
 
 // --- Modification Options ---
 const modificationOptions = ref([
@@ -57,12 +57,11 @@ const modificationOptions = ref([
 
 // --- Helper Functions ---
 const findDieObject = (dieString) => {
-  // Use props.gameRules directly
   if (!props.gameRules?.dice) return null
   return props.gameRules.dice.find((d) => d.die === dieString)
 }
 const findDieByStep = (step) => {
-  if (step < 0 || !props.gameRules?.dice) return null // Use props.gameRules
+  if (step < 0 || !props.gameRules?.dice) return null
   return props.gameRules.dice.find((d) => d.step === step)
 }
 const calculateNthWeaponCost = (weaponData, n, className) => {
@@ -89,16 +88,13 @@ const formatTraitForDisplay = (trait, className) => {
   const value = trait.value
 
   if (value === null || value === undefined) {
-    return name // e.g., "Kinetic"
+    return name
   }
-
   if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-    // Class-dependent value
     const classValue = className ? (value[className] ?? '?') : '?'
-    return `${name}(${classValue})` // e.g., "AP(2)"
+    return `${name}(${classValue})`
   } else {
-    // Simple fixed value (string or number)
-    return `${name}(${value})` // e.g., "Blast(3")", "Limited(3)"
+    return `${name}(${value})`
   }
 }
 // --- END Helper Functions ---
@@ -196,7 +192,7 @@ const baseMovementSpeed = computed(() => {
   return selectedClass.value?.baseMovement ?? 0
 })
 const hasJumpJets = computed(() => {
-  return selectedUpgrades.value.some((upg) => upg.id === 'u3')
+  return selectedUpgrades.value.some((upg) => upg.id === 'u6') // Adjusted ID
 })
 const jumpMovementSpeed = computed(() => {
   if (!hasJumpJets.value) return 0
@@ -238,7 +234,6 @@ const weaponDetails = computed(() => {
   return { totalTonnage, totalSlots }
 })
 
-// UPDATED upgradeDetails
 const upgradeDetails = computed(() => {
   const currentClassName = selectedClass.value?.name
   let totalTonnage = 0
@@ -254,13 +249,12 @@ const upgradeDetails = computed(() => {
 
 const usedSlots = computed(() => weaponDetails.value.totalSlots + upgradeDetails.value.totalSlots)
 
-// UPDATED totalUnitTonnageUsed calculation
 const totalUnitTonnageUsed = computed(
   () =>
     armorCost.value +
     structureCost.value +
     weaponDetails.value.totalTonnage +
-    upgradeDetails.value.totalTonnage, // This now uses the calculated class-specific total
+    upgradeDetails.value.totalTonnage,
 )
 const remainingUnitTonnage = computed(() => baseTonnage.value - totalUnitTonnageUsed.value)
 
@@ -275,6 +269,18 @@ const isValidUnit = computed(() => {
 })
 const isOverTonnage = computed(() => remainingUnitTonnage.value < 0)
 const isOverSlots = computed(() => usedSlots.value > maxSlots.value)
+
+// === Track selected exclusive upgrade types ===
+const selectedExclusiveUpgradeTypes = computed(() => {
+  const types = new Set()
+  selectedUpgrades.value.forEach((selectedUpg) => {
+    const fullUpgData = props.gameRules.upgrades.find((u) => u.id === selectedUpg.id)
+    if (fullUpgData?.type) {
+      types.add(fullUpgData.type)
+    }
+  })
+  return types
+})
 
 // == Formatting for Selects ==
 const availableMotiveTypes = computed(() => {
@@ -321,33 +327,34 @@ const formattedWeapons = computed(() => {
   })
 })
 
-// UPDATED formattedUpgrades (Added class restriction filter, removed trait display)
 const formattedUpgrades = computed(() => {
   const selectedUpgradeIds = selectedUpgrades.value.map((upg) => upg.id)
   const currentClassName = selectedClass.value?.name
+  const currentlySelectedTypes = selectedExclusiveUpgradeTypes.value
 
-  // Start with all upgrades
   let availableUpgrades = props.gameRules.upgrades
 
-  // Filter based on class restrictions if a class is selected
   if (currentClassName) {
     availableUpgrades = availableUpgrades.filter((upg) => {
-      // Keep if allowedClasses is not defined OR if current class is included
       return !upg.allowedClasses || upg.allowedClasses.includes(currentClassName)
     })
   } else {
-    // If no class selected, show no upgrades as available
     availableUpgrades = []
   }
 
-  // Filter out already selected upgrades and format the remaining ones
+  availableUpgrades = availableUpgrades.filter((upg) => {
+    if (upg.type && currentlySelectedTypes.has(upg.type)) {
+      return false
+    }
+    return true
+  })
+
   return availableUpgrades
     .filter((upg) => !selectedUpgradeIds.includes(upg.id))
     .map((upg) => {
       const cost = currentClassName ? (upg.tonnage?.[currentClassName] ?? '?') : '?'
-      // Removed trait display string generation
       return {
-        title: `${upg.name} (${cost}T / 1S)`, // Simplified title
+        title: `${upg.name} (${cost}T / 1S)`,
         value: upg.id,
       }
     })
@@ -402,12 +409,19 @@ const handleWeaponAdd = (event) => {
   }
 }
 
-// UPDATED handleUpgradeAdd
 const handleUpgradeAdd = (event) => {
   const selectedUpgradeId = event.target.value
   if (selectedUpgradeId) {
     const upgradeToAdd = props.gameRules.upgrades.find((u) => u.id === selectedUpgradeId)
     if (!upgradeToAdd) return
+
+    if (upgradeToAdd.type && selectedExclusiveUpgradeTypes.value.has(upgradeToAdd.type)) {
+      toast.error(
+        `Cannot add ${upgradeToAdd.name}: Another upgrade of type '${upgradeToAdd.type}' is already equipped.`,
+      )
+      if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
+      return
+    }
 
     const potentialSlots = usedSlots.value + 1
     if (potentialSlots > maxSlots.value) {
@@ -423,7 +437,6 @@ const handleUpgradeAdd = (event) => {
       return
     }
 
-    // Calculate class-specific cost
     const costOfThisUpgrade = upgradeToAdd.tonnage?.[currentClassName] ?? 0
     if (
       upgradeToAdd.tonnage === undefined ||
@@ -444,7 +457,7 @@ const handleUpgradeAdd = (event) => {
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
       return
     }
-    addUpgrade(upgradeToAdd) // Add the full upgrade object
+    addUpgrade(upgradeToAdd)
     if (upgradeSelectRef.value) {
       upgradeSelectRef.value.value = ''
     }
@@ -719,17 +732,20 @@ defineExpose({ resetForm, loadHevForEditing })
                     v-if="n === structureMarker_25_Percent"
                     class="threshold-divider divider-green"
                     title="25% Damage Threshold"
-                  ></span>
+                  ></span
+                  ><!-- 25% Marker -> GREEN -->
                   <span
                     v-else-if="n === structureMarker_50_Percent"
                     class="threshold-divider divider-yellow"
                     title="50% Damage Threshold"
-                  ></span>
+                  ></span
+                  ><!-- 50% Marker -> YELLOW -->
                   <span
                     v-else-if="n === structureMarker_75_Percent"
                     class="threshold-divider divider-red"
                     title="75% Damage Threshold"
-                  ></span>
+                  ></span
+                  ><!-- 75% Marker -> RED -->
                   <!-- Bubble -->
                   <span class="bubble"></span>
                 </template>
@@ -892,15 +908,17 @@ defineExpose({ resetForm, loadHevForEditing })
         </div>
         <div class="selection-list-container">
           <ul class="item-list">
-            <!-- UPDATED Upgrade list display (Removed Trait span) -->
+            <!-- Selected Upgrade List Item with Description -->
             <li
               v-for="(upgrade, index) in selectedUpgrades"
               :key="'selUpg-' + index + '-' + upgrade.id"
-              class="selected-item single-line-item"
+              class="selected-item upgrade-item"
             >
-              <div class="item-info-line">
+              <div class="upgrade-info">
                 <span class="item-name">{{ upgrade.name }}</span>
-                <!-- Removed trait display -->
+                <p v-if="upgrade.description" class="upgrade-description">
+                  {{ upgrade.description }}
+                </p>
               </div>
               <button @click="removeUpgrade(index)" class="btn btn-remove" title="Remove Upgrade">
                 X

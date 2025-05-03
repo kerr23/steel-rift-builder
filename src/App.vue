@@ -134,7 +134,7 @@ const getModificationText = (baseDie, effectiveDie) => {
   return ''
 }
 
-// === Helper Function for Trait Display (Print) ===
+// Helper Function for Trait Display (Print)
 const formatTraitForDisplayPrint = (trait, className) => {
   if (!trait || !trait.name) return ''
   const name = trait.name
@@ -150,7 +150,6 @@ const formatTraitForDisplayPrint = (trait, className) => {
     return `${name}(${value})`
   }
 }
-// === END Trait Helper ===
 // --- END Print Formatting Helpers ---
 
 // --- Main Print Formatting Function ---
@@ -207,14 +206,13 @@ const formatForPrint = () => {
             .print-weapon-table th:nth-child(3), .print-weapon-table td:nth-child(3) { text-align: center; width: 12%; white-space: nowrap; }
             .print-weapon-table td:nth-child(4) { font-size: 0.75rem; color: var(--text-muted); }
             .print-weapon-table .placeholder-row td { text-align: center; padding: 0.4rem; font-style: italic; color: var(--text-muted); }
-            .item-list { list-style: none; padding: 0; margin: 0.4rem 0 0 0; border: 1px solid var(--border-color); border-radius: var(--border-radius); }
-            .item-list li { display: flex; justify-content: space-between; align-items: baseline; padding: 0.2rem 0.4rem; border-bottom: 1px solid var(--medium-grey); font-size: 0.8rem; }
-            .item-list li:last-child { border-bottom: none; }
-            .item-list li i { color: var(--text-muted); font-style: italic; width: 100%; text-align: center; padding: 0.4rem; }
-            .item-info-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3em; flex-grow: 1; }
-            .item-name { font-weight: 500; margin-right: 0.2em; }
-            .item-stats { font-size: 0.9em; color: var(--secondary-color); margin-right: 0.2em; }
-            /* .item-traits removed as it was only used for upgrades */
+            /* item-list styles removed as the upgrade list is gone from print */
+            /* .item-list { ... } */
+            /* .item-list li { ... } */
+            /* .item-list li i { ... } */
+            /* .item-info-line { ... } */
+            /* .item-name { ... } */
+            /* .item-stats { ... } */
             .trait-definitions-section { margin-top: 1rem; }
             .trait-definitions-section .section-title { margin-bottom: 0.3rem; }
             .trait-list { list-style: none; padding: 0.4rem 0.6rem; margin: 0; font-size: 0.75rem; line-height: 1.4; border: 1px solid var(--medium-grey); border-radius: var(--border-radius); background-color: var(--light-grey); }
@@ -252,7 +250,7 @@ const formatForPrint = () => {
 
       // Get Movement Info
       const unitBaseMovement = unit.selectedClass?.baseMovement ?? 0
-      const unitHasJumpJets = unit.selectedUpgrades?.some((upg) => upg.id === 'u3') ?? false
+      const unitHasJumpJets = unit.selectedUpgrades?.some((upg) => upg.id === 'u6') ?? false // Adjusted ID
       let unitJumpMovement = 0
       if (unitHasJumpJets) {
         if (unitBaseMovement === 12) unitJumpMovement = 10
@@ -290,7 +288,6 @@ const formatForPrint = () => {
           }
         })
       }
-      // Removed upgrade trait collection
 
       // Get Motive Benefit Description
       const motiveDescription = unit.selectedMotiveType?.description || null
@@ -336,6 +333,7 @@ const formatForPrint = () => {
                                     ${generateBubbleHtml(unit.effectiveArmorDie?.sides ?? 0, false)}
                                     <span class="mod-cost-group">
                                         ${getModificationText(baseArmorDie, unit.effectiveArmorDie)}
+                                        <!-- Tonnage Cost Removed -->
                                     </span>
                                 </div>
                                 <!-- Structure Row -->
@@ -344,6 +342,7 @@ const formatForPrint = () => {
                                     ${generateBubbleHtml(unit.effectiveStructureDie?.sides ?? 0, true)}
                                      <span class="mod-cost-group">
                                         ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
+                                        <!-- Tonnage Cost Removed -->
                                      </span>
                                 </div>`
       // Threshold descriptions
@@ -414,24 +413,7 @@ const formatForPrint = () => {
       }
       htmlBody += `</div>` // End equipment-section (Weapons)
 
-      // Upgrades Section (List Format - Traits Removed)
-      htmlBody += `<div class="equipment-section"><h4 class="section-title">Upgrades</h4>`
-      if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
-        htmlBody += `<ul class="item-list">`
-        unit.selectedUpgrades.forEach((upgrade) => {
-          if (upgrade && upgrade.name) {
-            const tonnage = upgrade.tonnage?.[unitClassName] ?? '?'
-            // Removed Trait display from here
-            htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span><span class="item-stats">(${tonnage}T / 1S)</span></div></li>`
-          } else {
-            htmlBody += `<li><i>Unknown Upgrade</i></li>`
-          }
-        })
-        htmlBody += `</ul>`
-      } else {
-        htmlBody += `<p class="placeholder-text-inline" style="text-align: center; padding: 0.5rem;"><i>None</i></p>`
-      }
-      htmlBody += `</div>` // End equipment-section (Upgrades)
+      // REMOVED Upgrades List Section
 
       // Motive Benefit Section
       if (motiveDescription) {
@@ -443,6 +425,19 @@ const formatForPrint = () => {
                               </div>`
       }
 
+      // Upgrade Description Section
+      if (upgradesWithDescriptions.length > 0) {
+        htmlBody += `<div class="equipment-section upgrade-description-section">
+                               <h4 class="section-title">Upgrade Details</h4>
+                               <ul class="upgrade-description-list">`
+        upgradesWithDescriptions.sort((a, b) => a.name.localeCompare(b.name))
+        upgradesWithDescriptions.forEach((upgrade) => {
+          // Display name and description (tonnage/slot info removed)
+          htmlBody += `<li><strong>${upgrade.name}:</strong> ${upgrade.description}</li>`
+        })
+        htmlBody += `</ul></div>`
+      }
+
       // Trait Definitions Section (Shows only weapon traits now)
       if (uniqueUnitTraitNames.size > 0) {
         htmlBody += `<div class="equipment-section trait-definitions-section">
@@ -452,18 +447,6 @@ const formatForPrint = () => {
         sortedTraits.forEach((traitName) => {
           const definition = gameRulesData.traitDefinitions?.[traitName] || 'Definition not found.'
           htmlBody += `<li><strong>${traitName}:</strong> ${definition}</li>`
-        })
-        htmlBody += `</ul></div>`
-      }
-
-      // Upgrade Description Section
-      if (upgradesWithDescriptions.length > 0) {
-        htmlBody += `<div class="equipment-section upgrade-description-section">
-                               <h4 class="section-title">Upgrade Details</h4>
-                               <ul class="upgrade-description-list">`
-        upgradesWithDescriptions.sort((a, b) => a.name.localeCompare(b.name))
-        upgradesWithDescriptions.forEach((upgrade) => {
-          htmlBody += `<li><strong>${upgrade.name}:</strong> ${upgrade.description}</li>`
         })
         htmlBody += `</ul></div>`
       }
