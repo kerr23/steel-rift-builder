@@ -43,19 +43,15 @@ export const gameData = {
     { step: 2, die: 'd8', sides: 8, armorCost: 4, structureCost: 4 },
     { step: 3, die: 'd10', sides: 10, armorCost: 6, structureCost: 6 },
     { step: 4, die: 'd12', sides: 12, armorCost: 8, structureCost: 8 },
-    // { step: 5, die: 'd14', sides: 14, armorCost: 10, structureCost: 10 }, // Example if needed
   ],
-  // === UPDATED Weapons Traits Structure ===
   weapons: [
+    // Weapon traits are now objects { name: 'TraitName', value?: X | { L:Y, M:Z ... } }
     {
-      id: 'w_autocannon', // Use a more descriptive ID
+      id: 'w_autocannon',
       name: 'Auto-Cannon',
       tonnage: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 6 },
       damageRating: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 6 },
-      traits: [
-        // Now an array of objects
-        { name: 'Kinetic' }, // Trait with no value
-      ],
+      traits: [{ name: 'Kinetic' }],
       rangeCategory: 'Unlimited',
     },
     {
@@ -63,10 +59,7 @@ export const gameData = {
       name: 'Howitzer',
       tonnage: { Light: 2, Medium: 3, Heavy: 4, 'Ultra-Heavy': 5 },
       damageRating: { Light: 1, Medium: 2, Heavy: 3, 'Ultra-Heavy': 4 },
-      traits: [
-        { name: 'Blast', value: '3"' }, // Fixed value
-        { name: 'Kinetic' },
-      ],
+      traits: [{ name: 'Blast', value: '3"' }, { name: 'Kinetic' }],
       rangeCategory: 'Unlimited',
     },
     {
@@ -75,7 +68,6 @@ export const gameData = {
       tonnage: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 7 },
       damageRating: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 2 },
       traits: [
-        // Class-dependent value stored as object
         { name: 'AP', value: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 3 } },
         { name: 'Draining' },
       ],
@@ -86,10 +78,7 @@ export const gameData = {
       name: 'Melee Weapon',
       tonnage: { Light: 1, Medium: 2, Heavy: 3, 'Ultra-Heavy': 4 },
       damageRating: { Light: 0, Medium: 0, Heavy: 0, 'Ultra-Heavy': 0 },
-      traits: [
-        // Class-dependent value
-        { name: 'Melee', value: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 } },
-      ],
+      traits: [{ name: 'Melee', value: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 } }],
       rangeCategory: 'N/A',
     },
     {
@@ -97,10 +86,7 @@ export const gameData = {
       name: 'Missiles',
       tonnage: { Light: 2, Medium: 3, Heavy: 4, 'Ultra-Heavy': 5 },
       damageRating: { Light: 2, Medium: 4, Heavy: 6, 'Ultra-Heavy': 8 },
-      traits: [
-        { name: 'Smart' },
-        { name: 'Limited', value: 3 }, // Fixed numeric value
-      ],
+      traits: [{ name: 'Smart' }, { name: 'Limited', value: 3 }],
       rangeCategory: 'Unlimited',
     },
     {
@@ -155,27 +141,27 @@ export const gameData = {
       rangeCategory: '6"',
     },
   ],
-  // === UPDATED Upgrades with Class-Based Tonnage ===
+  // === UPDATED Upgrades (Traits Removed) ===
   upgrades: [
     {
       id: 'u1',
       name: 'Advanced Optics',
-      tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 }, // Example values
-      traits: ['+1 Accuracy Ranged'],
+      tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
+      // traits: REMOVED
     },
     {
       id: 'u3',
       name: 'Jump Jets',
-      tonnage: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 6 }, // Example values
-      traits: ['Jump Movement'],
+      tonnage: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 6 },
+      // traits: REMOVED
     },
     {
       id: 'u4',
       name: 'ECM Suite',
-      tonnage: { Light: 2, Medium: 2, Heavy: 3, 'Ultra-Heavy': 3 }, // Example values
-      traits: ['Enemy -1 Accuracy Targeting'],
+      tonnage: { Light: 2, Medium: 2, Heavy: 3, 'Ultra-Heavy': 3 },
+      // traits: REMOVED
     },
-    // Update ALL other upgrades similarly...
+    // REMOVE traits property from ALL upgrades
   ],
   // === END UPDATED Upgrades ===
   motiveTypes: [
@@ -203,8 +189,9 @@ export const gameData = {
         'HUNKERD DOWN:  While this HE-V is ‘Hunkered Down’ any attacks on this Unit originating from attackers within Line of Sight must count the Hunkered Unit as being obscured by Covering Terrain. If the Hunkered Unit was already obscured by Covering Terrain, it must be treated as being obscured by Blocking Terrain',
     },
   ],
-  // === UPDATED Trait Definitions (Use base names as keys) ===
+  // === UPDATED Trait Definitions (Removed upgrade-only traits) ===
   traitDefinitions: {
+    // == Weapon Traits ==
     AP: 'Armor Penetrating: If any damage is inflicted by this Attack, apply AP(X) damage directly to the target units Structure (value depends on HE-V class).',
     Blast:
       'Area Effect: All units (friend or foe) within (X) of the original target must also make a Defense Roll against this Attack at -1 to the Attack Pool (to a minimum of 1).',
@@ -223,12 +210,7 @@ export const gameData = {
       'Add (X) to the Attack Pool of this mech when it is performing a Smash Order (value depends on HE-V class). This model counts as one Class Size larger during a Smash order. This weapon System is not used in an Engage Order.',
     Smart:
       'The Active Unit may use any friendly unit with a Target Designator for determining Line of Sight for attacks with this Weapon System.',
-
-    // == Upgrade Traits (keep existing upgrade trait defs) ==
-    '+1 Accuracy Ranged': 'Gain +1 Accuracy on all ranged attack Orders.',
-    'Jump Movement': 'Unit gains the Jump movement type in addition to its standard motive type.',
-    'Enemy -1 Accuracy Targeting': 'Enemies targeting this unit suffer -1 Accuracy.',
-    // Add definitions for ALL other upgrade traits used in gameData.upgrades...
+    // Remove any definitions that were ONLY used by upgrades here
   },
   // === END Trait Definitions ===
 }

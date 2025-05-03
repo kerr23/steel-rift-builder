@@ -1,13 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue' // Removed unused 'watch'
-// Correct import capitalization
+import { ref, computed, onMounted } from 'vue'
 import HevCustomizer from './components/hevCustomizer.vue'
 import { gameData as importedGameData } from './gameData.js'
 
 // --- Theme State ---
-const currentTheme = ref('light') // Default theme
+const currentTheme = ref('light')
 
-// Function to set the theme class and save preference
 const applyTheme = (theme) => {
   currentTheme.value = theme
   localStorage.setItem('appTheme', theme)
@@ -18,26 +16,20 @@ const applyTheme = (theme) => {
   }
 }
 
-// Function to toggle the theme
 const toggleTheme = () => {
   applyTheme(currentTheme.value === 'light' ? 'dark' : 'light')
 }
 
-// Load theme on component mount
 onMounted(() => {
   const savedTheme = localStorage.getItem('appTheme')
-  // Check for saved theme, otherwise check system preference
   if (savedTheme) {
     applyTheme(savedTheme)
   } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    applyTheme('dark') // Default to dark if system prefers dark and no setting saved
+    applyTheme('dark')
   } else {
-    applyTheme('light') // Default to light
+    applyTheme('light')
   }
-
-  // Optional: Listen for system preference changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
-    // Only change if no theme preference is explicitly saved by the user
     if (!localStorage.getItem('appTheme')) {
       applyTheme(event.matches ? 'dark' : 'light')
     }
@@ -134,7 +126,7 @@ const getModificationText = (baseDie, effectiveDie) => {
   return ''
 }
 
-// === Helper Function for Trait Display (Print) ===
+// Helper Function for Trait Display (Print)
 const formatTraitForDisplayPrint = (trait, className) => {
   if (!trait || !trait.name) return ''
   const name = trait.name
@@ -150,19 +142,17 @@ const formatTraitForDisplayPrint = (trait, className) => {
     return `${name}(${value})`
   }
 }
-// === END Trait Helper ===
 // --- END Print Formatting Helpers ---
 
 // --- Main Print Formatting Function ---
 const formatForPrint = () => {
   console.log('Formatting for print...')
   try {
-    // --- CSS Styles (Includes Print Alignment Fix & Movement Subsection) ---
+    // --- CSS Styles ---
     const cssStyles = `
             body { font-family: Consolas, Menlo, 'DejaVu Sans Mono', 'Courier New', monospace; line-height: 1.4; margin: 0; padding: 0; color: #212529; background-color: #fff; font-size: 14px; }
             * { box-sizing: border-box; }
             :root { --primary-color: #0d6efd; --secondary-color: #6c757d; --success-color: #198754; --danger-color: #dc3545; --warning-color: #ffc107; --black-color: #000000; --light-grey: #f8f9fa; --medium-grey: #e9ecef; --dark-grey: #343a40; --border-color: #dee2e6; --border-radius: 0.25rem; --text-muted: #6c757d; }
-
             .print-container { max-width: 900px; margin: 15px auto; padding: 10px; }
             .print-header { text-align: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
             .print-header h1 { margin: 0 0 3px 0; font-size: 1.6rem; font-weight: 500; }
@@ -172,18 +162,11 @@ const formatForPrint = () => {
             .section-wrapper.class-defense-wrapper { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.8rem; align-items: stretch; }
             .form-section { flex: 1; min-width: 230px; display: flex; flex-direction: column; }
             .section-title { font-size: 0.9rem; color: var(--secondary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 0.2rem; margin-bottom: 0.5rem; font-weight: 500; }
-
-            /* Classification Section Styles */
-             .class-section p { margin: 0.1rem 0; font-size: 0.85rem; display: flex; }
-             .class-section p strong { font-weight: bold; min-width: 100px; display: inline-block; margin-right: 0.5em; }
-
-             /* Movement Subsection Styles */
+            .class-section p { margin: 0.1rem 0; font-size: 0.85rem; display: flex; }
+            .class-section p strong { font-weight: bold; min-width: 100px; display: inline-block; margin-right: 0.5em; }
             .print-movement-subsection { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--medium-grey); }
-            .print-movement-subsection p { /* Inherits base .class-section p styles */ }
-            .print-movement-subsection p strong { min-width: 100px; } /* Match width */
-
-
-            /* Defense Section Styles */
+            .print-movement-subsection p {}
+            .print-movement-subsection p strong { min-width: 100px; }
             .defense-section { display: flex; flex-direction: column; }
             .print-defense-layout-container { display: flex; flex-direction: column; gap: 0.4rem; border: 1px solid var(--medium-grey); padding: 0.5rem; border-radius: var(--border-radius); flex-grow: 1; }
             .print-defense-row { display: flex; align-items: center; gap: 0.5rem; min-height: 20px; }
@@ -207,8 +190,6 @@ const formatForPrint = () => {
             .threshold-desc-green strong { color: var(--success-color); }
             .threshold-desc-yellow strong { color: #b38600; }
             .threshold-desc-red strong { color: var(--danger-color); }
-
-            /* Equipment Sections & Tables/Lists */
             .equipment-section { margin-top: 0.8rem; }
             .print-weapon-table { width: 100%; border-collapse: collapse; margin-top: 0.4rem; font-size: 0.8rem; }
             .print-weapon-table th, .print-weapon-table td { border: 1px solid var(--border-color); padding: 0.2rem 0.4rem; text-align: left; vertical-align: top; }
@@ -225,28 +206,17 @@ const formatForPrint = () => {
             .item-name { font-weight: 500; margin-right: 0.2em; }
             .item-stats { font-size: 0.9em; color: var(--secondary-color); margin-right: 0.2em; }
             .item-traits { font-size: 0.85em; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-            /* Trait Definitions Section Styles */
             .trait-definitions-section { margin-top: 1rem; }
             .trait-definitions-section .section-title { margin-bottom: 0.3rem; }
             .trait-list { list-style: none; padding: 0.4rem 0.6rem; margin: 0; font-size: 0.75rem; line-height: 1.4; border: 1px solid var(--medium-grey); border-radius: var(--border-radius); background-color: var(--light-grey); }
             .trait-list li { margin-bottom: 0.25rem; }
             .trait-list li:last-child { margin-bottom: 0; }
             .trait-list li strong { font-weight: bold; color: var(--dark-grey); margin-right: 0.4em; }
-
-            /* Motive Benefit Section Styles */
-             .motive-benefit-section { margin-top: 0.8rem; }
-             .motive-benefit-section .section-title { margin-bottom: 0.3rem; }
-             .motive-benefit-display { font-size: 0.8rem; line-height: 1.4; padding: 0.4rem 0.6rem; border: 1px solid var(--medium-grey); border-radius: var(--border-radius); background-color: var(--light-grey); }
-             .motive-benefit-display strong { font-weight: bold; color: var(--dark-grey); margin-right: 0.4em; }
-
-            /* Print specific overrides */
-            @media print {
-                body { margin: 0; padding: 0; background-color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; }
-                .print-container { max-width: 100%; margin: 8mm; padding: 0; box-shadow: none; border: none; }
-                .no-print { display: none !important; }
-                .unit-card { border: 1px solid #ccc; margin-bottom: 8mm; }
-            }
+            .motive-benefit-section { margin-top: 0.8rem; }
+            .motive-benefit-section .section-title { margin-bottom: 0.3rem; }
+            .motive-benefit-display { font-size: 0.8rem; line-height: 1.4; padding: 0.4rem 0.6rem; border: 1px solid var(--medium-grey); border-radius: var(--border-radius); background-color: var(--light-grey); }
+            .motive-benefit-display strong { font-weight: bold; color: var(--dark-grey); margin-right: 0.4em; }
+            @media print { body { margin: 0; padding: 0; background-color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; } .print-container { max-width: 100%; margin: 8mm; padding: 0; box-shadow: none; border: none; } .no-print { display: none !important; } .unit-card { border: 1px solid #ccc; margin-bottom: 8mm; } }
             .no-print { position: fixed; top: 10px; right: 10px; padding: 5px 10px; background-color: #ddd; border: 1px solid #aaa; border-radius: 4px; cursor: pointer; z-index: 1000;}
         `
 
@@ -293,27 +263,19 @@ const formatForPrint = () => {
           break
       }
 
-      // Collect Unique Weapon & Upgrade Traits
-      const uniqueUnitTraitNames = new Set() // Changed variable name
+      // Collect Unique Weapon Trait Names
+      const uniqueUnitTraitNames = new Set()
       if (unit.selectedWeapons && unit.selectedWeapons.length > 0) {
         unit.selectedWeapons.forEach((weaponInstance) => {
           const weaponData = gameRulesData.weapons.find((w) => w.id === weaponInstance.id)
           if (weaponData?.traits?.length) {
             weaponData.traits.forEach((traitObj) => {
-              // Iterate objects
-              if (traitObj && traitObj.name) uniqueUnitTraitNames.add(traitObj.name) // Add name
+              if (traitObj && traitObj.name) uniqueUnitTraitNames.add(traitObj.name)
             })
           }
         })
       }
-      if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
-        unit.selectedUpgrades.forEach((upgradeInstance) => {
-          if (upgradeInstance?.traits?.length) {
-            // Assuming upgrade traits are still simple strings
-            upgradeInstance.traits.forEach((traitStr) => uniqueUnitTraitNames.add(traitStr))
-          }
-        })
-      }
+      // Removed collection of upgrade traits
 
       // Get Motive Benefit Description
       const motiveDescription = unit.selectedMotiveType?.description || null
@@ -411,7 +373,6 @@ const formatForPrint = () => {
           if (weaponData) {
             const damage = weaponData.damageRating?.[unitClassName] ?? '?'
             const range = weaponData.rangeCategory || 'N/A'
-            // Format traits using the helper
             const traits =
               (weaponData.traits || [])
                 .map((traitObj) => formatTraitForDisplayPrint(traitObj, unitClassName))
@@ -437,16 +398,15 @@ const formatForPrint = () => {
       }
       htmlBody += `</div>` // End equipment-section (Weapons)
 
-      // Upgrades Section (List Format)
+      // Upgrades Section (List Format - Traits Removed)
       htmlBody += `<div class="equipment-section"><h4 class="section-title">Upgrades</h4>`
       if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
         htmlBody += `<ul class="item-list">`
         unit.selectedUpgrades.forEach((upgrade) => {
           if (upgrade && upgrade.name) {
-            const traits = upgrade.traits?.join(', ') ?? 'None'
-            // Use class-specific tonnage
             const tonnage = upgrade.tonnage?.[unitClassName] ?? '?'
-            htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span><span class="item-stats">(${tonnage}T / 1S)</span><span class="item-traits">Tr:[${traits}]</span></div></li>`
+            // Removed Trait display
+            htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span><span class="item-stats">(${tonnage}T / 1S)</span></div></li>`
           } else {
             htmlBody += `<li><i>Unknown Upgrade</i></li>`
           }
@@ -467,17 +427,15 @@ const formatForPrint = () => {
                               </div>`
       }
 
-      // Trait Definitions Section (Uses BASE names)
+      // Trait Definitions Section (Shows only weapon traits now)
       if (uniqueUnitTraitNames.size > 0) {
-        // Use updated variable name
         htmlBody += `<div class="equipment-section trait-definitions-section">
                                <h4 class="section-title">Trait Key</h4>
                                <ul class="trait-list">`
         const sortedTraits = Array.from(uniqueUnitTraitNames).sort()
         sortedTraits.forEach((traitName) => {
-          // Iterate base names
           const definition = gameRulesData.traitDefinitions?.[traitName] || 'Definition not found.'
-          htmlBody += `<li><strong>${traitName}:</strong> ${definition}</li>` // Display base name
+          htmlBody += `<li><strong>${traitName}:</strong> ${definition}</li>`
         })
         htmlBody += `</ul></div>`
       }
