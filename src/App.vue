@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 // Correct import capitalization
 import HevCustomizer from './components/hevCustomizer.vue'
 import { gameData as importedGameData } from './gameData.js'
