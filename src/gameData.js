@@ -226,7 +226,7 @@ export const gameData = {
   motiveTypes: [
     {
       id: 'm1',
-      name: 'Standard Biped',
+      name: 'Biped',
       classApplicability: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy'],
       slotModifier: 0,
       description: null,
