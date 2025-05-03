@@ -145,25 +145,72 @@ export const gameData = {
   upgrades: [
     {
       id: 'u1',
-      name: 'Advanced Optics',
+      name: 'Ablative Armour ',
       tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
-      // traits: REMOVED
-      description: 'Provides +1 Accuracy to all ranged attacks.',
-      // allowedClasses: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy'] // Example: Allowed for all (or omit this line)
+      description: 'Reduce the Attack Pool for attacks using the Blast trait by 1, to a minimum of 1.',
+      // allowedClasses: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy']
     },
     {
       id: 'u3',
-      name: 'Jump Jets',
-      tonnage: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 6 },
-      // traits: REMOVED
+      name: 'Anti Missile System',
+      tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
+      description: 'This unit may not be targeted by a Weapon System using the Smart trait to Engage them from outside of Line of Sight of the Active Model.',
     },
     {
       id: 'u4',
-      name: 'ECM Suite',
-      tonnage: { Light: 2, Medium: 2, Heavy: 3, 'Ultra-Heavy': 3 },
-      // traits: REMOVED
+      name: 'Electronic Countermeasures',
+      tonnage: { Light: 2, Medium: 2, Heavy: 1, 'Ultra-Heavy': 1 },
+      description: "The Lock On order may not be taken against this model."
     },
-    // REMOVE traits property from ALL upgrades
+    {
+      id: 'u5',
+      name: 'Heavy Reactor',
+      tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
+      description: "Roll 1D6 when this model would take Structure damage from Redlining, on a 4+ this damage is ignored."
+    },
+    {
+      id: 'u6',
+      name: 'Jump Jets',
+      tonnage: { Light: 3, Medium: 3, Heavy: 2, 'Ultra-Heavy': 2 },
+      description: "This model may take the Jump Jet action."
+    },
+    {
+      id: 'u7',
+      name: 'Minefield Drone Carrier System',
+      tonnage: { Medium: 3, Heavy: 6, 'Ultra-Heavy': 6 },
+      description: "ORDER: Place a Mine Drone token (as per the Support Asset ) within 3” of the Active model and not within 6” of another Mine Drone token. This Upgrade has the Limited (*/1/2/2) trait.",
+      allowedClasses: ['Medium', 'Heavy', 'Ultra-Heavy']
+    },
+    {
+      id: 'u8',
+      name: 'Mine Drone Tracking Submunitions',
+      tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
+      description: "ORDER: This model makes an immediate Engage order against a Mine Field token in range. The Commander of the target Minefield makes a Defense Roll on a 3+. If at least one point of Damage would be inflicted, remove the Token. (Model with Submunitions Only).",
+    },
+    {
+      id: 'u9',
+      name: 'Optic Camouflage',
+      tonnage: { Light: 5, Medium: 4, Heavy: 3, 'Ultra-Heavy': 2 },
+      description: 'Add +1 to Defense Rolls for this unit when the attacker is outside of 10”.',
+    },
+    {
+      id: 'u10',
+      name: 'Reactive Armour',
+      tonnage: { Light: 1, Medium: 1, Heavy: 1, 'Ultra-Heavy': 1 },
+      description: 'Reduce the Attack Pool for Missile and Rocket Pack attacks by 1, to a minimum of 1.',
+    },
+    {
+      id: 'u11',
+      name: 'Ceramic Plating',
+      tonnage: { Light: 2, Medium: 2, Heavy: 1, 'Ultra-Heavy': 1 },
+      description: 'Each time this unit would take damage from the AP trait of a Laser Weapon System roll 1D6 - on a 5+ that damage is negated.',
+    },
+    {
+      id: 'u12',
+      name: 'Target Designator',
+      tonnage: { Light: 1, Medium: 1, Heavy: 1, 'Ultra-Heavy': 1 },
+      description: 'Once per turn, friendly models in the same force may use this vehicle to draw Line of Sight for Weapon Systems using the Smart trait. Use this model for determining the AttackPool and Line of Sight. Its use can be canceled by Electronic Counter measures.',
+    },
   ],
   // === END UPDATED Upgrades ===
   motiveTypes: [
