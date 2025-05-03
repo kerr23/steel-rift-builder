@@ -1,4 +1,4 @@
-/* src/components/evCustomizer.css */
+/* src/components/hevCustomizer.css */
 
 /* --- Global Component Styles --- */
 .hev-customizer.card {
@@ -45,7 +45,35 @@
   margin-bottom: 0;
 }
 
-/* --- NEW Defense Section Layout --- */
+/* --- Classification Section Specifics --- */
+.class-section .form-group label[for='hevName'],
+.class-section .form-group input#hevName {
+  /* Prevent the name input from growing too wide */
+  max-width: 350px; /* Adjust this value as needed */
+}
+
+/* Movement Info Styles */
+.movement-info {
+  margin-top: 0.75rem; /* Space above movement info */
+  padding-top: 0.5rem; /* Space below last form group */
+  border-top: 1px dashed var(--border-color); /* Separator line */
+}
+.movement-info p {
+  margin: 0.15rem 0;
+  font-size: 0.9rem;
+}
+.movement-info p strong {
+  display: inline-block;
+  min-width: 80px; /* Align labels */
+  font-weight: 600;
+}
+.movement-info .text-muted {
+  color: var(--text-muted-color); /* Use variable */
+  font-style: italic;
+}
+/* END Movement Info Styles */
+
+/* --- Defense Section Layout (Row-based) --- */
 .defense-section {
   /* Inherits flex: 1, min-width from .form-section */
 }
@@ -53,25 +81,51 @@
 .defense-layout-container {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* Space between Armor row, Structure row, and Thresholds */
+  gap: 0.75rem; /* Re-adjusted gap slightly */
   flex-grow: 1; /* Allow container to fill space */
+  border: 1px solid var(--medium-grey); /* Use variable */
+  border-radius: var(--border-radius);
+  padding: 0.75rem;
+  background-color: var(--card-bg-color); /* Ensure container matches card bg if needed */
 }
 
 .defense-row {
   display: flex;
-  align-items: center;
-  gap: 0.75rem; /* Space between label, bubbles, select, cost */
-  min-height: 38px; /* Ensure consistent row height */
+  align-items: center; /* Vertically align items in the row */
+  gap: 0.5rem; /* Reduced gap between items in the row */
+  min-height: 30px; /* Adjusted min-height slightly */
 }
 
+/* Dodge Target Row Styles */
+.dodge-target-row {
+  padding-bottom: 0.6rem; /* Add some space below dodge */
+  margin-bottom: 0.6rem; /* Add some space below dodge */
+  border-bottom: 1px dashed var(--medium-grey); /* Separator line */
+}
+.dodge-target-row .defense-label {
+  /* Inherits updated label styles */
+}
+.dodge-value {
+  font-size: 1rem; /* Make value slightly larger */
+  font-weight: bold;
+  color: var(--primary-color); /* Use variable */
+  flex-grow: 1; /* Allow it to take remaining space */
+  text-align: left;
+}
+/* END Dodge Target Row Styles */
+
+/* Label Alignment */
 .defense-label {
   font-weight: 600;
-  min-width: 70px; /* Fixed width for alignment */
-  text-align: right;
-  color: var(--dark-grey);
+  width: 75px; /* Use fixed width for perfect alignment */
+  min-width: 75px; /* Fallback */
+  text-align: left; /* Align text to the left */
+  color: var(--text-color); /* Use variable */
   font-size: 0.9rem;
-  flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0;
+  margin-right: 0.5rem; /* Add space between label and bubbles */
 }
+/* END Label Alignment */
 
 /* Bubble display within the row */
 .defense-row .bubble-display {
@@ -79,11 +133,10 @@
   flex-wrap: nowrap;
   gap: 2px;
   line-height: 1;
-  align-items: center;
-  /* Removed fixed min-width, let flex handle it */
+  align-items: center; /* Vertically center bubbles */
   overflow: hidden;
-  flex-grow: 1; /* Allow bubbles to take up space */
-  min-width: 100px; /* But not get too small */
+  flex-grow: 1; /* Allow bubbles to take available space */
+  min-width: 120px; /* Prevent excessive shrinking */
 }
 
 /* Modification select within the row */
@@ -92,78 +145,83 @@
   font-size: 0.8rem;
   min-width: 90px; /* Adjust as needed */
   flex-shrink: 0; /* Prevent shrinking */
+  margin-left: auto; /* Push select and cost to the right */
+  background-color: var(--input-bg-color); /* Use variable */
+  color: var(--text-color); /* Use variable */
+  border: 1px solid var(--input-border-color); /* Use variable */
+}
+.defense-row .modification-select option {
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+}
+/* Specific dark theme override for better option visibility if needed */
+html.dark-theme .defense-row .modification-select option {
+  background-color: var(--dark-grey); /* Match dark input bg */
+  color: var(--text-color);
 }
 .defense-row .modification-select option:disabled {
-  color: var(--text-muted);
-  background-color: var(--light-grey);
+  color: var(--text-muted-color); /* Use variable */
+  /* Background might be handled by OS/browser */
 }
 
 /* Cost display within the row */
 .defense-row .die-cost {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--dark-grey);
+  color: var(--text-color); /* Use variable */
   white-space: nowrap;
   flex-shrink: 0;
   min-width: 40px; /* Ensure space for cost */
   text-align: right;
+  margin-left: 0.25rem; /* Space between select and cost */
 }
 
-/* Bubble Styles (remain the same as they describe the bubble appearance) */
+/* Bubble Styles */
 .bubble {
   display: inline-block;
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  border: 1.5px solid var(--success-color);
+  border: 1.5px solid var(--black-color); /* Black border variable */
   background-color: transparent;
   vertical-align: middle;
   box-sizing: border-box;
   flex-shrink: 0;
 }
-.bubble.bubble-yellow {
-  border-color: var(--warning-color);
-}
-.bubble.bubble-red {
-  border-color: var(--danger-color);
-}
-.bubble.bubble-black {
-  border-color: var(--black-color);
-}
 
-/* Threshold Divider Styles (remain the same) */
+/* Threshold Divider Styles */
 .threshold-divider {
   display: inline-block;
-  width: 2px;
-  height: 12px;
+  width: 2px; /* Keep width */
+  height: 12px; /* Keep height */
   margin: 0 1px;
   vertical-align: middle;
   flex-shrink: 0;
 }
+.divider-green {
+  background-color: var(--success-color);
+} /* Use variable */
 .divider-yellow {
   background-color: var(--warning-color);
-}
+} /* Use variable */
 .divider-red {
   background-color: var(--danger-color);
-}
-.divider-black {
-  background-color: var(--black-color);
-}
+} /* Use variable */
 
 .placeholder-text-inline {
   font-style: italic;
-  color: var(--text-muted);
+  color: var(--text-muted-color); /* Use variable */
   font-size: 0.85rem;
   width: 100%;
   text-align: left;
   padding-left: 5px;
 }
 
-/* Threshold Descriptions (position adjusted) */
+/* Threshold Descriptions */
 .threshold-descriptions {
   margin-top: 0.25rem; /* Small space above descriptions */
   padding: 0.5rem 0 0.2rem 0.5rem; /* Add some padding */
-  border-top: 1px dashed var(--border-color);
+  border-top: 1px dashed var(--border-color); /* Use variable */
   font-size: 0.75rem;
   line-height: 1.3;
   width: 100%; /* Take full width inside the container */
@@ -182,39 +240,44 @@
   font-weight: bold;
   margin-right: 0.3em;
 }
-.threshold-desc-yellow strong {
-  color: #b38600;
+
+/* Threshold Description Text Colors */
+.threshold-desc-green strong {
+  color: var(--success-color);
 }
+.threshold-desc-yellow strong {
+  color: var(--warning-color);
+} /* Use warning var */
 .threshold-desc-red strong {
   color: var(--danger-color);
-}
-.threshold-desc-black strong {
-  color: var(--black-color);
 }
 /* --- END Defense Section Layout --- */
 
 /* --- Placeholder Section --- */
 .placeholder-section {
-  border: 1px dashed var(--border-color);
+  border: 1px dashed var(--border-color); /* Use variable */
   border-radius: var(--border-radius);
   padding: 1rem;
-  background-color: var(--light-grey);
+  background-color: var(--light-grey); /* Use variable */
   min-height: 150px;
-  justify-content: flex-start; /* Align title to top */
+  justify-content: flex-start;
   align-items: center;
 }
 .placeholder-section .section-title {
-  margin-bottom: auto; /* Push title to top */
+  margin-bottom: auto;
   width: 100%;
   text-align: center;
+  color: var(--secondary-color); /* Ensure title color fits */
+  border-bottom-color: var(--border-color);
 }
 .placeholder-section p {
-  flex-grow: 1; /* Allow text to center vertically */
+  flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   width: 100%;
+  color: var(--text-muted-color); /* Use variable */
 }
 /* --- END Placeholder Section --- */
 
@@ -237,9 +300,25 @@
   display: flex;
   flex-direction: column;
 }
+
+/* UPDATED: Ensure select uses theme variables */
 .selection-control select {
   margin-bottom: 0.3rem;
+  background-color: var(--input-bg-color); /* Use variable */
+  color: var(--text-color); /* Use variable */
+  border: 1px solid var(--input-border-color); /* Use variable */
 }
+/* Ensure options try to inherit colors (browser support varies) */
+.selection-control select option {
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+}
+/* Specific dark theme override for better option visibility if needed */
+html.dark-theme .selection-control select option {
+  background-color: var(--dark-grey); /* Match dark input bg */
+  color: var(--text-color);
+}
+
 .selection-list-container {
   flex: 2;
   min-width: 280px;
@@ -251,9 +330,9 @@
   margin: 0;
   max-height: 150px;
   overflow-y: auto;
-  border: 1px solid var(--medium-grey);
+  border: 1px solid var(--medium-grey); /* Use variable */
   border-radius: var(--border-radius);
-  background: #fff;
+  background: var(--card-bg-color); /* Use variable */
   min-height: 35px;
 }
 .item-list li.selected-item {
@@ -263,18 +342,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--medium-grey);
+  border-bottom: 1px solid var(--medium-grey); /* Use variable */
 }
 .item-list li:last-child {
   border-bottom: none;
 }
 .item-list li i {
-  color: var(--text-muted);
+  /* Placeholder text */
+  color: var(--text-muted-color); /* Use variable */
   width: 100%;
   text-align: center;
   padding: 0.5rem 0;
   font-style: italic;
 }
+/* Styles for single-line item display */
 .single-line-item .item-info-line {
   display: flex;
   flex-wrap: wrap;
@@ -283,21 +364,23 @@
   flex-grow: 1;
   overflow: hidden;
 }
+
+/* UPDATED: Use theme variables for text colors */
 .single-line-item .item-name {
   font-weight: 500;
-  color: var(--dark-grey);
+  color: var(--text-color); /* Use main text color */
   white-space: nowrap;
   margin-right: 0.2em;
 }
 .single-line-item .item-stats {
   font-size: 0.85em;
-  color: var(--secondary-color);
+  color: var(--secondary-color); /* Use secondary color variable */
   white-space: nowrap;
   margin-right: 0.2em;
 }
 .single-line-item .item-traits {
   font-size: 0.8em;
-  color: var(--text-muted);
+  color: var(--text-muted-color); /* Use muted text color variable */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -310,8 +393,8 @@
 }
 .placeholder-input {
   height: calc(1.5em + 0.75rem + 2px); /* Match standard select height */
-  border: 1px solid var(--border-color);
-  background-color: var(--light-grey);
+  border: 1px solid var(--border-color); /* Use variable */
+  background-color: var(--light-grey); /* Use variable */
   border-radius: var(--border-radius);
   box-sizing: border-box;
 }
@@ -321,16 +404,17 @@
 .summary-compact {
   margin-top: 1.5rem;
   padding: 0.6rem 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color); /* Use variable */
   border-radius: var(--border-radius);
-  background-color: var(--light-grey);
+  background-color: var(--light-grey); /* Use variable */
 }
 .summary-compact h4 {
   margin: 0 0 0.6rem 0;
   padding-bottom: 0.4rem;
   font-size: 1.1rem;
   text-align: center;
-  border-bottom: 1px solid var(--medium-grey);
+  border-bottom: 1px solid var(--medium-grey); /* Use variable */
+  color: var(--text-color); /* Use variable */
 }
 .summary-grid {
   display: grid;
@@ -349,16 +433,17 @@
 .summary-label {
   padding-right: 0.4em;
   color: var(--secondary-color);
-}
+} /* Use variable */
 .summary-value {
   font-weight: 600;
   text-align: right;
-}
+  color: var(--text-color);
+} /* Use variable */
 .summary-divider {
   grid-column: 1 / -1;
   margin: 0.4rem 0;
   border: 0;
-  border-top: 1px solid var(--medium-grey);
+  border-top: 1px solid var(--medium-grey); /* Use variable */
 }
 .summary-item.error .summary-label,
 .summary-item.error .summary-value {
@@ -376,21 +461,24 @@
   color: var(--danger-color) !important;
 }
 .warning-text {
-  color: #b38600; /* Darker yellow */
+  color: var(--warning-color); /* Use variable */
   font-size: 0.85em;
   font-style: italic;
   margin-top: 0.25rem;
   display: block;
 }
+html.dark-theme .warning-text {
+  color: #ffec99;
+} /* Lighter yellow for dark */
 
 .slot-limit-message {
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--text-muted-color); /* Use variable */
   font-style: italic;
   margin-top: 0.15rem;
 }
 .slot-limit-message.error {
-  color: var(--danger-color);
+  color: var(--danger-color); /* Use variable */
   font-weight: bold;
   font-style: normal;
 }
@@ -399,9 +487,13 @@
 }
 
 select:disabled {
-  background-color: var(--medium-grey);
+  background-color: var(--medium-grey); /* Use variable */
   cursor: not-allowed;
   opacity: 0.7;
+}
+html.dark-theme select:disabled {
+  background-color: var(--dark-grey); /* Darker disabled */
+  opacity: 0.6;
 }
 
 .btn-add-hev {
@@ -409,7 +501,7 @@ select:disabled {
   font-size: 1rem;
 }
 .btn-remove {
-  background-color: var(--danger-color);
+  background-color: var(--danger-color); /* Use variable */
   color: white;
   border: none;
   border-radius: 50%;
@@ -422,8 +514,9 @@ select:disabled {
   padding: 0;
   margin-left: 0.5rem;
   flex-shrink: 0;
+  transition: background-color 0.15s ease-in-out;
 }
 .btn-remove:hover {
-  background-color: #a71d2a;
+  filter: brightness(90%);
 }
 /* --- END General --- */

@@ -9,6 +9,7 @@ export const gameData = {
       baseSlots: 6,
       defaultArmorDie: 'd6',
       defaultStructureDie: 'd6',
+      baseMovement: 12,
     },
     {
       name: 'Medium',
@@ -16,6 +17,7 @@ export const gameData = {
       baseSlots: 8,
       defaultArmorDie: 'd8',
       defaultStructureDie: 'd8',
+      baseMovement: 10,
     },
     {
       name: 'Heavy',
@@ -23,6 +25,7 @@ export const gameData = {
       baseSlots: 10,
       defaultArmorDie: 'd10',
       defaultStructureDie: 'd10',
+      baseMovement: 8,
     },
     {
       name: 'Ultra-Heavy',
@@ -30,6 +33,7 @@ export const gameData = {
       baseSlots: 12,
       defaultArmorDie: 'd12',
       defaultStructureDie: 'd12',
+      baseMovement: 6,
     },
   ],
   dice: [
@@ -83,59 +87,60 @@ export const gameData = {
   upgrades: [
     // --- Ensure you have your COMPLETE list of upgrades here ---
     { id: 'u1', name: 'Advanced Optics', tonnage: 1, traits: ['+1 Accuracy Ranged'] },
-    { id: 'u3', name: 'Jump Jets', tonnage: 4, traits: ['Jump Movement'] },
+    { id: 'u3', name: 'Jump Jets', tonnage: 4, traits: ['Jump Movement'] }, // Ensure this ID ('u3') is correct
     { id: 'u4', name: 'ECM Suite', tonnage: 2, traits: ['Enemy -1 Accuracy Targeting'] },
     // Add all other upgrades...
   ],
+  // === UPDATED motiveTypes (tonnageModifier removed) ===
   motiveTypes: [
-    // --- Ensure you have your COMPLETE list of motive types here ---
     {
       id: 'm1',
       name: 'Standard Biped',
       classApplicability: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy'],
-      tonnageModifier: 0,
       slotModifier: 0,
+      description: null, // Or 'Standard walking movement.'
     },
     {
       id: 'm2',
       name: 'Standard Tracked',
       classApplicability: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy'],
-      tonnageModifier: 0,
       slotModifier: 0,
+      description: 'Ignores movement penalties for Difficult Terrain.',
     },
     {
       id: 'm3',
       name: 'Standard Wheeled',
       classApplicability: ['Light', 'Medium', 'Heavy'],
-      tonnageModifier: 0,
       slotModifier: 0,
+      description: '+2" Movement on roads, -2" Movement in Difficult Terrain.',
     },
     {
       id: 'bh1',
       name: 'Agile Walker (BH)',
       classApplicability: ['Light', 'Medium'],
-      tonnageModifier: 2,
       slotModifier: 0,
-    }, // Example BH
+      description: '+1 bonus to Dodge attempts.', // Example benefit
+    },
     {
       id: 'bh2',
       name: 'Heavy Treads (BH)',
       classApplicability: ['Heavy', 'Ultra-Heavy'],
-      tonnageModifier: 0,
       slotModifier: -1,
-    }, // Example BH
+      description:
+        'Ignores movement penalties for Difficult Terrain. Cannot benefit from Road movement bonus.', // Example benefit
+    },
     {
       id: 'bh3',
       name: 'Grav Skimmer (BH)',
       classApplicability: ['Light', 'Medium', 'Heavy'],
-      tonnageModifier: 5,
       slotModifier: -1,
-    }, // Example BH
-    // Add all other motive types...
+      description: 'Hovers. Ignores all terrain penalties & effects. Can move over water/chasms.', // Example benefit
+    },
+    // REMOVE tonnageModifier from all other motive types...
   ],
-
+  // *** Trait Definitions ***
   traitDefinitions: {
-    // Weapon Traits
+    // == Weapon Traits ==
     'AP 1': "Armor Penetrating 1: Reduce the target's Armor value by 1 before rolling damage.",
     AI: 'Anti-Infantry: Gains bonuses or special effects when targeting infantry units.',
     Suppressive: 'Can make Suppressive Fire attacks, potentially pinning enemy infantry.',
@@ -144,11 +149,15 @@ export const gameData = {
     Melee: 'This weapon can only be used during melee combat actions.',
     Accurate:
       'Improves the chance to hit with this weapon (e.g., reroll misses, bonus to hit roll).',
-    // Add definitions for ALL weapon traits you use in your gameData.weapons list
-    // ...
+    // Add ALL other weapon traits...
 
-    // Note: You might want separate definitions for Upgrade Traits if needed,
-    // but the current request is only for weapon traits.
+    // == Upgrade Traits ==
+    '+1 Accuracy Ranged': 'Gain +1 Accuracy on all ranged attack Orders.',
+    'Jump Movement': 'Unit gains the Jump movement type in addition to its standard motive type.',
+    'Enemy -1 Accuracy Targeting': 'Enemies targeting this unit suffer -1 Accuracy.',
+    // Add definitions for ALL other upgrade traits used in gameData.upgrades...
+
+    // ... Add any other traits from weapons or upgrades ...
   },
   // *** END Trait Definitions ***
 }

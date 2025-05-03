@@ -1,13 +1,54 @@
 <script setup>
-import { ref, computed } from 'vue'
-import HevCustomizer from './components/HevCustomizer.vue'
+import { ref, computed, onMounted, watch } from 'vue'
+// Correct import capitalization
+import HevCustomizer from './components/hevCustomizer.vue'
 import { gameData as importedGameData } from './gameData.js'
+
+// --- Theme State ---
+const currentTheme = ref('light') // Default theme
+
+// Function to set the theme class and save preference
+const applyTheme = (theme) => {
+  currentTheme.value = theme
+  localStorage.setItem('appTheme', theme)
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark-theme')
+  } else {
+    document.documentElement.classList.remove('dark-theme')
+  }
+}
+
+// Function to toggle the theme
+const toggleTheme = () => {
+  applyTheme(currentTheme.value === 'light' ? 'dark' : 'light')
+}
+
+// Load theme on component mount
+onMounted(() => {
+  const savedTheme = localStorage.getItem('appTheme')
+  // Check for saved theme, otherwise check system preference
+  if (savedTheme) {
+    applyTheme(savedTheme)
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark') // Default to dark if system prefers dark and no setting saved
+  } else {
+    applyTheme('light') // Default to light
+  }
+
+  // Optional: Listen for system preference changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+    // Only change if no theme preference is explicitly saved by the user
+    if (!localStorage.getItem('appTheme')) {
+      applyTheme(event.matches ? 'dark' : 'light')
+    }
+  })
+})
 
 // --- App State ---
 const rosterName = ref('')
 const roster = ref([])
 const hevCustomizerRef = ref(null)
-const gameRulesData = importedGameData // Use gameData directly
+const gameRulesData = importedGameData
 const fileInputRef = ref(null)
 
 // --- Computed Properties ---
@@ -20,10 +61,10 @@ const addHevToRoster = (hevData) => {
   console.log('Adding HEV to roster:', hevData)
   roster.value.push({
     ...hevData,
-    id: hevData.id || Date.now() + Math.random(), // Add ID here if not provided by customizer
+    id: hevData.id || Date.now() + Math.random(),
   })
   if (hevCustomizerRef.value) {
-    hevCustomizerRef.value.resetForm() // Call resetForm on the customizer component
+    hevCustomizerRef.value.resetForm()
   } else {
     console.warn('Could not access hevCustomizerRef to reset form.')
   }
@@ -50,15 +91,12 @@ const editHev = (unitToEdit) => {
     alert('Error: Invalid unit data.')
     return
   }
-  // Load data into customizer
   hevCustomizerRef.value.loadHevForEditing(JSON.parse(JSON.stringify(unitToEdit)))
-  // Remove the old version from the roster
   removeHevFromRoster(unitToEdit.id)
 }
 
 // --- Print Formatting Helpers ---
 const findDieObjectPrint = (dieString) => {
-  // Ensure gameRulesData and dice exist before trying to access them
   if (!gameRulesData?.dice || !dieString) return null
   return gameRulesData.dice.find((d) => d.die === dieString)
 }
@@ -66,13 +104,8 @@ const findDieObjectPrint = (dieString) => {
 const generateBubbleHtml = (sides, isStructureTrack = false) => {
   if (sides <= 0) return `<span class="placeholder-text-inline">N/A</span>`
   let bubblesHtml = ''
-  // Threshold calculation remains the same as it's for visual representation
   const thresholds = isStructureTrack
     ? {
-        redEnd: sides > 0 ? Math.floor(sides * 0.25) : 0,
-        orangeEnd: sides > 0 ? Math.floor(sides * 0.5) : 0,
-        yellowEnd: sides > 0 ? Math.floor(sides * 0.75) : 0,
-        // Calculate marker indices correctly based on remaining pips
         markerYellow: sides > 0 ? sides - Math.floor(sides * 0.75) + 1 : 0,
         markerOrange: sides > 0 ? sides - Math.floor(sides * 0.5) + 1 : 0,
         markerRed: sides > 0 ? sides - Math.floor(sides * 0.25) + 1 : 0,
@@ -80,27 +113,16 @@ const generateBubbleHtml = (sides, isStructureTrack = false) => {
     : null
 
   for (let n = 1; n <= sides; n++) {
-    let bubbleClass = 'bubble'
     if (isStructureTrack && thresholds) {
-      // Add dividers *before* the bubble they mark the start of
       if (n === thresholds.markerYellow && thresholds.markerYellow <= sides)
-        bubblesHtml += `<span class="threshold-divider divider-yellow"></span>`
+        bubblesHtml += `<span class="threshold-divider divider-green"></span>`
       else if (n === thresholds.markerOrange && thresholds.markerOrange <= sides)
-        bubblesHtml += `<span class="threshold-divider divider-red"></span>`
+        bubblesHtml += `<span class="threshold-divider divider-yellow"></span>`
       else if (n === thresholds.markerRed && thresholds.markerRed <= sides)
-        bubblesHtml += `<span class="threshold-divider divider-black"></span>`
-
-      // Color bubbles based on which zone they fall *into*
-      if (n <= thresholds.redEnd)
-        bubbleClass += ' bubble-black' // 75%+ damage
-      else if (n <= thresholds.orangeEnd)
-        bubbleClass += ' bubble-red' // 50%-75% damage
-      else if (n <= thresholds.yellowEnd) bubbleClass += ' bubble-yellow' // 25%-50% damage
-      // else bubble remains default green (0-25% damage)
+        bubblesHtml += `<span class="threshold-divider divider-red"></span>`
     }
-    bubblesHtml += `<span class="${bubbleClass}"></span>`
+    bubblesHtml += `<span class="bubble"></span>`
   }
-  // Wrap the bubbles in the display div
   return `<div class="bubble-display">${bubblesHtml}</div>`
 }
 
@@ -109,7 +131,7 @@ const getModificationText = (baseDie, effectiveDie) => {
   if (effectiveDie.step > baseDie.step)
     return ' <span class="modification-text">(Reinforced)</span>'
   if (effectiveDie.step < baseDie.step) return ' <span class="modification-text">(Stripped)</span>'
-  return '' // No text for standard
+  return ''
 }
 // --- END Print Formatting Helpers ---
 
@@ -117,9 +139,9 @@ const getModificationText = (baseDie, effectiveDie) => {
 const formatForPrint = () => {
   console.log('Formatting for print...')
   try {
-    // --- CSS Styles (Including Trait Definitions) ---
+    // --- CSS Styles (Updated Classification & Movement subsection) ---
     const cssStyles = `
-            body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; padding: 0; color: #212529; background-color: #fff; font-size: 14px; }
+            body { font-family: Consolas, Menlo, 'DejaVu Sans Mono', 'Courier New', monospace; line-height: 1.4; margin: 0; padding: 0; color: #212529; background-color: #fff; font-size: 14px; }
             * { box-sizing: border-box; }
             :root { --primary-color: #0d6efd; --secondary-color: #6c757d; --success-color: #198754; --danger-color: #dc3545; --warning-color: #ffc107; --black-color: #000000; --light-grey: #f8f9fa; --medium-grey: #e9ecef; --dark-grey: #343a40; --border-color: #dee2e6; --border-radius: 0.25rem; --text-muted: #6c757d; }
 
@@ -127,38 +149,65 @@ const formatForPrint = () => {
             .print-header { text-align: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
             .print-header h1 { margin: 0 0 3px 0; font-size: 1.6rem; font-weight: 500; }
             .print-header h2 { margin: 0; font-size: 1.1rem; font-weight: 400; color: var(--text-muted); }
-
             .unit-card { border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 10px; margin-bottom: 15px; page-break-inside: avoid !important; }
-            .unit-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: var(--primary-color); border-bottom: 1px solid var(--medium-grey); padding-bottom: 4px; }
-
+            .unit-title { font-size: 1.2rem; font-weight: 600; margin: 0 0 10px 0; padding: 0; color: var(--dark-grey); text-align: center; }
             .section-wrapper.class-defense-wrapper { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.8rem; align-items: stretch; }
             .form-section { flex: 1; min-width: 230px; display: flex; flex-direction: column; }
             .section-title { font-size: 0.9rem; color: var(--secondary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 0.2rem; margin-bottom: 0.5rem; font-weight: 500; }
-            .class-section p { margin: 0.1rem 0; font-size: 0.85rem; }
+
+            /* === UPDATED Classification Section Styles === */
+            .class-section p {
+                 margin: 0.1rem 0;
+                 font-size: 0.85rem;
+                 display: flex;
+             }
+             .class-section p strong {
+                 font-weight: bold;
+                 min-width: 100px; /* Alignment for all labels in this section */
+                 display: inline-block;
+                 margin-right: 0.5em;
+             }
+            /* === END Classification Styles === */
+
+             /* === NEW Styles for Movement Subsection within Classification === */
+            .print-movement-subsection {
+                margin-top: 0.5rem; /* Space above the subsection */
+                padding-top: 0.5rem; /* Space below the line */
+                border-top: 1px dashed var(--medium-grey); /* Decorative line */
+            }
+            .print-movement-subsection p {
+                 /* Inherits base .class-section p styles */
+            }
+            .print-movement-subsection p strong {
+                 /* Inherits base .class-section p strong styles */
+                 min-width: 100px; /* Make sure width matches other labels */
+            }
+            /* === END Movement Subsection Styles === */
 
             /* Defense Section Styles */
             .defense-section { display: flex; flex-direction: column; }
             .print-defense-layout-container { display: flex; flex-direction: column; gap: 0.4rem; border: 1px solid var(--medium-grey); padding: 0.5rem; border-radius: var(--border-radius); flex-grow: 1; }
             .print-defense-row { display: flex; align-items: center; gap: 0.5rem; min-height: 20px; }
-            .print-defense-label { font-weight: bold; min-width: 65px; text-align: right; flex-shrink: 0; font-size: 0.85rem; }
-            .print-defense-row .bubble-display { display: flex; flex-wrap: nowrap; gap: 1.5px; align-items: center; flex-shrink: 0; min-width: 140px; overflow: hidden; }
-            .bubble { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--success-color); flex-shrink: 0; background-color: transparent; box-sizing: border-box; }
-            .bubble.bubble-yellow { border-color: var(--warning-color); }
-            .bubble.bubble-red { border-color: var(--danger-color); }
-            .bubble.bubble-black { border-color: var(--black-color); }
+            .print-defense-label { font-weight: bold; width: 75px; min-width: 75px; text-align: left; flex-shrink: 0; font-size: 0.85rem; margin-right: 0.5rem; }
+            .dodge-target-row-print { display: flex; align-items: baseline; padding-bottom: 0.3rem; margin-bottom: 0.4rem; border-bottom: 1px dashed var(--medium-grey); font-size: 0.9rem; }
+            .dodge-target-row-print .print-defense-label { margin-right: 0.5em; }
+            .dodge-value-print { font-weight: bold; color: var(--primary-color); }
+            .print-defense-row .bubble-display { display: flex; flex-wrap: nowrap; gap: 1.5px; align-items: center; flex-shrink: 0; overflow: hidden; }
+            .bubble { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--black-color); flex-shrink: 0; background-color: transparent; box-sizing: border-box; }
             .threshold-divider { display: inline-block; width: 1.5px; height: 10px; margin: 0 1px; vertical-align: middle; flex-shrink: 0; }
+            .divider-green { background-color: var(--success-color); }
             .divider-yellow { background-color: var(--warning-color); }
             .divider-red { background-color: var(--danger-color); }
-            .divider-black { background-color: var(--black-color); }
             .placeholder-text-inline { font-style: italic; color: var(--text-muted); font-size: 0.75rem; padding-left: 5px; }
-            .modification-text { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; margin-left: 0.2em; }
-            .die-cost-print { font-size: 0.8rem; font-weight: 500; color: var(--dark-grey); margin-left: auto; white-space: nowrap; padding-left: 0.4em; }
+            .print-defense-row .mod-cost-group { display: flex; align-items: baseline; margin-left: auto; gap: 0.4em; flex-shrink: 0; }
+            .modification-text { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+            .die-cost-print { font-size: 0.8rem; font-weight: 500; color: var(--dark-grey); white-space: nowrap; }
             .threshold-descriptions { margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px dashed var(--border-color); font-size: 0.7rem; line-height: 1.2; }
             .threshold-descriptions p { margin: 0; display: flex;}
             .threshold-descriptions p strong { min-width: 50px; text-align: right; flex-shrink: 0; display: inline-block; font-weight: bold; margin-right: 3px; }
+            .threshold-desc-green strong { color: var(--success-color); }
             .threshold-desc-yellow strong { color: #b38600; }
             .threshold-desc-red strong { color: var(--danger-color); }
-            .threshold-desc-black strong { color: var(--black-color); }
 
             /* Equipment Sections & Tables/Lists */
             .equipment-section { margin-top: 0.8rem; }
@@ -186,6 +235,12 @@ const formatForPrint = () => {
             .trait-list li:last-child { margin-bottom: 0; }
             .trait-list li strong { font-weight: bold; color: var(--dark-grey); margin-right: 0.4em; }
 
+            /* Motive Benefit Section Styles */
+             .motive-benefit-section { margin-top: 0.8rem; }
+             .motive-benefit-section .section-title { margin-bottom: 0.3rem; }
+             .motive-benefit-display { font-size: 0.8rem; line-height: 1.4; padding: 0.4rem 0.6rem; border: 1px solid var(--medium-grey); border-radius: var(--border-radius); background-color: var(--light-grey); }
+             .motive-benefit-display strong { font-weight: bold; color: var(--dark-grey); margin-right: 0.4em; }
+
             /* Print specific overrides */
             @media print {
                 body { margin: 0; padding: 0; background-color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; }
@@ -196,7 +251,7 @@ const formatForPrint = () => {
             .no-print { position: fixed; top: 10px; right: 10px; padding: 5px 10px; background-color: #ddd; border: 1px solid #aaa; border-radius: 4px; cursor: pointer; z-index: 1000;}
         `
 
-    // --- HTML Body Generation (UPDATED Trait Collection) ---
+    // --- HTML Body Generation ---
     let htmlBody = `
             <button class="no-print" onclick="window.print()">Print this page</button>
             <div class="print-header">
@@ -211,57 +266,102 @@ const formatForPrint = () => {
       const baseArmorDie = findDieObjectPrint(unit.selectedClass.defaultArmorDie)
       const baseStructDie = findDieObjectPrint(unit.selectedClass.defaultStructureDie)
 
-      // *** Collect Unique Weapon & Upgrade Traits for this Unit ***
+      // Get Movement Info
+      const unitBaseMovement = unit.selectedClass?.baseMovement ?? 0
+      const unitHasJumpJets = unit.selectedUpgrades?.some((upg) => upg.id === 'u3') ?? false
+      let unitJumpMovement = 0
+      if (unitHasJumpJets) {
+        if (unitBaseMovement === 12) unitJumpMovement = 10
+        else if (unitBaseMovement === 10) unitJumpMovement = 8
+        else if (unitBaseMovement === 8) unitJumpMovement = 6
+        else if (unitBaseMovement === 6) unitJumpMovement = 4
+      }
+
+      // Calculate Dodge Target
+      let unitDodgeTarget = '?'
+      switch (unitClassName) {
+        case 'Light':
+          unitDodgeTarget = '3+'
+          break
+        case 'Medium':
+          unitDodgeTarget = '4+'
+          break
+        case 'Heavy':
+          unitDodgeTarget = '5+'
+          break
+        case 'Ultra-Heavy':
+          unitDodgeTarget = '6+'
+          break
+      }
+
+      // Collect Unique Weapon & Upgrade Traits
       const uniqueUnitTraits = new Set()
-      // Collect from Weapons
       if (unit.selectedWeapons && unit.selectedWeapons.length > 0) {
         unit.selectedWeapons.forEach((weaponInstance) => {
           const weaponData = gameRulesData.weapons.find((w) => w.id === weaponInstance.id)
           if (weaponData?.traits?.length) {
-            // Check if weaponData and traits exist and traits array is not empty
             weaponData.traits.forEach((trait) => uniqueUnitTraits.add(trait))
           }
         })
       }
-      // Collect from Upgrades
       if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
         unit.selectedUpgrades.forEach((upgradeInstance) => {
-          // Assuming full upgrade object is stored in unit.selectedUpgrades
           if (upgradeInstance?.traits?.length) {
             upgradeInstance.traits.forEach((trait) => uniqueUnitTraits.add(trait))
           }
         })
       }
-      // *** End Trait Collection ***
+
+      // Get Motive Benefit Description
+      const motiveDescription = unit.selectedMotiveType?.description || null
 
       htmlBody += `<div class="unit-card">`
       htmlBody += `<h3 class="unit-title">${unit.unitName || 'Unnamed HE-V'}</h3>`
       htmlBody += `<div class="section-wrapper class-defense-wrapper">` // Wrapper Class/Defense
 
-      // Classification Section
+      // Classification Section HTML (Movement Included)
       htmlBody += `<div class="form-section class-section">
                            <h4 class="section-title">Classification</h4>
-                           <p><strong>Class:</strong> ${unitClassName}</p>
-                           <p><strong>Motive:</strong> ${unit.selectedMotiveType?.name || 'Standard'}</p>
-                           <p><strong>Unit Tonnage:</strong> ${unit.totalUnitTonnage || '?'}</p>
-                           <p><strong>Slots Used:</strong> ${unit.usedSlots === undefined ? '?' : unit.usedSlots} / ${unit.maxSlots === undefined ? '?' : unit.maxSlots}</p>
-                         </div>`
+                           <p><strong>Class:</strong> <span>${unitClassName}</span></p>
+                           <p><strong>Motive:</strong> <span>${unit.selectedMotiveType?.name || 'Standard'}</span></p>
+                           <p><strong>Unit Tonnage:</strong> <span>${unit.totalUnitTonnage || '?'}</span></p>
+                           <!-- Movement Subsection -->
+                           <div class="print-movement-subsection">
+                               <p><strong>Movement:</strong> <span>${unitBaseMovement}"</span></p>`
+      if (unitHasJumpJets) {
+        htmlBody += `<p><strong>Jump:</strong> <span>${unitJumpMovement}"</span></p>`
+      }
+      const slotMod = unit.selectedMotiveType?.slotModifier ?? 0
+      if (slotMod !== 0) {
+        htmlBody += `<p><strong>Motive Slots:</strong> <span>${slotMod > 0 ? '+' : ''}${slotMod}S</span></p>`
+      }
+      htmlBody += `</div> <!-- End print-movement-subsection -->
+                         </div>` // End class-section
 
-      // Defense Section (Row-based)
+      // Defense Section HTML
       htmlBody += `<div class="form-section defense-section">
                             <h4 class="section-title">Armor & Structure</h4>
                             <div class="print-defense-layout-container">
+                                <!-- Dodge Target Row for Print -->
+                                <div class="dodge-target-row-print">
+                                    <span class="print-defense-label">Dodge:</span> <!-- Renamed -->
+                                    <span class="dodge-value-print">${unitDodgeTarget}</span>
+                                </div>
+                                <!-- Armor Row -->
                                 <div class="print-defense-row">
                                     <span class="print-defense-label">Armor:</span>
                                     ${generateBubbleHtml(unit.effectiveArmorDie?.sides ?? 0, false)}
-                                    ${getModificationText(baseArmorDie, unit.effectiveArmorDie)}
-                                    <span class="die-cost-print">(${unit.effectiveArmorDie?.armorCost ?? 0}T)</span>
+                                    <span class="mod-cost-group">
+                                        ${getModificationText(baseArmorDie, unit.effectiveArmorDie)}
+                                    </span>
                                 </div>
+                                <!-- Structure Row -->
                                 <div class="print-defense-row">
                                     <span class="print-defense-label">Structure:</span>
                                     ${generateBubbleHtml(unit.effectiveStructureDie?.sides ?? 0, true)}
-                                    ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
-                                    <span class="die-cost-print">(${unit.effectiveStructureDie?.structureCost ?? unit.effectiveStructureDie?.armorCost ?? 0}T)</span>
+                                     <span class="mod-cost-group">
+                                        ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
+                                     </span>
                                 </div>`
       // Threshold descriptions
       const structureSides = unit.effectiveStructureDie?.sides ?? 0
@@ -275,11 +375,11 @@ const formatForPrint = () => {
         if (hasYellowThreshold || hasOrangeThreshold || hasRedThreshold) {
           htmlBody += `<div class="threshold-descriptions">`
           if (hasYellowThreshold)
-            htmlBody += `<p class="threshold-desc-yellow"><strong>25% Dmg:</strong> All Move/Jump Orders -1</p>`
+            htmlBody += `<p class="threshold-desc-green"><strong>25% Dmg:</strong> All Move/Jump Orders -1</p>`
           if (hasOrangeThreshold)
-            htmlBody += `<p class="threshold-desc-red"><strong>50% Dmg:</strong> Weapon Damage -1 (min 1)</p>`
+            htmlBody += `<p class="threshold-desc-yellow"><strong>50% Dmg:</strong> Weapon Damage -1 (min 1)</p>`
           if (hasRedThreshold)
-            htmlBody += `<p class="threshold-desc-black"><strong>75% Dmg:</strong> Only 1 Order per activation</p>`
+            htmlBody += `<p class="threshold-desc-red"><strong>75% Dmg:</strong> Only 1 Order per activation</p>`
           htmlBody += `</div>`
         }
       }
@@ -347,14 +447,23 @@ const formatForPrint = () => {
       }
       htmlBody += `</div>` // End equipment-section (Upgrades)
 
+      // Motive Benefit Section
+      if (motiveDescription) {
+        htmlBody += `<div class="equipment-section motive-benefit-section">
+                                <h4 class="section-title">Motive Benefit</h4>
+                                <div class="motive-benefit-display">
+                                    <strong>${unit.selectedMotiveType.name}:</strong> ${motiveDescription}
+                                </div>
+                              </div>`
+      }
+
       // Trait Definitions Section
       if (uniqueUnitTraits.size > 0) {
         htmlBody += `<div class="equipment-section trait-definitions-section">
                                <h4 class="section-title">Trait Key</h4>
                                <ul class="trait-list">`
-        const sortedTraits = Array.from(uniqueUnitTraits).sort() // Sort alphabetically
+        const sortedTraits = Array.from(uniqueUnitTraits).sort()
         sortedTraits.forEach((trait) => {
-          // Look up definition; provide default if not found
           const definition = gameRulesData.traitDefinitions?.[trait] || 'Definition not found.'
           htmlBody += `<li><strong>${trait}:</strong> ${definition}</li>`
         })
@@ -477,6 +586,13 @@ const importRosterJson = (event) => {
 
 <template>
   <div id="app" class="container">
+    <!-- Theme Toggle Button -->
+    <div style="text-align: right; margin-bottom: 10px">
+      <button @click="toggleTheme" class="btn btn-outline-secondary btn-sm">
+        Switch to {{ currentTheme === 'light' ? 'Dark' : 'Light' }} Mode
+      </button>
+    </div>
+
     <h1>Steel Rift Force Roster & HE-V Customizer</h1>
 
     <!-- Roster Management Section -->
@@ -566,4 +682,4 @@ const importRosterJson = (event) => {
 </template>
 
 <!-- No <style> block here, styles are in src/assets/main.css -->
-<!-- Component-specific styles are in HevCustomizer.css -->
+<!-- Component-specific styles are in hevCustomizer.css -->

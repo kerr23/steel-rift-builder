@@ -3,7 +3,6 @@
 import { ref, computed, watch, defineProps, defineEmits, defineExpose, nextTick } from 'vue'
 import { useToast } from 'vue-toastification'
 import { gameData as importedGameRulesData, getMaxDieStep } from '../gameData.js'
-// NO LONGER IMPORTING DiceTrack
 
 // --- Initialize Toast ---
 const toast = useToast()
@@ -75,7 +74,7 @@ const calculateNthWeaponCost = (weaponData, n, className) => {
 // == Base Stats ==
 const baseTonnage = computed(() => selectedClass.value?.baseTonnage ?? 0)
 const baseSlots = computed(() => selectedClass.value?.baseSlots ?? 0)
-const motiveTonnageModifier = computed(() => selectedMotiveType.value?.tonnageModifier ?? 0)
+// REMOVED motiveTonnageModifier computed property
 const motiveSlotModifier = computed(() => selectedMotiveType.value?.slotModifier ?? 0)
 const maxSlots = computed(() => (baseSlots.value || 0) + motiveSlotModifier.value)
 
@@ -84,6 +83,24 @@ const baseArmorDieObject = computed(() => findDieObject(selectedClass.value?.def
 const baseStructureDieObject = computed(() =>
   findDieObject(selectedClass.value?.defaultStructureDie),
 )
+
+// == Dodge Target ==
+const dodgeTarget = computed(() => {
+  const className = selectedClass.value?.name
+  if (!className) return 'N/A'
+  switch (className) {
+    case 'Light':
+      return '3+'
+    case 'Medium':
+      return '4+'
+    case 'Heavy':
+      return '5+'
+    case 'Ultra-Heavy':
+      return '6+'
+    default:
+      return '?' // Should not happen
+  }
+})
 
 // == Effective Armor Calculation ==
 const effectiveArmorStep = computed(() => {
@@ -127,30 +144,44 @@ const canReinforceStructure = computed(
   () => baseStructureDieObject.value && baseStructureDieObject.value.step < maxDieStep.value,
 )
 
-// == Structure Thresholds ==
-const structureRedZoneEnd = computed(() => {
-  const s = structureSides.value
-  return s > 0 ? Math.floor(s * 0.25) : 0
-})
-const structureOrangeZoneEnd = computed(() => {
-  const s = structureSides.value
-  return s > 0 ? Math.floor(s * 0.5) : 0
-})
-const structureYellowZoneEnd = computed(() => {
-  const s = structureSides.value
-  return s > 0 ? Math.floor(s * 0.75) : 0
-})
-const structureMarkerIndexYellow = computed(() => {
+// == Structure Thresholds (Renamed Markers) ==
+const structureMarker_25_Percent = computed(() => {
+  // Previously structureMarkerIndexYellow
   const s = structureSides.value
   return s > 0 ? s - Math.floor(s * 0.75) + 1 : 0
 })
-const structureMarkerIndexOrange = computed(() => {
+const structureMarker_50_Percent = computed(() => {
+  // Previously structureMarkerIndexOrange
   const s = structureSides.value
   return s > 0 ? s - Math.floor(s * 0.5) + 1 : 0
 })
-const structureMarkerIndexRed = computed(() => {
+const structureMarker_75_Percent = computed(() => {
+  // Previously structureMarkerIndexRed
   const s = structureSides.value
   return s > 0 ? s - Math.floor(s * 0.25) + 1 : 0
+})
+
+// == Movement Calculations ==
+const baseMovementSpeed = computed(() => {
+  return selectedClass.value?.baseMovement ?? 0
+})
+
+const hasJumpJets = computed(() => {
+  // Check if any selected upgrade has the ID 'u3' (or whatever your Jump Jet ID is)
+  return selectedUpgrades.value.some((upg) => upg.id === 'u3')
+})
+
+const jumpMovementSpeed = computed(() => {
+  if (!hasJumpJets.value) {
+    return 0 // No jump jets, no jump speed
+  }
+  const baseMove = baseMovementSpeed.value
+  // Map base movement to jump movement (one step down)
+  if (baseMove === 12) return 10
+  if (baseMove === 10) return 8
+  if (baseMove === 8) return 6
+  if (baseMove === 6) return 4
+  return 0 // Should not happen with defined classes, but good fallback
 })
 
 // == Weapon/Upgrade/Total Calculations ==
@@ -189,13 +220,14 @@ const upgradeDetails = computed(() => {
 })
 const usedSlots = computed(() => weaponDetails.value.totalSlots + upgradeDetails.value.totalSlots)
 
+// UPDATED totalUnitTonnageUsed calculation
 const totalUnitTonnageUsed = computed(
   () =>
     armorCost.value +
     structureCost.value +
     weaponDetails.value.totalTonnage +
-    upgradeDetails.value.totalTonnage +
-    motiveTonnageModifier.value,
+    upgradeDetails.value.totalTonnage,
+  // REMOVED: + motiveTonnageModifier.value
 )
 const remainingUnitTonnage = computed(() => baseTonnage.value - totalUnitTonnageUsed.value)
 
@@ -224,9 +256,10 @@ const formattedClasses = computed(() =>
     value: cls,
   })),
 )
+// UPDATED formattedMotiveTypes display text
 const formattedMotiveTypes = computed(() =>
   availableMotiveTypes.value.map((mt) => ({
-    title: `${mt.name} (T: ${mt.tonnageModifier >= 0 ? '+' : ''}${mt.tonnageModifier}, S: ${mt.slotModifier >= 0 ? '+' : ''}${mt.slotModifier})`,
+    title: `${mt.name} (Slots: ${mt.slotModifier >= 0 ? '+' : ''}${mt.slotModifier})`, // Only show slot modifier
     value: mt,
   })),
 )
@@ -289,7 +322,6 @@ const handleWeaponAdd = (event) => {
     if (!currentClassName) return
     const currentCount = selectedWeapons.value.filter((w) => w.id === weaponToAdd.id).length
     const costOfThisWeapon = calculateNthWeaponCost(weaponToAdd, currentCount + 1, currentClassName)
-    // Temporarily calculate potential total tonnage without relying on computed (which might lag)
     const currentUsedWithoutArmorStructure =
       totalUnitTonnageUsed.value - armorCost.value - structureCost.value
     const potentialTotal =
@@ -320,7 +352,6 @@ const handleUpgradeAdd = (event) => {
       return
     }
     const costOfThisUpgrade = upgradeToAdd.tonnage || 0
-    // Temporarily calculate potential total tonnage
     const currentUsedWithoutArmorStructure =
       totalUnitTonnageUsed.value - armorCost.value - structureCost.value
     const potentialTotal =
@@ -343,7 +374,7 @@ const handleUpgradeAdd = (event) => {
 const resetForm = () => {
   console.log('Resetting HEV form')
   unitName.value = ''
-  selectedClass.value = null // This will trigger watchers and reset dependent fields like motive
+  selectedClass.value = null
   selectedWeapons.value = []
   selectedUpgrades.value = []
   armorModification.value = 'standard'
@@ -356,25 +387,18 @@ const resetForm = () => {
 const loadHevForEditing = (unitData) => {
   console.log('Loading HEV data for editing:', unitData)
   try {
-    // Don't reset form fully here, set values individually
     unitName.value = unitData.unitName || ''
-
-    // 1. Set Class first - this triggers watchers
     selectedClass.value =
       props.gameRules.classes.find((c) => c.name === unitData.selectedClass?.name) || null
 
-    // Use nextTick to allow computed properties (like availableMotiveTypes, base dice) to update
     nextTick(() => {
-      // 2. Set Motive Type (after availableMotiveTypes is updated)
       if (selectedClass.value) {
         selectedMotiveType.value =
           availableMotiveTypes.value.find((mt) => mt.id === unitData.selectedMotiveType?.id) ||
           availableMotiveTypes.value[0] ||
-          null // Fallback added
-
-        // 3. Set Modifications based on loaded effective dice vs *newly calculated* base dice
-        const baseArmor = baseArmorDieObject.value // Read computed prop *after* class is set
-        const baseStruct = baseStructureDieObject.value // Read computed prop *after* class is set
+          null
+        const baseArmor = baseArmorDieObject.value
+        const baseStruct = baseStructureDieObject.value
 
         if (baseArmor && unitData.effectiveArmorDie) {
           if (unitData.effectiveArmorDie.step > baseArmor.step)
@@ -396,13 +420,11 @@ const loadHevForEditing = (unitData) => {
           structureModification.value = 'standard'
         }
       } else {
-        // No class, reset motive and mods
         selectedMotiveType.value = null
         armorModification.value = 'standard'
         structureModification.value = 'standard'
       }
 
-      // 4. Set Weapons and Upgrades
       selectedWeapons.value = unitData.selectedWeapons
         ? JSON.parse(JSON.stringify(unitData.selectedWeapons))
         : []
@@ -410,7 +432,6 @@ const loadHevForEditing = (unitData) => {
         ? JSON.parse(JSON.stringify(unitData.selectedUpgrades))
         : []
 
-      // Reset dropdown visuals
       if (weaponSelectRef.value) weaponSelectRef.value.value = ''
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
 
@@ -419,7 +440,7 @@ const loadHevForEditing = (unitData) => {
   } catch (error) {
     console.error('Error loading HEV data:', error, unitData)
     toast.error('Failed to load HEV data for editing.')
-    resetForm() // Reset fully on error
+    resetForm()
   }
 }
 
@@ -439,7 +460,6 @@ const submitHev = () => {
     return
   }
 
-  // Get final effective dice objects from computed props
   const finalArmorDie = effectiveArmorDie.value
   const finalStructDie = effectiveStructureDie.value
 
@@ -461,13 +481,10 @@ const submitHev = () => {
 
 // --- Watchers ---
 watch(selectedClass, (newClass, oldClass) => {
-  // Only reset modifications if the class actually changed from a previous selection
   if (oldClass !== null && newClass?.name !== oldClass?.name) {
     armorModification.value = 'standard'
     structureModification.value = 'standard'
   }
-
-  // Update motive type selection based on new class
   if (newClass) {
     const currentMotiveIsValid = availableMotiveTypes.value.some(
       (mt) => mt.id === selectedMotiveType.value?.id,
@@ -476,43 +493,37 @@ watch(selectedClass, (newClass, oldClass) => {
       selectedMotiveType.value = availableMotiveTypes.value[0] || null
     }
   } else {
-    selectedMotiveType.value = null // No class, no motive
+    selectedMotiveType.value = null
   }
 })
 
-// Watchers for modifications to prevent exceeding tonnage
 watch(armorModification, (newValue, oldValue) => {
-  if (oldValue === undefined || !selectedClass.value) return // Skip initial run or if no class
-
+  if (oldValue === undefined || !selectedClass.value) return
   nextTick(() => {
-    // Check *after* computed properties update
     if (isOverTonnage.value) {
       toast.error(
         `Armor change to '${newValue}' exceeds max tonnage (${baseTonnage.value}T). Reverting.`,
       )
       nextTick(() => {
         armorModification.value = oldValue
-      }) // Revert on next tick
+      })
     }
   })
 })
 
 watch(structureModification, (newValue, oldValue) => {
-  if (oldValue === undefined || !selectedClass.value) return // Skip initial run or if no class
-
+  if (oldValue === undefined || !selectedClass.value) return
   nextTick(() => {
-    // Check *after* computed properties update
     if (isOverTonnage.value) {
       toast.error(
         `Structure change to '${newValue}' exceeds max tonnage (${baseTonnage.value}T). Reverting.`,
       )
       nextTick(() => {
         structureModification.value = oldValue
-      }) // Revert on next tick
+      })
     }
   })
 })
-
 // --- END Watchers ---
 
 // --- Expose Methods ---
@@ -528,7 +539,7 @@ defineExpose({ resetForm, loadHevForEditing })
     <div class="form-inline class-defense-wrapper">
       <!-- Class Section -->
       <div class="form-section class-section">
-        <h3 class="section-title">Classification</h3>
+        <h3 class="section-title">Classification & Movement</h3>
         <div class="form-group">
           <label for="hevName">HE-V Name (Optional):</label>
           <input type="text" id="hevName" v-model="unitName" placeholder="e.g., 'Brawler Alpha'" />
@@ -548,6 +559,7 @@ defineExpose({ resetForm, loadHevForEditing })
         </div>
         <div class="form-group" v-if="selectedClass">
           <label for="motiveType">Motive Type:</label>
+          <!-- UPDATED Loop display text -->
           <select id="motiveType" v-model="selectedMotiveType" required>
             <option :value="null" disabled>-- Select Motive Type --</option>
             <option
@@ -556,6 +568,7 @@ defineExpose({ resetForm, loadHevForEditing })
               :value="mtOption.value"
             >
               {{ mtOption.title }}
+              <!-- Now only shows name and slot mod -->
             </option>
             <option v-if="availableMotiveTypes.length === 0" :value="null" disabled>
               -- No types available for this class --
@@ -571,12 +584,25 @@ defineExpose({ resetForm, loadHevForEditing })
           <div class="placeholder-input"></div>
           <!-- Placeholder input box -->
         </div>
+
+        <!-- Movement Display -->
+        <div class="movement-info" v-if="selectedClass">
+          <p><strong>Movement:</strong> {{ baseMovementSpeed }}"</p>
+          <p v-if="hasJumpJets"><strong>Jump:</strong> {{ jumpMovementSpeed }}"</p>
+        </div>
       </div>
 
       <!-- Combined Armor & Structure Section -->
       <div class="form-section defense-section" v-if="selectedClass">
         <h3 class="section-title">Armor & Structure</h3>
         <div class="defense-layout-container">
+          <!-- Dodge Target Display -->
+          <div class="defense-row dodge-target-row">
+            <label class="defense-label">Dodge:</label>
+            <!-- Renamed label -->
+            <span class="dodge-value">{{ dodgeTarget }}</span>
+          </div>
+
           <!-- Armor Row -->
           <div class="defense-row armor-row">
             <label class="defense-label">Armor:</label>
@@ -614,31 +640,27 @@ defineExpose({ resetForm, loadHevForEditing })
             >
               <template v-if="structureSides > 0">
                 <template v-for="n in structureSides" :key="`struct-bubble-${n}`">
-                  <!-- Dividers -->
+                  <!-- Divider - Use RENAMED computed props -->
                   <span
-                    v-if="n === structureMarkerIndexYellow"
-                    class="threshold-divider divider-yellow"
+                    v-if="n === structureMarker_25_Percent"
+                    class="threshold-divider divider-green"
                     title="25% Damage Threshold"
-                  ></span>
+                  ></span
+                  ><!-- 25% Marker -> GREEN -->
                   <span
-                    v-else-if="n === structureMarkerIndexOrange"
-                    class="threshold-divider divider-red"
+                    v-else-if="n === structureMarker_50_Percent"
+                    class="threshold-divider divider-yellow"
                     title="50% Damage Threshold"
-                  ></span>
+                  ></span
+                  ><!-- 50% Marker -> YELLOW -->
                   <span
-                    v-else-if="n === structureMarkerIndexRed"
-                    class="threshold-divider divider-black"
+                    v-else-if="n === structureMarker_75_Percent"
+                    class="threshold-divider divider-red"
                     title="75% Damage Threshold"
-                  ></span>
-                  <!-- Bubbles with color -->
-                  <span
-                    class="bubble"
-                    :class="{
-                      'bubble-black': n <= structureRedZoneEnd,
-                      'bubble-red': n > structureRedZoneEnd && n <= structureOrangeZoneEnd,
-                      'bubble-yellow': n > structureOrangeZoneEnd && n <= structureYellowZoneEnd,
-                    }"
-                  ></span>
+                  ></span
+                  ><!-- 75% Marker -> RED -->
+                  <!-- Bubble -->
+                  <span class="bubble"></span>
                 </template>
               </template>
               <span v-else class="placeholder-text-inline">N/A</span>
@@ -661,13 +683,14 @@ defineExpose({ resetForm, loadHevForEditing })
 
           <!-- Structure Threshold Descriptions -->
           <div class="threshold-descriptions" v-if="structureSides > 0">
-            <p v-if="structureMarkerIndexYellow > 1" class="threshold-desc-yellow">
+            <!-- UPDATED v-if conditions and CSS classes for text color -->
+            <p v-if="structureMarker_25_Percent > 1" class="threshold-desc-green">
               <strong>25% Dmg:</strong> All Move/Jump Orders -1
             </p>
-            <p v-if="structureMarkerIndexOrange > 1" class="threshold-desc-red">
+            <p v-if="structureMarker_50_Percent > 1" class="threshold-desc-yellow">
               <strong>50% Dmg:</strong> Weapon Damage -1 (min 1)
             </p>
-            <p v-if="structureMarkerIndexRed > 1" class="threshold-desc-black">
+            <p v-if="structureMarker_75_Percent > 1" class="threshold-desc-red">
               <strong>75% Dmg:</strong> Only 1 Order per activation
             </p>
           </div>
@@ -682,7 +705,7 @@ defineExpose({ resetForm, loadHevForEditing })
     </div>
     <!-- End Class/Defense Wrapper -->
 
-    <!-- Weapon Systems Selection (Keep as is) -->
+    <!-- Weapon Systems Selection -->
     <div class="form-group equipment-section" v-if="selectedClass">
       <h3 class="section-title">Weapon Systems</h3>
       <div class="selection-layout">
@@ -740,7 +763,7 @@ defineExpose({ resetForm, loadHevForEditing })
       </div>
     </div>
 
-    <!-- Upgrades Selection (Keep as is) -->
+    <!-- Upgrades Selection -->
     <div class="form-group equipment-section" v-if="selectedClass">
       <h3 class="section-title">Upgrades</h3>
       <div class="selection-layout">
@@ -810,7 +833,7 @@ defineExpose({ resetForm, loadHevForEditing })
       </div>
     </div>
 
-    <!-- Unit Summary Display (Keep as is) -->
+    <!-- Unit Summary Display -->
     <div class="summary card summary-compact" v-if="selectedClass">
       <h4>Unit Summary</h4>
       <div class="summary-grid">
@@ -826,11 +849,11 @@ defineExpose({ resetForm, loadHevForEditing })
           <span class="summary-label">Structure Cost:</span
           ><strong class="summary-value">{{ structureCost }}T</strong>
         </div>
+        <!-- UPDATED Motive Mods display -->
         <div class="summary-item">
-          <span class="summary-label">Motive Mods:</span
+          <span class="summary-label">Motive Slots:</span
           ><strong class="summary-value"
-            >{{ motiveTonnageModifier >= 0 ? '+' : '' }}{{ motiveTonnageModifier }}T /
-            {{ motiveSlotModifier >= 0 ? '+' : '' }}{{ motiveSlotModifier }}S</strong
+            >{{ motiveSlotModifier >= 0 ? '+' : '' }}{{ motiveSlotModifier }}S</strong
           >
         </div>
         <div class="summary-item summary-item-full">
@@ -861,7 +884,7 @@ defineExpose({ resetForm, loadHevForEditing })
       </div>
     </div>
 
-    <!-- Action Button to Add HE-V (Keep as is) -->
+    <!-- Action Button to Add HE-V -->
     <div class="action-buttons" v-if="selectedClass">
       <button
         @click="submitHev"

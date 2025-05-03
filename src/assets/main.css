@@ -1,11 +1,65 @@
 /* src/assets/main.css */
 
-/* Add any global resets or base styles here if needed */
+/* Default Light Theme Variables */
+:root {
+  --primary-color: #0d6efd;
+  --secondary-color: #6c757d;
+  --success-color: #198754;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #0dcaf0; /* Added info color variable */
+  --black-color: #000000;
+
+  /* Light Theme Specific Colors */
+  --bg-color: #f8f9fa; /* Light background */
+  --card-bg-color: #ffffff; /* White cards */
+  --text-color: #212529; /* Dark text */
+  --text-muted-color: #6c757d; /* Muted text */
+  --border-color: #dee2e6; /* Light border */
+  --input-bg-color: #fff;
+  --input-border-color: #ced4da;
+  --medium-grey: #e9ecef;
+  --light-grey: #f8f9fa;
+  --dark-grey: #343a40;
+
+  /* Other variables */
+  --border-radius: 0.375rem;
+}
+
+/* Dark Theme Variable Overrides */
+html.dark-theme {
+  /* Target the html element when dark mode is active */
+  --primary-color: #4dabf7; /* Lighter blue */
+  --secondary-color: #adb5bd; /* Lighter grey */
+  --success-color: #40c057; /* Lighter green */
+  --danger-color: #ff6b6b; /* Lighter red */
+  --warning-color: #ffdd57; /* Lighter yellow */
+  --info-color: #3bc9db; /* Lighter cyan */
+  --black-color: #dee2e6; /* Light grey for "black" elements */
+
+  /* Dark Theme Specific Colors */
+  --bg-color: #1a1a1a; /* Very dark background */
+  --card-bg-color: #2c2c2c; /* Darker card background */
+  --text-color: #e9ecef; /* Light text */
+  --text-muted-color: #adb5bd; /* Lighter muted text */
+  --border-color: #495057; /* Darker border */
+  --input-bg-color: #343a40; /* Dark input background */
+  --input-border-color: #495057; /* Darker input border */
+  --medium-grey: #495057;
+  --light-grey: #343a40; /* Darker shade for light grey */
+  --dark-grey: #ced4da; /* Lighter shade for dark grey */
+}
+
+/* Apply Variables */
 body {
-  margin: 0; /* Example reset */
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #f8f9fa; /* Light background for the app */
-  color: #212529;
+  margin: 0;
+  font-family: Consolas, Menlo, 'DejaVu Sans Mono', 'Courier New', monospace;
+  line-height: 1.5;
+  background-color: var(--bg-color); /* Use variable */
+  color: var(--text-color); /* Use variable */
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease; /* Smooth transition */
 }
 
 #app {
@@ -21,12 +75,18 @@ body {
 
 /* Basic card styling */
 .card {
-  border: 1px solid #dee2e6;
-  border-radius: 0.375rem;
+  border: 1px solid var(--border-color); /* Use variable */
+  border-radius: var(--border-radius);
   padding: 1rem;
   margin-bottom: 1.5rem;
-  background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background-color: var(--card-bg-color); /* Use variable */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Shadow might need adjustment for dark */
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease; /* Smooth transition */
+}
+html.dark-theme .card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); /* Darker shadow for dark mode */
 }
 
 /* Form group styling */
@@ -37,29 +97,40 @@ body {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  color: var(--text-color); /* Use variable */
 }
-.form-group input[type="text"],
+.form-group input[type='text'],
 .form-group select {
   display: block;
   width: 100%;
   padding: 0.375rem 0.75rem;
-  font-size: 1rem;
+  font-size: 1rem; /* Will inherit font-family */
   font-weight: 400;
   line-height: 1.5;
-  color: #212529;
-  background-color: #fff;
+  color: var(--text-color); /* Use variable */
+  background-color: var(--input-bg-color); /* Use variable */
   background-clip: padding-box;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--input-border-color); /* Use variable */
   border-radius: 0.25rem;
-  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out,
+    background-color 0.15s ease,
+    color 0.15s ease; /* Smooth transition */
 }
-.form-group input[type="text"]:focus,
+.form-group input[type='text']:focus,
 .form-group select:focus {
-  color: #212529;
-  background-color: #fff;
-  border-color: #86b7fe;
+  color: var(--text-color); /* Use variable */
+  background-color: var(--input-bg-color); /* Use variable */
+  border-color: var(--primary-color); /* Use variable */
   outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+  /* Adjust focus shadow for dark mode if needed */
+  box-shadow: 0 0 0 0.25rem rgba(from var(--primary-color) r g b / 0.25);
+}
+/* Specific style for disabled select in dark mode */
+html.dark-theme select:disabled {
+  background-color: var(--dark-grey); /* Darker disabled background */
+  opacity: 0.6;
 }
 
 /* Button styling */
@@ -67,7 +138,7 @@ body {
   display: inline-block;
   font-weight: 400;
   line-height: 1.5;
-  color: #212529;
+  color: var(--text-color); /* Default text color based on theme */
   text-align: center;
   text-decoration: none;
   vertical-align: middle;
@@ -76,54 +147,178 @@ body {
   background-color: transparent;
   border: 1px solid transparent;
   padding: 0.375rem 0.75rem;
-  font-size: 1rem;
+  font-size: 1rem; /* Will inherit font-family */
   border-radius: 0.25rem;
-  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
 }
 .btn:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }
-.btn-secondary { color: #fff; background-color: #6c757d; border-color: #6c757d; }
-.btn-secondary:hover { background-color: #5c636a; border-color: #565e64; }
-.btn-info { color: #000; background-color: #0dcaf0; border-color: #0dcaf0; }
-.btn-info:hover { background-color: #31d2f2; border-color: #25cff2; }
-.btn-warning { color: #000; background-color: #ffc107; border-color: #ffc107; }
-.btn-warning:hover { background-color: #ffca2c; border-color: #ffc720; }
-.btn-edit { color: #fff; background-color: #0d6efd; border-color: #0d6efd; font-size: 0.8rem; padding: 0.2rem 0.5rem; margin-right: 0.5rem; }
-.btn-edit:hover { background-color: #0b5ed7; border-color: #0a58ca; }
-.btn-remove-roster { color: #fff; background-color: #dc3545; border-color: #dc3545; font-size: 0.8rem; padding: 0.2rem 0.5rem; }
-.btn-remove-roster:hover { background-color: #bb2d3b; border-color: #b02a37; }
-.btn-success { color: #fff; background-color: #198754; border-color: #198754; }
-.btn-success:hover { background-color: #157347; border-color: #146c43; }
+
+/* Theme-aware button colors */
+.btn-secondary {
+  color: #fff;
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+html.dark-theme .btn-secondary {
+  background-color: #5a6268;
+  border-color: #545b62;
+} /* Slightly adjusted dark theme secondary */
+.btn-secondary:hover {
+  filter: brightness(90%);
+}
+
+.btn-info {
+  color: #000;
+  background-color: var(--info-color);
+  border-color: var(--info-color);
+}
+html.dark-theme .btn-info {
+  color: #fff;
+} /* White text on lighter cyan */
+.btn-info:hover {
+  filter: brightness(90%);
+}
+
+.btn-warning {
+  color: #000;
+  background-color: var(--warning-color);
+  border-color: var(--warning-color);
+}
+html.dark-theme .btn-warning {
+  color: #000;
+} /* Keep black text */
+.btn-warning:hover {
+  filter: brightness(90%);
+}
+
+.btn-edit {
+  color: #fff;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  margin-right: 0.5rem;
+}
+.btn-edit:hover {
+  filter: brightness(90%);
+}
+
+.btn-remove-roster {
+  color: #fff;
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+}
+.btn-remove-roster:hover {
+  filter: brightness(90%);
+}
+
+.btn-success {
+  color: #fff;
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+.btn-success:hover {
+  filter: brightness(90%);
+}
+
+/* Specific style for outline button */
+.btn-outline-secondary {
+  color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+.btn-outline-secondary:hover {
+  color: #fff;
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+.btn-sm {
+  /* Make toggle button smaller */
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
+}
 
 /* Roster specific styles */
-.roster-manager h2 { margin-bottom: 1rem; font-size: 1.4rem; /* Slightly larger */ color: var(--dark-grey); }
-.roster-summary h3 { font-size: 1.2rem; margin-bottom: 0.8rem; border-bottom: 1px solid #eee; padding-bottom: 0.4rem; }
-.roster-summary ul { list-style: none; padding: 0; margin: 0; }
-.roster-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.2rem; border-bottom: 1px dashed #eee; }
-.roster-item:last-child { border-bottom: none; }
-.roster-item-info { display: flex; flex-direction: column; flex-grow: 1; margin-right: 1rem; }
-.roster-item-name { font-weight: 600; font-size: 1rem; }
-.roster-item-details { font-size: 0.85rem; color: #6c757d; }
-.roster-item-actions { flex-shrink: 0; }
-.tonnage-badge { font-size: 0.9rem; font-weight: normal; color: #6c757d; margin-left: 0.5rem; }
-.placeholder-text { text-align: center; color: #6c757d; font-style: italic; padding: 1rem 0; }
-.action-buttons { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: flex-end;} /* Keep buttons aligned right */
-.divider { margin: 2rem 0; border: 0; border-top: 1px solid #dee2e6; }
+.roster-manager h2 {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  color: var(--dark-grey);
+} /* Uses variable */
 
-/* Add global variables if needed */
-:root {
-  --primary-color: #0d6efd;
-  --secondary-color: #6c757d;
-  --success-color: #198754;
-  --danger-color: #dc3545;
-  --warning-color: #ffc107;
-  --black-color: #000000;
-  --light-grey: #f8f9fa;
-  --medium-grey: #e9ecef;
-  --dark-grey: #343a40;
-  --border-color: #dee2e6;
-  --border-radius: 0.375rem;
-  --text-muted: #6c757d;
+/* === Constrain Roster Name Input Width === */
+.roster-manager .form-group input#rosterName {
+  max-width: 400px; /* Adjust this pixel value as needed */
 }
+/* === END Roster Name Constraint === */
+
+.roster-summary h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid var(--medium-grey);
+  padding-bottom: 0.4rem;
+} /* Use variable */
+.roster-summary ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.roster-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.2rem;
+  border-bottom: 1px dashed var(--medium-grey);
+} /* Use variable */
+.roster-item:last-child {
+  border-bottom: none;
+}
+.roster-item-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-right: 1rem;
+}
+.roster-item-name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.roster-item-details {
+  font-size: 0.85rem;
+  color: var(--text-muted-color);
+} /* Use variable */
+.roster-item-actions {
+  flex-shrink: 0;
+}
+.tonnage-badge {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: var(--text-muted-color);
+  margin-left: 0.5rem;
+} /* Use variable */
+.placeholder-text {
+  text-align: center;
+  color: var(--text-muted-color);
+  font-style: italic;
+  padding: 1rem 0;
+} /* Use variable */
+.action-buttons {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+.divider {
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+} /* Use variable */
