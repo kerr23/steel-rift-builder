@@ -56,21 +56,21 @@ export const gameData = {
     {
       id: 'w_howitzer',
       name: 'Howitzer',
-      tonnage: { Light: 2, Medium: 3, Heavy: 4, 'Ultra-Heavy': 5 },
-      damageRating: { Light: 1, Medium: 2, Heavy: 3, 'Ultra-Heavy': 4 },
-      traits: [{ name: 'Blast', value: '3"' }, { name: 'Kinetic' }],
+      tonnage: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 6 },
+      damageRating: { Light: 2, Medium: 3, Heavy: 4, 'Ultra-Heavy': 5 },
+      traits: [{ name: 'Blast', value: '3"' }],
       rangeCategory: 'Unlimited',
     },
     {
       id: 'w_laser',
       name: 'Laser',
-      tonnage: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 7 },
-      damageRating: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 2 },
+      tonnage: { Light: 3, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
+      damageRating: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 },
       traits: [
-        { name: 'AP', value: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 3 } },
-        { name: 'Draining' },
+        { name: 'AP', value: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 } },
+        { name: 'Long', value: '18"' },
       ],
-      rangeCategory: 'Unlimited',
+      rangeCategory: '18+"',
     },
     {
       id: 'w_melee_weapon',
@@ -93,13 +93,13 @@ export const gameData = {
       name: 'Particle Cannon',
       tonnage: { Light: 2, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
       damageRating: { Light: 2, Medium: 4, Heavy: 6, 'Ultra-Heavy': 8 },
-      traits: [{ name: 'Draining' }, { name: 'Disruptive' }],
+      traits: [],
       rangeCategory: '18"',
     },
     {
       id: 'w_rail_gun',
       name: 'Rail Gun',
-      tonnage: { Light: 2, Medium: 2, Heavy: 4, 'Ultra-Heavy': 5 },
+      tonnage: { Light: 1, Medium: 1, Heavy: 3, 'Ultra-Heavy': 4 },
       damageRating: { Light: 1, Medium: 1, Heavy: 1, 'Ultra-Heavy': 1 },
       traits: [
         { name: 'AP', value: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 3 } },
@@ -264,6 +264,7 @@ export const gameData = {
     Light:
       'This attack will cause 1 damage to Armor or Structure for every 2 hits that are not evaded, rounding down.',
     Limited: 'This weapon system can only be fired (X) times per battle.',
+    Long: 'Weapon has a minimim effective firing distance, can only be fired at targets (X) inches or beyond.',
     Melee:
       'Add (X) to the Attack Pool of this mech when it is performing a Smash Order (value depends on HE-V class). This model counts as one Class Size larger during a Smash order. This weapon System is not used in an Engage Order.',
     Smart:
