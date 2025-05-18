@@ -564,7 +564,8 @@ const submitHev = () => {
     selectedWeapons: JSON.parse(JSON.stringify(selectedWeapons.value)),
     selectedUpgrades: JSON.parse(JSON.stringify(selectedUpgrades.value)),
     selectedMotiveType: JSON.parse(JSON.stringify(selectedMotiveType.value)),
-    totalUnitTonnage: totalUnitTonnageUsed.value,
+    totalUnitTonnage: baseTonnage.value,
+    usedTonnage: totalUnitTonnageUsed.value,
     usedSlots: usedSlots.value,
     maxSlots: maxSlots.value,
   }
