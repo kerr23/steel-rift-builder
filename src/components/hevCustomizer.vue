@@ -1,22 +1,21 @@
 <script setup>
-// Import necessary functions from Vue
-import { ref, computed, watch, nextTick } from 'vue' // Removed defineProps, defineEmits, defineExpose
+// Import necessary functions from Vue and data/helpers from gameData.js
+import { ref, computed, watch, defineProps, defineEmits, defineExpose, nextTick } from 'vue'
 import { useToast } from 'vue-toastification'
-// NO import from ../gameData.js needed here
+import { gameData as importedGameRulesData, getMaxDieStep } from '../gameData.js'
 
 // --- Initialize Toast ---
 const toast = useToast()
 
-// --- Props Definition (Still use the macro) ---
+// --- Props Definition ---
 const props = defineProps({
   gameRules: {
-    // Receives game data via props
     type: Object,
     required: true,
   },
 })
 
-// --- Emits Definition (Still use the macro) ---
+// --- Emits Definition ---
 const emit = defineEmits(['add-hev'])
 
 // --- Component State ---
@@ -33,20 +32,8 @@ const weaponSelectRef = ref(null)
 const upgradeSelectRef = ref(null)
 
 // --- Game Data Access ---
-const maxDieStep = computed(() => {
-  if (!props.gameRules?.dice || props.gameRules.dice.length === 0) {
-    console.error('gameRules.dice is missing or empty in HevCustomizer props!')
-    return -1
-  }
-  try {
-    return Math.max(...props.gameRules.dice.map((d) => d.step))
-  } catch (e) {
-    console.error('Error calculating maxDieStep:', e, props.gameRules.dice)
-    return -1
-  }
-})
-// REMOVED unused allDice computed property
-// const allDice = computed(() => props.gameRules?.dice || [])
+const maxDieStep = computed(() => (props.gameRules ? getMaxDieStep() : -1))
+const allDice = computed(() => props.gameRules?.dice || [])
 
 // --- Modification Options ---
 const modificationOptions = ref([
@@ -57,12 +44,11 @@ const modificationOptions = ref([
 
 // --- Helper Functions ---
 const findDieObject = (dieString) => {
-  if (!props.gameRules?.dice) return null
-  return props.gameRules.dice.find((d) => d.die === dieString)
+  return allDice.value.find((d) => d.die === dieString)
 }
 const findDieByStep = (step) => {
-  if (step < 0 || !props.gameRules?.dice) return null
-  return props.gameRules.dice.find((d) => d.step === step)
+  if (step < 0) return null
+  return allDice.value.find((d) => d.step === step)
 }
 const calculateNthWeaponCost = (weaponData, n, className) => {
   if (
@@ -81,57 +67,37 @@ const calculateNthWeaponCost = (weaponData, n, className) => {
   const totalPenaltyForNth = penaltyMultiplier * penaltyAmount
   return baseCost + totalPenaltyForNth
 }
-// Helper Function for Trait Display
-const formatTraitForDisplay = (trait, className) => {
-  if (!trait || !trait.name) return ''
-  const name = trait.name
-  const value = trait.value
 
-  if (value === null || value === undefined) {
-    return name
+// Helper to format traits for display in the selected list
+const formatTraitDisplay = (trait) => {
+  if (typeof trait === 'string') {
+    // Should mostly be objects now from weapons
+    return trait
   }
-  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-    const classValue = className ? (value[className] ?? '?') : '?'
-    return `${name}(${classValue})`
-  } else {
-    return `${name}(${value})`
+  if (trait.name === 'Limited' && trait.value) {
+    let bubbles = ''
+    for (let i = 0; i < trait.value; i++) {
+      bubbles += `<span class="trait-bubble"></span>`
+    }
+    return `Limited(${bubbles})`
   }
+  if (trait.name && trait.value !== undefined) {
+    return `${trait.name} ${trait.value}`
+  }
+  return trait.name || 'Unknown Trait'
 }
 // --- END Helper Functions ---
 
 // --- Computed Properties ---
-
-// == Base Stats ==
 const baseTonnage = computed(() => selectedClass.value?.baseTonnage ?? 0)
 const baseSlots = computed(() => selectedClass.value?.baseSlots ?? 0)
+const motiveTonnageModifier = computed(() => selectedMotiveType.value?.tonnageModifier ?? 0)
 const motiveSlotModifier = computed(() => selectedMotiveType.value?.slotModifier ?? 0)
 const maxSlots = computed(() => (baseSlots.value || 0) + motiveSlotModifier.value)
-
-// == Base Dice ==
 const baseArmorDieObject = computed(() => findDieObject(selectedClass.value?.defaultArmorDie))
 const baseStructureDieObject = computed(() =>
   findDieObject(selectedClass.value?.defaultStructureDie),
 )
-
-// == Dodge Target ==
-const dodgeTarget = computed(() => {
-  const className = selectedClass.value?.name
-  if (!className) return 'N/A'
-  switch (className) {
-    case 'Light':
-      return '3+'
-    case 'Medium':
-      return '4+'
-    case 'Heavy':
-      return '5+'
-    case 'Ultra-Heavy':
-      return '6+'
-    default:
-      return '?'
-  }
-})
-
-// == Effective Armor Calculation ==
 const effectiveArmorStep = computed(() => {
   if (!baseArmorDieObject.value) return -1
   let targetStep = baseArmorDieObject.value.step
@@ -149,8 +115,6 @@ const canStripArmor = computed(() => baseArmorDieObject.value && baseArmorDieObj
 const canReinforceArmor = computed(
   () => baseArmorDieObject.value && baseArmorDieObject.value.step < maxDieStep.value,
 )
-
-// == Effective Structure Calculation ==
 const effectiveStructureStep = computed(() => {
   if (!baseStructureDieObject.value) return -1
   let targetStep = baseStructureDieObject.value.step
@@ -172,8 +136,6 @@ const canStripStructure = computed(
 const canReinforceStructure = computed(
   () => baseStructureDieObject.value && baseStructureDieObject.value.step < maxDieStep.value,
 )
-
-// == Structure Thresholds (Renamed Markers) ==
 const structureMarker_25_Percent = computed(() => {
   const s = structureSides.value
   return s > 0 ? s - Math.floor(s * 0.75) + 1 : 0
@@ -186,13 +148,11 @@ const structureMarker_75_Percent = computed(() => {
   const s = structureSides.value
   return s > 0 ? s - Math.floor(s * 0.25) + 1 : 0
 })
-
-// == Movement Calculations ==
 const baseMovementSpeed = computed(() => {
   return selectedClass.value?.baseMovement ?? 0
 })
 const hasJumpJets = computed(() => {
-  return selectedUpgrades.value.some((upg) => upg.id === 'u6') // Adjusted ID
+  return selectedUpgrades.value.some((upg) => upg.id === 'u3')
 })
 const jumpMovementSpeed = computed(() => {
   if (!hasJumpJets.value) return 0
@@ -203,8 +163,6 @@ const jumpMovementSpeed = computed(() => {
   if (baseMove === 6) return 4
   return 0
 })
-
-// == Weapon/Upgrade/Total Calculations ==
 const weaponDetails = computed(() => {
   const counts = {}
   let totalTonnage = 0
@@ -233,32 +191,21 @@ const weaponDetails = computed(() => {
   })
   return { totalTonnage, totalSlots }
 })
-
 const upgradeDetails = computed(() => {
-  const currentClassName = selectedClass.value?.name
-  let totalTonnage = 0
-  if (currentClassName) {
-    totalTonnage = selectedUpgrades.value.reduce((sum, up) => {
-      const cost = up?.tonnage?.[currentClassName] ?? 0
-      return sum + cost
-    }, 0)
-  }
+  const totalTonnage = selectedUpgrades.value.reduce((sum, up) => sum + (up?.tonnage || 0), 0)
   const totalSlots = selectedUpgrades.value.length
   return { totalTonnage, totalSlots }
 })
-
 const usedSlots = computed(() => weaponDetails.value.totalSlots + upgradeDetails.value.totalSlots)
-
 const totalUnitTonnageUsed = computed(
   () =>
     armorCost.value +
     structureCost.value +
     weaponDetails.value.totalTonnage +
-    upgradeDetails.value.totalTonnage,
+    upgradeDetails.value.totalTonnage +
+    motiveTonnageModifier.value,
 )
 const remainingUnitTonnage = computed(() => baseTonnage.value - totalUnitTonnageUsed.value)
-
-// == Validation ==
 const isValidUnit = computed(() => {
   return (
     !!selectedClass.value &&
@@ -269,20 +216,6 @@ const isValidUnit = computed(() => {
 })
 const isOverTonnage = computed(() => remainingUnitTonnage.value < 0)
 const isOverSlots = computed(() => usedSlots.value > maxSlots.value)
-
-// === Track selected exclusive upgrade types ===
-const selectedExclusiveUpgradeTypes = computed(() => {
-  const types = new Set()
-  selectedUpgrades.value.forEach((selectedUpg) => {
-    const fullUpgData = props.gameRules.upgrades.find((u) => u.id === selectedUpg.id)
-    if (fullUpgData?.type) {
-      types.add(fullUpgData.type)
-    }
-  })
-  return types
-})
-
-// == Formatting for Selects ==
 const availableMotiveTypes = computed(() => {
   if (!selectedClass.value || !props.gameRules?.motiveTypes) return []
   return props.gameRules.motiveTypes.filter((mt) =>
@@ -297,7 +230,7 @@ const formattedClasses = computed(() =>
 )
 const formattedMotiveTypes = computed(() =>
   availableMotiveTypes.value.map((mt) => ({
-    title: `${mt.name} (Slots: ${mt.slotModifier >= 0 ? '+' : ''}${mt.slotModifier})`,
+    title: `${mt.name} (T: ${mt.tonnageModifier >= 0 ? '+' : ''}${mt.tonnageModifier}, S: ${mt.slotModifier >= 0 ? '+' : ''}${mt.slotModifier})`,
     value: mt,
   })),
 )
@@ -308,68 +241,47 @@ const formattedWeapons = computed(() => {
   selectedWeapons.value.forEach((w) => {
     if (w && w.id) currentCounts[w.id] = (currentCounts[w.id] || 0) + 1
   })
-
   return props.gameRules.weapons.map((wpn) => {
     const currentQuantity = currentCounts[wpn.id] || 0
     const nextQuantityIndex = currentQuantity + 1
     const costToAddNext = calculateNthWeaponCost(wpn, nextQuantityIndex, currentClassName)
     const damageRating = wpn.damageRating?.[currentClassName] ?? '?'
     const range = wpn.rangeCategory || 'N/A'
-
-    const formattedTraits = (wpn.traits || [])
-      .map((trait) => formatTraitForDisplay(trait, currentClassName))
-      .join(', ')
+    const traitsDisplay =
+      wpn.traits
+        ?.map((t) => {
+          if (t.name === 'Limited' && t.value) return `${t.name} ${t.value}` // Dropdown shows number
+          if (t.name && t.value !== undefined) return `${t.name} ${t.value}`
+          return t.name
+        })
+        .join(', ') ?? 'N/A'
 
     return {
-      title: `${wpn.name} [${range}] (Dmg: ${damageRating}, Cost: ${costToAddNext}T) - Tr: [${formattedTraits || 'None'}]`,
+      title: `${wpn.name} [${range}] (Dmg: ${damageRating}, Cost: ${costToAddNext}T) - Tr: [${traitsDisplay}]`,
       value: wpn.id,
     }
   })
 })
-
 const formattedUpgrades = computed(() => {
   const selectedUpgradeIds = selectedUpgrades.value.map((upg) => upg.id)
-  const currentClassName = selectedClass.value?.name
-  const currentlySelectedTypes = selectedExclusiveUpgradeTypes.value
-
-  let availableUpgrades = props.gameRules.upgrades
-
-  if (currentClassName) {
-    availableUpgrades = availableUpgrades.filter((upg) => {
-      return !upg.allowedClasses || upg.allowedClasses.includes(currentClassName)
-    })
-  } else {
-    availableUpgrades = []
-  }
-
-  availableUpgrades = availableUpgrades.filter((upg) => {
-    if (upg.type && currentlySelectedTypes.has(upg.type)) {
-      return false
-    }
-    return true
-  })
-
-  return availableUpgrades
+  return props.gameRules.upgrades
     .filter((upg) => !selectedUpgradeIds.includes(upg.id))
-    .map((upg) => {
-      const cost = currentClassName ? (upg.tonnage?.[currentClassName] ?? '?') : '?'
-      return {
-        title: `${upg.name} (${cost}T / 1S)`,
-        value: upg.id,
-      }
-    })
+    .map((upg) => ({
+      title: `${upg.name} (${upg.tonnage}T / 1S) - [${upg.traits?.join(', ') ?? ''}]`,
+      value: upg.id,
+    }))
 })
 // --- END Computed Properties ---
 
 // --- Methods ---
 const addWeapon = (weapon) => {
-  if (weapon) selectedWeapons.value.push({ ...weapon })
+  if (weapon) selectedWeapons.value.push({ ...weapon }) // Add a copy
 }
 const removeWeapon = (index) => {
   selectedWeapons.value.splice(index, 1)
 }
 const addUpgrade = (upgrade) => {
-  if (upgrade) selectedUpgrades.value.push({ ...upgrade })
+  if (upgrade) selectedUpgrades.value.push({ ...upgrade }) // Add a copy
 }
 const removeUpgrade = (index) => {
   selectedUpgrades.value.splice(index, 1)
@@ -402,62 +314,37 @@ const handleWeaponAdd = (event) => {
       if (weaponSelectRef.value) weaponSelectRef.value.value = ''
       return
     }
-    addWeapon(weaponToAdd)
+    addWeapon(weaponToAdd) // Add a copy of the weapon data
     if (weaponSelectRef.value) {
       weaponSelectRef.value.value = ''
     }
   }
 }
-
 const handleUpgradeAdd = (event) => {
   const selectedUpgradeId = event.target.value
   if (selectedUpgradeId) {
     const upgradeToAdd = props.gameRules.upgrades.find((u) => u.id === selectedUpgradeId)
     if (!upgradeToAdd) return
-
-    if (upgradeToAdd.type && selectedExclusiveUpgradeTypes.value.has(upgradeToAdd.type)) {
-      toast.error(
-        `Cannot add ${upgradeToAdd.name}: Another upgrade of type '${upgradeToAdd.type}' is already equipped.`,
-      )
-      if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
-      return
-    }
-
     const potentialSlots = usedSlots.value + 1
     if (potentialSlots > maxSlots.value) {
       toast.error(`Cannot add ${upgradeToAdd.name}: Exceeds maximum slots (${maxSlots.value}).`)
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
       return
     }
+    const costOfThisUpgrade = upgradeToAdd.tonnage || 0
+    const currentUsedWithoutArmorStructure =
+      totalUnitTonnageUsed.value - armorCost.value - structureCost.value
+    const potentialTotal =
+      currentUsedWithoutArmorStructure + armorCost.value + structureCost.value + costOfThisUpgrade
 
-    const currentClassName = selectedClass.value?.name
-    if (!currentClassName) {
-      toast.error(`Cannot add ${upgradeToAdd.name}: Please select a HE-V class first.`)
-      if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
-      return
-    }
-
-    const costOfThisUpgrade = upgradeToAdd.tonnage?.[currentClassName] ?? 0
-    if (
-      upgradeToAdd.tonnage === undefined ||
-      upgradeToAdd.tonnage[currentClassName] === undefined
-    ) {
-      console.error(`Tonnage not defined for ${upgradeToAdd.name} on ${currentClassName} class.`)
-      toast.error(`Cannot add ${upgradeToAdd.name}: Tonnage configuration error.`)
-      if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
-      return
-    }
-
-    const potentialTonnage = totalUnitTonnageUsed.value + costOfThisUpgrade
-
-    if (potentialTonnage > baseTonnage.value) {
+    if (potentialTotal > baseTonnage.value) {
       toast.error(
         `Cannot add ${upgradeToAdd.name}: Exceeds maximum tonnage (${baseTonnage.value}T). Cost of this upgrade: ${costOfThisUpgrade}T.`,
       )
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
       return
     }
-    addUpgrade(upgradeToAdd)
+    addUpgrade(upgradeToAdd) // Add a copy
     if (upgradeSelectRef.value) {
       upgradeSelectRef.value.value = ''
     }
@@ -518,6 +405,7 @@ const loadHevForEditing = (unitData) => {
         structureModification.value = 'standard'
       }
 
+      // Make sure to load copies, not references, especially for traits which are now objects
       selectedWeapons.value = unitData.selectedWeapons
         ? JSON.parse(JSON.stringify(unitData.selectedWeapons))
         : []
@@ -564,8 +452,7 @@ const submitHev = () => {
     selectedWeapons: JSON.parse(JSON.stringify(selectedWeapons.value)),
     selectedUpgrades: JSON.parse(JSON.stringify(selectedUpgrades.value)),
     selectedMotiveType: JSON.parse(JSON.stringify(selectedMotiveType.value)),
-    totalUnitTonnage: baseTonnage.value,
-    usedTonnage: totalUnitTonnageUsed.value,
+    totalUnitTonnage: totalUnitTonnageUsed.value,
     usedSlots: usedSlots.value,
     maxSlots: maxSlots.value,
   }
@@ -620,8 +507,9 @@ watch(structureModification, (newValue, oldValue) => {
 })
 // --- END Watchers ---
 
-// --- Expose Methods (Still use the macro) ---
+// --- Expose Methods ---
 defineExpose({ resetForm, loadHevForEditing })
+// --- END Expose Methods ---
 </script>
 
 <template>
@@ -674,7 +562,6 @@ defineExpose({ resetForm, loadHevForEditing })
           <div class="placeholder-input"></div>
         </div>
 
-        <!-- Movement Display -->
         <div class="movement-info" v-if="selectedClass">
           <p><strong>Movement:</strong> {{ baseMovementSpeed }}"</p>
           <p v-if="hasJumpJets"><strong>Jump:</strong> {{ jumpMovementSpeed }}"</p>
@@ -685,12 +572,6 @@ defineExpose({ resetForm, loadHevForEditing })
       <div class="form-section defense-section" v-if="selectedClass">
         <h3 class="section-title">Armor & Structure</h3>
         <div class="defense-layout-container">
-          <!-- Dodge Target Display -->
-          <div class="defense-row dodge-target-row">
-            <label class="defense-label">Dodge:</label>
-            <span class="dodge-value">{{ dodgeTarget }}</span>
-          </div>
-
           <!-- Armor Row -->
           <div class="defense-row armor-row">
             <label class="defense-label">Armor:</label>
@@ -728,7 +609,6 @@ defineExpose({ resetForm, loadHevForEditing })
             >
               <template v-if="structureSides > 0">
                 <template v-for="n in structureSides" :key="`struct-bubble-${n}`">
-                  <!-- Divider -->
                   <span
                     v-if="n === structureMarker_25_Percent"
                     class="threshold-divider divider-green"
@@ -747,7 +627,6 @@ defineExpose({ resetForm, loadHevForEditing })
                     title="75% Damage Threshold"
                   ></span
                   ><!-- 75% Marker -> RED -->
-                  <!-- Bubble -->
                   <span class="bubble"></span>
                 </template>
               </template>
@@ -838,13 +717,10 @@ defineExpose({ resetForm, loadHevForEditing })
                   >(Dmg: {{ weapon.damageRating?.[selectedClass?.name ?? ''] ?? '?' }}, Rng:
                   {{ weapon.rangeCategory || 'N/A' }})</span
                 >
-                <span class="item-traits"
-                  >Tr: [{{
-                    (weapon.traits || [])
-                      .map((trait) => formatTraitForDisplay(trait, selectedClass?.name))
-                      .join(', ') || 'None'
-                  }}]</span
-                >
+                <span
+                  class="item-traits"
+                  v-html="`Tr: [${weapon.traits?.map(formatTraitDisplay).join(', ') || 'None'}]`"
+                ></span>
               </div>
               <button @click="removeWeapon(index)" class="btn btn-remove" title="Remove Weapon">
                 X
@@ -873,7 +749,6 @@ defineExpose({ resetForm, loadHevForEditing })
               :value="upgOption.value"
             >
               {{ upgOption.title }}
-              <!-- Shows simplified title -->
             </option>
             <option
               v-if="selectedClass && formattedUpgrades.length === 0 && selectedUpgrades.length > 0"
@@ -887,8 +762,7 @@ defineExpose({ resetForm, loadHevForEditing })
               "
               disabled
             >
-              -- No upgrades available for this class --
-              <!-- Message updated -->
+              -- No upgrades available --
             </option>
             <option v-if="!selectedClass" disabled>-- Select Class First --</option>
           </select>
@@ -909,17 +783,14 @@ defineExpose({ resetForm, loadHevForEditing })
         </div>
         <div class="selection-list-container">
           <ul class="item-list">
-            <!-- Selected Upgrade List Item with Description -->
             <li
               v-for="(upgrade, index) in selectedUpgrades"
               :key="'selUpg-' + index + '-' + upgrade.id"
-              class="selected-item upgrade-item"
+              class="selected-item single-line-item"
             >
-              <div class="upgrade-info">
+              <div class="item-info-line">
                 <span class="item-name">{{ upgrade.name }}</span>
-                <p v-if="upgrade.description" class="upgrade-description">
-                  {{ upgrade.description }}
-                </p>
+                <span class="item-traits">Tr: [{{ upgrade.traits?.join(', ') || 'None' }}]</span>
               </div>
               <button @click="removeUpgrade(index)" class="btn btn-remove" title="Remove Upgrade">
                 X
@@ -948,9 +819,10 @@ defineExpose({ resetForm, loadHevForEditing })
           ><strong class="summary-value">{{ structureCost }}T</strong>
         </div>
         <div class="summary-item">
-          <span class="summary-label">Motive Slots:</span
+          <span class="summary-label">Motive Mods:</span
           ><strong class="summary-value"
-            >{{ motiveSlotModifier >= 0 ? '+' : '' }}{{ motiveSlotModifier }}S</strong
+            >{{ motiveTonnageModifier >= 0 ? '+' : '' }}{{ motiveTonnageModifier }}T /
+            {{ motiveSlotModifier >= 0 ? '+' : '' }}{{ motiveSlotModifier }}S</strong
           >
         </div>
         <div class="summary-item summary-item-full">

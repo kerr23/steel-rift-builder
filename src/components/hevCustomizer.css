@@ -3,13 +3,11 @@
 /* --- Global Component Styles --- */
 .hev-customizer.card {
   padding: 1.25rem;
-  background-color: var(--card-bg-color); /* Theme aware */
-  border-color: var(--border-color); /* Theme aware */
 }
 
 .component-title {
   text-align: center;
-  color: var(--secondary-color); /* Theme aware */
+  color: var(--secondary-color);
   margin-bottom: 1.25rem;
   font-weight: 500;
   font-size: 1.5rem;
@@ -17,8 +15,8 @@
 
 .section-title {
   font-size: 1.05rem;
-  color: var(--secondary-color); /* Theme aware */
-  border-bottom: 1px solid var(--border-color); /* Theme aware */
+  color: var(--secondary-color);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.3rem;
   margin-bottom: 0.75rem;
   font-weight: 500;
@@ -50,32 +48,27 @@
 /* --- Classification Section Specifics --- */
 .class-section .form-group label[for='hevName'],
 .class-section .form-group input#hevName {
-  /* Prevent the name input from growing too wide */
-  max-width: 350px; /* Adjust this value as needed */
+  max-width: 350px;
 }
-
-/* Movement Info Styles */
 .movement-info {
-  margin-top: 0.75rem; /* Space above movement info */
-  padding-top: 0.5rem; /* Space below last form group */
-  border-top: 1px dashed var(--border-color); /* Theme aware separator */
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border-color);
 }
 .movement-info p {
   margin: 0.15rem 0;
   font-size: 0.9rem;
-  color: var(--text-color); /* Theme aware */
 }
 .movement-info p strong {
   display: inline-block;
-  min-width: 80px; /* Align labels */
+  min-width: 80px;
   font-weight: 600;
-  color: var(--text-color); /* Theme aware */
 }
 .movement-info .text-muted {
-  color: var(--text-muted-color); /* Use variable */
+  color: var(--text-muted);
   font-style: italic;
 }
-/* END Movement Info Styles */
+/* --- END Classification Section Specifics --- */
 
 /* --- Defense Section Layout (Row-based) --- */
 .defense-section {
@@ -85,49 +78,28 @@
 .defense-layout-container {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* Re-adjusted gap slightly */
+  gap: 0.75rem; /* Space between Armor row, Structure row, and Thresholds */
   flex-grow: 1; /* Allow container to fill space */
-  border: 1px solid var(--medium-grey); /* Use variable */
+  border: 1px solid var(--medium-grey); /* Optional border */
   border-radius: var(--border-radius);
   padding: 0.75rem;
-  background-color: var(--input-bg-color); /* Match input background slightly */
-  /* Use theme variable for background if needed: var(--card-bg-color); or var(--light-grey) / var(--dark-grey) */
 }
 
 .defense-row {
   display: flex;
-  align-items: center; /* Vertically align items in the row */
-  gap: 0.5rem; /* Reduced gap between items in the row */
-  min-height: 30px; /* Adjusted min-height slightly */
+  align-items: center;
+  gap: 0.75rem; /* Space between label, bubbles, select, cost */
+  min-height: 38px; /* Ensure consistent row height */
 }
 
-/* Dodge Target Row Styles */
-.dodge-target-row {
-  padding-bottom: 0.6rem; /* Add some space below dodge */
-  margin-bottom: 0.6rem; /* Add some space below dodge */
-  border-bottom: 1px dashed var(--medium-grey); /* Theme aware separator */
-}
-.dodge-value {
-  font-size: 1rem; /* Make value slightly larger */
-  font-weight: bold;
-  color: var(--primary-color); /* Use variable */
-  flex-grow: 1; /* Allow it to take remaining space */
-  text-align: left;
-}
-/* END Dodge Target Row Styles */
-
-/* Label Alignment */
 .defense-label {
   font-weight: 600;
-  width: 75px; /* Use fixed width for perfect alignment */
-  min-width: 75px; /* Fallback */
-  text-align: left; /* Align text to the left */
-  color: var(--text-color); /* Theme aware */
+  min-width: 70px; /* Fixed width for alignment */
+  text-align: right;
+  color: var(--dark-grey);
   font-size: 0.9rem;
-  flex-shrink: 0;
-  margin-right: 0.5rem; /* Add space between label and bubbles */
+  flex-shrink: 0; /* Prevent shrinking */
 }
-/* END Label Alignment */
 
 /* Bubble display within the row */
 .defense-row .bubble-display {
@@ -135,10 +107,10 @@
   flex-wrap: nowrap;
   gap: 2px;
   line-height: 1;
-  align-items: center; /* Vertically center bubbles */
+  align-items: center;
   overflow: hidden;
-  flex-grow: 1; /* Allow bubbles to take available space */
-  min-width: 120px; /* Prevent excessive shrinking */
+  flex-grow: 1; /* Allow bubbles to take up space */
+  min-width: 100px; /* But not get too small */
 }
 
 /* Modification select within the row */
@@ -147,35 +119,21 @@
   font-size: 0.8rem;
   min-width: 90px; /* Adjust as needed */
   flex-shrink: 0; /* Prevent shrinking */
-  margin-left: auto; /* Push select and cost to the right */
-  background-color: var(--input-bg-color); /* Use variable */
-  color: var(--text-color); /* Use variable */
-  border: 1px solid var(--input-border-color); /* Use variable */
-}
-.defense-row .modification-select option {
-  background-color: var(--input-bg-color);
-  color: var(--text-color);
-}
-/* Specific dark theme override for better option visibility if needed */
-html.dark-theme .defense-row .modification-select option {
-  background-color: var(--dark-grey); /* Match dark input bg */
-  color: var(--text-color);
 }
 .defense-row .modification-select option:disabled {
-  color: var(--text-muted-color); /* Use variable */
-  /* Background might be handled by OS/browser */
+  color: var(--text-muted);
+  background-color: var(--light-grey);
 }
 
 /* Cost display within the row */
 .defense-row .die-cost {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--text-color); /* Use variable */
+  color: var(--dark-grey);
   white-space: nowrap;
   flex-shrink: 0;
   min-width: 40px; /* Ensure space for cost */
   text-align: right;
-  margin-left: 0.25rem; /* Space between select and cost */
 }
 
 /* Bubble Styles */
@@ -184,35 +142,39 @@ html.dark-theme .defense-row .modification-select option {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  border: 1.5px solid var(--black-color); /* Black border variable */
+  border: 1.5px solid var(--black-color); /* Structure bubbles are black */
   background-color: transparent;
   vertical-align: middle;
   box-sizing: border-box;
   flex-shrink: 0;
 }
+.armor-row .bubble {
+  /* Armor bubbles remain green (or their default) */
+  border-color: var(--success-color);
+}
 
 /* Threshold Divider Styles */
 .threshold-divider {
   display: inline-block;
-  width: 2px; /* Keep width */
-  height: 12px; /* Keep height */
+  width: 2px;
+  height: 12px;
   margin: 0 1px;
   vertical-align: middle;
   flex-shrink: 0;
 }
 .divider-green {
   background-color: var(--success-color);
-} /* Use variable */
+}
 .divider-yellow {
   background-color: var(--warning-color);
-} /* Use variable */
+}
 .divider-red {
   background-color: var(--danger-color);
-} /* Use variable */
+}
 
 .placeholder-text-inline {
   font-style: italic;
-  color: var(--text-muted-color); /* Use variable */
+  color: var(--text-muted);
   font-size: 0.85rem;
   width: 100%;
   text-align: left;
@@ -221,19 +183,18 @@ html.dark-theme .defense-row .modification-select option {
 
 /* Threshold Descriptions */
 .threshold-descriptions {
-  margin-top: 0.25rem; /* Small space above descriptions */
-  padding: 0.5rem 0 0.2rem 0.5rem; /* Add some padding */
-  border-top: 1px dashed var(--border-color); /* Use variable */
+  margin-top: 0.25rem;
+  padding: 0.5rem 0 0.2rem 0.5rem;
+  border-top: 1px dashed var(--border-color);
   font-size: 0.75rem;
   line-height: 1.3;
-  width: 100%; /* Take full width inside the container */
+  width: 100%;
 }
 .threshold-descriptions p {
   margin: 0.15rem 0;
   padding: 0;
   display: flex;
   align-items: flex-start;
-  color: var(--text-color); /* Theme aware */
 }
 .threshold-descriptions p strong {
   min-width: 55px;
@@ -243,25 +204,23 @@ html.dark-theme .defense-row .modification-select option {
   font-weight: bold;
   margin-right: 0.3em;
 }
-
-/* Threshold Description Text Colors */
 .threshold-desc-green strong {
   color: var(--success-color);
-} /* 25% Text -> Green */
+}
 .threshold-desc-yellow strong {
-  color: var(--warning-color);
-} /* 50% Text -> Yellow */
+  color: #b38600;
+}
 .threshold-desc-red strong {
   color: var(--danger-color);
-} /* 75% Text -> Red */
+}
 /* --- END Defense Section Layout --- */
 
 /* --- Placeholder Section --- */
 .placeholder-section {
-  border: 1px dashed var(--border-color); /* Use variable */
+  border: 1px dashed var(--border-color);
   border-radius: var(--border-radius);
   padding: 1rem;
-  background-color: var(--light-grey); /* Use variable */
+  background-color: var(--light-grey);
   min-height: 150px;
   justify-content: flex-start;
   align-items: center;
@@ -270,8 +229,6 @@ html.dark-theme .defense-row .modification-select option {
   margin-bottom: auto;
   width: 100%;
   text-align: center;
-  color: var(--secondary-color); /* Ensure title color fits */
-  border-bottom-color: var(--border-color);
 }
 .placeholder-section p {
   flex-grow: 1;
@@ -280,7 +237,6 @@ html.dark-theme .defense-row .modification-select option {
   justify-content: center;
   text-align: center;
   width: 100%;
-  color: var(--text-muted-color); /* Use variable */
 }
 /* --- END Placeholder Section --- */
 
@@ -303,25 +259,9 @@ html.dark-theme .defense-row .modification-select option {
   display: flex;
   flex-direction: column;
 }
-
-/* Ensure select uses theme variables */
 .selection-control select {
   margin-bottom: 0.3rem;
-  background-color: var(--input-bg-color); /* Use variable */
-  color: var(--text-color); /* Use variable */
-  border: 1px solid var(--input-border-color); /* Use variable */
 }
-/* Ensure options try to inherit colors (browser support varies) */
-.selection-control select option {
-  background-color: var(--input-bg-color);
-  color: var(--text-color);
-}
-/* Specific dark theme override for better option visibility if needed */
-html.dark-theme .selection-control select option {
-  background-color: var(--dark-grey); /* Match dark input bg */
-  color: var(--text-color);
-}
-
 .selection-list-container {
   flex: 2;
   min-width: 280px;
@@ -333,32 +273,30 @@ html.dark-theme .selection-control select option {
   margin: 0;
   max-height: 150px;
   overflow-y: auto;
-  border: 1px solid var(--medium-grey); /* Use variable */
+  border: 1px solid var(--medium-grey);
   border-radius: var(--border-radius);
-  background: var(--card-bg-color); /* Use variable */
+  background: #fff;
   min-height: 35px;
 }
 .item-list li.selected-item {
-  padding: 0.4rem 0.6rem; /* Slightly more padding */
+  padding: 0.35rem 0.6rem;
   font-size: 0.85rem;
-  gap: 0.5rem; /* Increased gap slightly */
+  gap: 0.4rem;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; /* Align items to top for multi-line content */
-  border-bottom: 1px solid var(--medium-grey); /* Use variable */
+  align-items: center;
+  border-bottom: 1px solid var(--medium-grey);
 }
 .item-list li:last-child {
   border-bottom: none;
 }
 .item-list li i {
-  /* Placeholder text */
-  color: var(--text-muted-color); /* Use variable */
+  color: var(--text-muted);
   width: 100%;
   text-align: center;
   padding: 0.5rem 0;
   font-style: italic;
 }
-/* Styles for weapon's single-line display */
 .single-line-item .item-info-line {
   display: flex;
   flex-wrap: wrap;
@@ -367,56 +305,37 @@ html.dark-theme .selection-control select option {
   flex-grow: 1;
   overflow: hidden;
 }
-
-/* Use theme variables for text colors */
 .single-line-item .item-name {
   font-weight: 500;
-  color: var(--text-color); /* Use main text color */
+  color: var(--dark-grey);
   white-space: nowrap;
   margin-right: 0.2em;
 }
 .single-line-item .item-stats {
   font-size: 0.85em;
-  color: var(--secondary-color); /* Use secondary color variable */
+  color: var(--secondary-color);
   white-space: nowrap;
   margin-right: 0.2em;
 }
 .single-line-item .item-traits {
   font-size: 0.8em;
-  color: var(--text-muted-color); /* Use muted text color variable */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--text-muted);
+  white-space: normal; /* Allow trait text to wrap if needed with bubbles */
+  /* overflow: hidden; */ /* Can be problematic with wrapped content */
+  /* text-overflow: ellipsis; */
 }
-
-/* === Styles for Selected Upgrades === */
-.item-list li.upgrade-item {
-  align-items: flex-start; /* Ensure button aligns well with multi-line text */
+/* Trait Bubble Style for customizer list */
+.item-traits .trait-bubble {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--secondary-color);
+  background-color: transparent;
+  margin: 0 1px;
+  vertical-align: middle;
+  box-sizing: border-box;
 }
-.upgrade-info {
-  display: flex;
-  flex-direction: column; /* Stack name and description */
-  flex-grow: 1; /* Take available space */
-  margin-right: 0.5rem; /* Space before remove button */
-}
-.upgrade-item .item-name {
-  /* Use existing item-name class for consistency */
-  font-weight: 500;
-  color: var(--text-color);
-  margin-bottom: 0.15rem; /* Add small space below name */
-}
-.upgrade-description {
-  font-size: 0.75rem; /* Smaller font for description */
-  color: var(--text-muted-color); /* Muted color */
-  margin: 0; /* Remove default paragraph margin */
-  line-height: 1.3; /* Adjust line height */
-}
-.upgrade-item .btn-remove {
-  align-self: center; /* Vertically center button next to multi-line text */
-  margin-top: 2px; /* Fine-tune vertical alignment */
-}
-/* === END Selected Upgrades Styles === */
-
 /* --- END Equipment Sections --- */
 
 /* --- Form Placeholders --- */
@@ -424,9 +343,9 @@ html.dark-theme .selection-control select option {
   min-width: 200px;
 }
 .placeholder-input {
-  height: calc(1.5em + 0.75rem + 2px); /* Match standard select height */
-  border: 1px solid var(--border-color); /* Use variable */
-  background-color: var(--light-grey); /* Use variable */
+  height: calc(1.5em + 0.75rem + 2px);
+  border: 1px solid var(--border-color);
+  background-color: var(--light-grey);
   border-radius: var(--border-radius);
   box-sizing: border-box;
 }
@@ -436,17 +355,16 @@ html.dark-theme .selection-control select option {
 .summary-compact {
   margin-top: 1.5rem;
   padding: 0.6rem 1rem;
-  border: 1px solid var(--border-color); /* Use variable */
+  border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  background-color: var(--light-grey); /* Use variable */
+  background-color: var(--light-grey);
 }
 .summary-compact h4 {
   margin: 0 0 0.6rem 0;
   padding-bottom: 0.4rem;
   font-size: 1.1rem;
   text-align: center;
-  border-bottom: 1px solid var(--medium-grey); /* Use variable */
-  color: var(--text-color); /* Use variable */
+  border-bottom: 1px solid var(--medium-grey);
 }
 .summary-grid {
   display: grid;
@@ -465,17 +383,16 @@ html.dark-theme .selection-control select option {
 .summary-label {
   padding-right: 0.4em;
   color: var(--secondary-color);
-} /* Use variable */
+}
 .summary-value {
   font-weight: 600;
   text-align: right;
-  color: var(--text-color);
-} /* Use variable */
+}
 .summary-divider {
   grid-column: 1 / -1;
   margin: 0.4rem 0;
   border: 0;
-  border-top: 1px solid var(--medium-grey); /* Use variable */
+  border-top: 1px solid var(--medium-grey);
 }
 .summary-item.error .summary-label,
 .summary-item.error .summary-value {
@@ -493,24 +410,21 @@ html.dark-theme .selection-control select option {
   color: var(--danger-color) !important;
 }
 .warning-text {
-  color: var(--warning-color); /* Use variable */
+  color: #b38600;
   font-size: 0.85em;
   font-style: italic;
   margin-top: 0.25rem;
   display: block;
 }
-html.dark-theme .warning-text {
-  color: #ffec99;
-} /* Lighter yellow for dark */
 
 .slot-limit-message {
   font-size: 0.8rem;
-  color: var(--text-muted-color); /* Use variable */
+  color: var(--text-muted);
   font-style: italic;
   margin-top: 0.15rem;
 }
 .slot-limit-message.error {
-  color: var(--danger-color); /* Use variable */
+  color: var(--danger-color);
   font-weight: bold;
   font-style: normal;
 }
@@ -519,13 +433,9 @@ html.dark-theme .warning-text {
 }
 
 select:disabled {
-  background-color: var(--medium-grey); /* Use variable */
+  background-color: var(--medium-grey);
   cursor: not-allowed;
   opacity: 0.7;
-}
-html.dark-theme select:disabled {
-  background-color: var(--dark-grey); /* Darker disabled */
-  opacity: 0.6;
 }
 
 .btn-add-hev {
@@ -533,7 +443,7 @@ html.dark-theme select:disabled {
   font-size: 1rem;
 }
 .btn-remove {
-  background-color: var(--danger-color); /* Use variable */
+  background-color: var(--danger-color);
   color: white;
   border: none;
   border-radius: 50%;
@@ -546,9 +456,8 @@ html.dark-theme select:disabled {
   padding: 0;
   margin-left: 0.5rem;
   flex-shrink: 0;
-  transition: background-color 0.15s ease-in-out;
 }
 .btn-remove:hover {
-  filter: brightness(90%);
+  background-color: #a71d2a;
 }
 /* --- END General --- */
