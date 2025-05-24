@@ -66,10 +66,7 @@ export const gameData = {
       name: 'Laser',
       tonnage: { Light: 3, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
       damageRating: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 },
-      traits: [
-        { name: 'AP', value: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 } },
-        { name: 'Long', value: '18"' },
-      ],
+      traits: [{ name: 'AP', value: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 } }],
       rangeCategory: '18+"',
     },
     {
@@ -93,7 +90,7 @@ export const gameData = {
       name: 'Particle Cannon',
       tonnage: { Light: 2, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
       damageRating: { Light: 2, Medium: 4, Heavy: 6, 'Ultra-Heavy': 8 },
-      traits: [], // No traits example
+      traits: [{ name: 'Plasma', value: 2 }],
       rangeCategory: '18"',
     },
     {
@@ -145,7 +142,6 @@ export const gameData = {
       id: 'u1',
       name: 'Ablative Armour ',
       tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
-      traits: [],
       description:
         'Reduce the Attack Pool for attacks using the Blast trait by 1, to a minimum of 1.',
       type: 'armor',
@@ -154,7 +150,6 @@ export const gameData = {
       id: 'u3',
       name: 'Anti Missile System',
       tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
-      traits: [],
       description:
         'This unit may not be targeted by a Weapon System using the Smart trait to Engage them from outside of Line of Sight of the Active Model.',
     },
@@ -162,14 +157,12 @@ export const gameData = {
       id: 'u4',
       name: 'Electronic Countermeasures',
       tonnage: { Light: 2, Medium: 2, Heavy: 1, 'Ultra-Heavy': 1 },
-      traits: [],
       description: 'The Lock On order may not be taken against this model.',
     },
     {
       id: 'u5',
       name: 'Heavy Reactor',
       tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
-      traits: [],
       description:
         'Roll 1D6 when this model would take Structure damage from Redlining, on a 4+ this damage is ignored.',
     },
@@ -177,14 +170,12 @@ export const gameData = {
       id: 'u6',
       name: 'Jump Jets',
       tonnage: { Light: 3, Medium: 3, Heavy: 2, 'Ultra-Heavy': 2 },
-      traits: ['Jump Movement'],
       description: 'This model may take the Jump Jet action.',
     },
     {
       id: 'u7',
       name: 'Minefield Drone Carrier System',
       tonnage: { Medium: 3, Heavy: 6, 'Ultra-Heavy': 6 },
-      traits: [{ name: 'Limited', value: { Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 } }],
       description:
         'ORDER: Place a Mine Drone token (as per the Support Asset ) within 3” of the Active model and not within 6” of another Mine Drone token. This Upgrade has the Limited (*/1/2/2) trait.',
       allowedClasses: ['Medium', 'Heavy', 'Ultra-Heavy'],
@@ -201,14 +192,12 @@ export const gameData = {
       id: 'u9',
       name: 'Optic Camouflage',
       tonnage: { Light: 5, Medium: 4, Heavy: 3, 'Ultra-Heavy': 2 },
-      traits: [],
       description: 'Add +1 to Defense Rolls for this unit when the attacker is outside of 10”.',
     },
     {
       id: 'u10',
       name: 'Reactive Armour',
       tonnage: { Light: 1, Medium: 1, Heavy: 1, 'Ultra-Heavy': 1 },
-      traits: [],
       description:
         'Reduce the Attack Pool for Missile and Rocket Pack attacks by 1, to a minimum of 1.',
       type: 'armor',
@@ -217,7 +206,6 @@ export const gameData = {
       id: 'u11',
       name: 'Ceramic Plating',
       tonnage: { Light: 2, Medium: 2, Heavy: 1, 'Ultra-Heavy': 1 },
-      traits: [],
       description:
         'Each time this unit would take damage from the AP trait of a Laser Weapon System roll 1D6 - on a 5+ that damage is negated.',
       type: 'armor',
@@ -226,7 +214,6 @@ export const gameData = {
       id: 'u12',
       name: 'Target Designator',
       tonnage: { Light: 1, Medium: 1, Heavy: 1, 'Ultra-Heavy': 1 },
-      traits: ['Target Designator Effect'],
       description:
         'Once per turn, friendly models in the same force may use this vehicle to draw Line of Sight for Weapon Systems using the Smart trait. Use this model for determining the AttackPool and Line of Sight. Its use can be canceled by Electronic Counter measures.',
     },
@@ -262,6 +249,8 @@ export const gameData = {
   traitDefinitions: {
     // == Weapon Traits (keys are the 'name' property from weapon traits objects) ==
     AP: 'Armor Penetrating: If any damage is inflicted by this Attack, apply AP(X) damage directly to the target units Structure (value depends on HE-V class).',
+    Plasma:
+      'If any damage is inflicted by this Attack, apply Plasma(X) damage to armor. If armor remains apply hits to structure',
     Blast:
       'Area Effect: All units (friend or foe) within (X) of the original target must also make a Defense Roll against this Attack at -1 to the Attack Pool (to a minimum of 1).',
     Disruptive:
@@ -280,13 +269,6 @@ export const gameData = {
       'Add (X) to the Attack Pool of this mech when it is performing a Smash Order (value depends on HE-V class). This model counts as one Class Size larger during a Smash order. This weapon System is not used in an Engage Order.',
     Smart:
       'The Active Unit may use any friendly unit with a Target Designator for determining Line of Sight for attacks with this Weapon System.',
-
-    // == Upgrade "Traits" (if you want to list their effects in the key) ==
-    // These are based on the strings found in `upgrades[X].traits`
-    'Jump Movement':
-      'This model may take the Jump Jet action. (Effect provided by Jump Jets upgrade).',
-    'Target Designator Effect':
-      'Allows this unit to act as a spotter for Smart weapons. (Effect provided by Target Designator upgrade).',
   },
 }
 

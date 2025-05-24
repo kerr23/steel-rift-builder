@@ -2,8 +2,7 @@
 // Import necessary functions from Vue and data/helpers from gameData.js
 import { ref, computed, watch, defineProps, defineEmits, defineExpose, nextTick } from 'vue'
 import { useToast } from 'vue-toastification'
-import { gameData as importedGameRulesData, getMaxDieStep } from '../gameData.js'
-// NO import for CustomSelect.vue
+import { getMaxDieStep } from '../gameData.js'
 
 // --- Initialize Toast ---
 const toast = useToast()
@@ -69,12 +68,11 @@ const calculateNthWeaponCost = (weaponData, n, className) => {
   return baseCost + totalPenaltyForNth
 }
 
-// Helper to format traits for display in the selected list (handles bubbles)
+// Helper to format traits for display in the selected list (handles bubbles and class-specific values)
 const formatTraitDisplay = (trait) => {
-  if (typeof trait === 'string') {
-    return trait
-  }
-  if (!trait || !trait.name) return 'Unknown Trait'
+  // Assuming trait is always an object from gameData.weapons
+  if (!trait || typeof trait !== 'object' || !trait.name) return 'Unknown Trait'
+
   const currentClassNameForTrait = selectedClass.value?.name
 
   if (trait.name === 'Limited' && trait.value !== undefined) {
@@ -265,10 +263,8 @@ const formattedMotiveTypes = computed(() =>
   })),
 )
 
-// **** ENSURE THIS COMPUTED PROPERTY IS PRESENT AND CORRECT ****
 const formattedWeapons = computed(() => {
   const currentClassName = selectedClass.value?.name
-  // If no class selected, some values will be '?' but options should still list
   const currentCounts = {}
   selectedWeapons.value.forEach((w) => {
     if (w && w.id) currentCounts[w.id] = (currentCounts[w.id] || 0) + 1
@@ -281,29 +277,27 @@ const formattedWeapons = computed(() => {
     const damageRating = currentClassName ? (wpn.damageRating?.[currentClassName] ?? '?') : '?'
     const range = wpn.rangeCategory || 'N/A'
 
+    // SIMPLIFIED: Assuming all traits in gameData.weapons are objects
     const traitsDisplay =
       wpn.traits
         ?.map((traitObj) => {
-          if (typeof traitObj === 'object' && traitObj !== null && traitObj.name) {
+          if (traitObj && traitObj.name) {
+            // Ensure traitObj and traitObj.name exist
             if (typeof traitObj.value === 'object' && traitObj.value !== null) {
-              // Class-specific trait values in dropdown
               if (currentClassName && traitObj.value[currentClassName] !== undefined) {
                 return `${traitObj.name} ${traitObj.value[currentClassName]}`
               } else {
-                // Fallback for object values if class not selected or specific value missing
                 const classValuesSummary = Object.keys(traitObj.value)
                   .map((k) => k[0])
                   .join('/')
-                return `${traitObj.name} (${classValuesSummary})` // e.g. "AP (L/M/H/U)"
+                return `${traitObj.name} (${classValuesSummary})`
               }
             } else if (traitObj.value !== undefined) {
-              // Primitive value
               return `${traitObj.name} ${traitObj.value}`
             }
-            return traitObj.name // Name only
+            return traitObj.name
           }
-          if (typeof traitObj === 'string') return traitObj // Fallback for old string format
-          return ''
+          return '' // For malformed trait objects
         })
         .filter(Boolean)
         .join(', ') || 'None'
@@ -333,20 +327,16 @@ const formattedUpgrades = computed(() => {
       } else {
         tonnageDisplay = upg.tonnage
       }
-      const traitsDisplay = upg.traits?.join(', ') || 'None'
+      // Assuming upgrade traits are simple strings
       return {
-        title: `${upg.name} (${tonnageDisplay}T / 1S) - [${traitsDisplay}]`,
+        title: `${upg.name} (${tonnageDisplay}T)`,
         value: upg.id,
       }
     })
 })
-// **** END COMPUTED PROPERTIES TO CHECK ****
+// --- END Computed Properties ---
 
 // --- Methods ---
-// ... (addWeapon, removeWeapon, addUpgrade, removeUpgrade - keep these) ...
-// ... (handleWeaponAdd, handleUpgradeAdd - keep these, they use standard select refs) ...
-// ... (resetForm, loadHevForEditing, submitHev - keep these) ...
-
 const addWeapon = (weapon) => {
   if (weapon) selectedWeapons.value.push(JSON.parse(JSON.stringify(weapon)))
 }
@@ -459,8 +449,8 @@ const resetForm = () => {
   armorModification.value = 'standard'
   structureModification.value = 'standard'
   selectedMotiveType.value = null
-  if (weaponSelectRef.value) weaponSelectRef.value.value = '' // For standard select
-  if (upgradeSelectRef.value) upgradeSelectRef.value.value = '' // For standard select
+  if (weaponSelectRef.value) weaponSelectRef.value.value = ''
+  if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
 }
 
 const loadHevForEditing = (unitData) => {
@@ -887,9 +877,8 @@ defineExpose({ resetForm, loadHevForEditing })
                       : typeof upgrade.tonnage === 'number'
                         ? upgrade.tonnage
                         : '?'
-                  }}T / 1S)
+                  }}T)
                 </span>
-                <span class="item-traits">Tr: [{{ upgrade.traits?.join(', ') || 'None' }}]</span>
               </div>
               <button @click="removeUpgrade(index)" class="btn btn-remove" title="Remove Upgrade">
                 X
