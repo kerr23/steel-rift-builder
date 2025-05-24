@@ -73,6 +73,7 @@ const generateBubbleHtml = (sides, isStructureTrack = false) => {
     : null
 
   for (let n = 1; n <= sides; n++) {
+    let bubbleClass = 'bubble' // Base class for armor/structure bubbles
     if (isStructureTrack && thresholds) {
       if (n === thresholds.markerYellow && thresholds.markerYellow <= sides)
         bubblesHtml += `<span class="threshold-divider divider-green"></span>`
@@ -81,7 +82,12 @@ const generateBubbleHtml = (sides, isStructureTrack = false) => {
       else if (n === thresholds.markerRed && thresholds.markerRed <= sides)
         bubblesHtml += `<span class="threshold-divider divider-red"></span>`
     }
-    bubblesHtml += `<span class="bubble"></span>`
+    // Armor bubbles get armor-bubble class for specific styling if needed (e.g. green border)
+    // Structure bubbles just use the default .bubble style (black border)
+    if (!isStructureTrack) {
+      bubbleClass += ' armor-bubble'
+    }
+    bubblesHtml += `<span class="${bubbleClass}"></span>`
   }
   return `<div class="bubble-display">${bubblesHtml}</div>`
 }
@@ -94,6 +100,7 @@ const getModificationText = (baseDie, effectiveDie) => {
   return ''
 }
 
+// Helper for "Limited" trait bubbles in print
 const generateLimitedTraitBubbleHtml = (count) => {
   if (count <= 0) return ''
   let bubbles = ''
@@ -103,17 +110,19 @@ const generateLimitedTraitBubbleHtml = (count) => {
   return `(${bubbles})`
 }
 
+// Helper to format a single trait object for print
 const formatPrintTrait = (traitObj) => {
   if (typeof traitObj === 'string') return traitObj
   if (!traitObj || !traitObj.name) return 'Unknown Trait'
 
-  if (traitObj.name === 'Limited' && traitObj.value) {
+  if (traitObj.name === 'Limited' && traitObj.value !== undefined) {
     return `Limited${generateLimitedTraitBubbleHtml(traitObj.value)}`
   }
   if (traitObj.value !== undefined) {
+    // For traits like AP 1
     return `${traitObj.name} ${traitObj.value}`
   }
-  return traitObj.name
+  return traitObj.name // For traits with only a name
 }
 // --- END Print Formatting Helpers ---
 
@@ -130,41 +139,14 @@ const formatForPrint = () => {
             .print-container { max-width: 900px; margin: 15px auto; padding: 10px; }
             .print-header { text-align: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
             .print-header h1 { margin: 0 0 3px 0; font-size: 1.6rem; font-weight: 500; }
-            /* .print-header h2 REMOVED as total tonnage moved */
 
             .unit-card { border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 10px; margin-bottom: 15px; page-break-inside: avoid !important; }
 
-            /* UPDATED Unit Title Style */
-            .unit-title {
-                display: flex;
-                justify-content: space-between;
-                align-items: baseline;
-                font-size: 1.2rem;
-                font-weight: 600;
-                margin: 0 0 10px 0;
-                padding: 0;
-                color: var(--dark-grey);
-            }
-            .unit-title-hev-name {
-                flex-grow: 1;
-                margin-right: 1em;
-            }
-            .unit-title-roster-info {
-                display: flex;
-                align-items: baseline;
-                font-size: 0.85rem;
-                font-weight: 400;
-                color: var(--text-muted);
-                white-space: nowrap;
-                flex-shrink: 0;
-            }
-            .unit-title-roster-name {
-                 margin-right: 0.5em;
-            }
-            .unit-title-total-tonnage {
-                font-weight: 500;
-                color: var(--secondary-color);
-            }
+            .unit-title { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.2rem; font-weight: 600; margin: 0 0 10px 0; padding: 0; color: var(--dark-grey); }
+            .unit-title-hev-name { flex-grow: 1; margin-right: 1em; }
+            .unit-title-roster-info { display: flex; align-items: baseline; font-size: 0.85rem; font-weight: 400; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+            .unit-title-roster-name { margin-right: 0.5em; }
+            .unit-title-total-tonnage { font-weight: 500; color: var(--secondary-color); }
 
             .section-wrapper.class-defense-wrapper { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.8rem; align-items: stretch; }
             .form-section { flex: 1; min-width: 230px; display: flex; flex-direction: column; }
@@ -180,7 +162,7 @@ const formatForPrint = () => {
             .print-defense-label { font-weight: bold; min-width: 65px; text-align: right; flex-shrink: 0; font-size: 0.85rem; }
             .print-defense-row .bubble-display { display: flex; flex-wrap: nowrap; gap: 1.5px; align-items: center; flex-shrink: 0; min-width: 140px; overflow: hidden; }
             .bubble { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--black-color); flex-shrink: 0; background-color: transparent; box-sizing: border-box; }
-            .print-defense-row.armor-row .bubble { border-color: var(--success-color); }
+            .bubble.armor-bubble { border-color: var(--success-color); } /* Armor bubbles green */
             .threshold-divider { display: inline-block; width: 1.5px; height: 10px; margin: 0 1px; vertical-align: middle; flex-shrink: 0; }
             .divider-green { background-color: var(--success-color); }
             .divider-yellow { background-color: var(--warning-color); }
@@ -239,7 +221,6 @@ const formatForPrint = () => {
             <button class="no-print" onclick="window.print()">Print this page</button>
             <div class="print-header">
                 <h1>${rosterName.value || 'Unnamed Roster'}</h1>
-                <!-- Total Tonnage removed -->
             </div>
         `
 
@@ -277,17 +258,16 @@ const formatForPrint = () => {
       }
 
       htmlBody += `<div class="unit-card">`
-      // UPDATED Unit Title
       htmlBody += `<h3 class="unit-title">
                            <span class="unit-title-hev-name">${unit.unitName || 'Unnamed HE-V'}</span>`
       if (rosterName.value) {
         htmlBody += `<span class="unit-title-roster-info">
-                               <span class="unit-title-roster-name">${rosterName.value}</span>
-                               <span class="unit-title-total-tonnage">- ${totalRosterTonnage.value}T</span>
+                               <span class="unit-title-roster-name">(${rosterName.value})</span>
+                               <span class="unit-title-total-tonnage">- ${totalRosterTonnage.value}T Total</span>
                              </span>`
       } else {
         htmlBody += `<span class="unit-title-roster-info">
-                               <span class="unit-title-total-tonnage">${totalRosterTonnage.value}T</span>
+                               <span class="unit-title-total-tonnage">${totalRosterTonnage.value}T Total</span>
                              </span>`
       }
       htmlBody += `</h3>`

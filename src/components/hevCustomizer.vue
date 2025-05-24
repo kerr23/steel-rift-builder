@@ -68,23 +68,42 @@ const calculateNthWeaponCost = (weaponData, n, className) => {
   return baseCost + totalPenaltyForNth
 }
 
-// Helper to format traits for display in the selected list
+// Helper to format traits for display in the selected list (handles bubbles and class-specific values)
 const formatTraitDisplay = (trait) => {
   if (typeof trait === 'string') {
-    // Should mostly be objects now from weapons
+    // Fallback for old data structure
     return trait
   }
-  if (trait.name === 'Limited' && trait.value) {
+  if (!trait || !trait.name) return 'Unknown Trait'
+
+  const currentClassNameForTrait = selectedClass.value?.name // Get current class for context
+
+  if (trait.name === 'Limited' && trait.value !== undefined) {
     let bubbles = ''
     for (let i = 0; i < trait.value; i++) {
       bubbles += `<span class="trait-bubble"></span>`
     }
     return `Limited(${bubbles})`
   }
-  if (trait.name && trait.value !== undefined) {
+
+  // Handle traits where the value is an object (e.g., class-specific AP/Melee values)
+  if (typeof trait.value === 'object' && trait.value !== null) {
+    if (currentClassNameForTrait && trait.value[currentClassNameForTrait] !== undefined) {
+      return `${trait.name} ${trait.value[currentClassNameForTrait]}`
+    } else {
+      // Fallback for display in list if class not selected or specific value missing
+      const classValues = Object.entries(trait.value)
+        .map(([k, v]) => `${k[0]}:${v}`)
+        .join('/')
+      return `${trait.name} (${classValues})`
+    }
+  }
+
+  if (trait.value !== undefined) {
+    // Value is a primitive (string or number)
     return `${trait.name} ${trait.value}`
   }
-  return trait.name || 'Unknown Trait'
+  return trait.name // Trait with only a name
 }
 // --- END Helper Functions ---
 
@@ -152,7 +171,7 @@ const baseMovementSpeed = computed(() => {
   return selectedClass.value?.baseMovement ?? 0
 })
 const hasJumpJets = computed(() => {
-  return selectedUpgrades.value.some((upg) => upg.id === 'u3')
+  return selectedUpgrades.value.some((upg) => upg.id === 'u3') // Ensure 'u3' is your jump jet ID
 })
 const jumpMovementSpeed = computed(() => {
   if (!hasJumpJets.value) return 0
@@ -191,11 +210,27 @@ const weaponDetails = computed(() => {
   })
   return { totalTonnage, totalSlots }
 })
+
 const upgradeDetails = computed(() => {
-  const totalTonnage = selectedUpgrades.value.reduce((sum, up) => sum + (up?.tonnage || 0), 0)
+  const currentClassName = selectedClass.value?.name
+  let totalTonnage = 0
+  selectedUpgrades.value.forEach((up) => {
+    if (typeof up.tonnage === 'object' && up.tonnage !== null) {
+      if (currentClassName && up.tonnage[currentClassName] !== undefined) {
+        totalTonnage += up.tonnage[currentClassName]
+      } else {
+        console.warn(
+          `Upgrade "${up.name}" has object tonnage but no value for class "${currentClassName}". Using 0T for calculation.`,
+        )
+      }
+    } else if (typeof up.tonnage === 'number') {
+      totalTonnage += up.tonnage
+    }
+  })
   const totalSlots = selectedUpgrades.value.length
   return { totalTonnage, totalSlots }
 })
+
 const usedSlots = computed(() => weaponDetails.value.totalSlots + upgradeDetails.value.totalSlots)
 const totalUnitTonnageUsed = computed(
   () =>
@@ -234,27 +269,52 @@ const formattedMotiveTypes = computed(() =>
     value: mt,
   })),
 )
+
 const formattedWeapons = computed(() => {
   const currentClassName = selectedClass.value?.name
-  if (!currentClassName) return []
-  const currentCounts = {}
+  // It's important that formattedWeapons can run even if no class is selected yet,
+  // as the dropdown might be visible before a class is chosen.
+  // The class-specific parts will just show '?' or a fallback.
+
+  const currentCounts = {} // For Nth weapon cost, not directly for trait display in dropdown
   selectedWeapons.value.forEach((w) => {
     if (w && w.id) currentCounts[w.id] = (currentCounts[w.id] || 0) + 1
   })
+
   return props.gameRules.weapons.map((wpn) => {
     const currentQuantity = currentCounts[wpn.id] || 0
     const nextQuantityIndex = currentQuantity + 1
+    // Pass currentClassName (which might be null/undefined) to calculateNthWeaponCost
     const costToAddNext = calculateNthWeaponCost(wpn, nextQuantityIndex, currentClassName)
-    const damageRating = wpn.damageRating?.[currentClassName] ?? '?'
+    const damageRating = currentClassName ? (wpn.damageRating?.[currentClassName] ?? '?') : '?'
     const range = wpn.rangeCategory || 'N/A'
+
     const traitsDisplay =
       wpn.traits
-        ?.map((t) => {
-          if (t.name === 'Limited' && t.value) return `${t.name} ${t.value}` // Dropdown shows number
-          if (t.name && t.value !== undefined) return `${t.name} ${t.value}`
-          return t.name
+        ?.map((traitObj) => {
+          if (typeof traitObj === 'object' && traitObj !== null && traitObj.name) {
+            // For dropdown, show class-specific value if class is selected, otherwise a generic placeholder or summary
+            if (typeof traitObj.value === 'object' && traitObj.value !== null) {
+              if (currentClassName && traitObj.value[currentClassName] !== undefined) {
+                return `${traitObj.name} ${traitObj.value[currentClassName]}`
+              } else {
+                // Fallback for object values when class isn't selected or value is missing
+                const classValuesSummary = Object.keys(traitObj.value)
+                  .map((k) => k[0])
+                  .join('/') // e.g. (L/M/H/U)
+                return `${traitObj.name} (${classValuesSummary})` // e.g. "AP (L/M/H/U)"
+              }
+            } else if (traitObj.value !== undefined) {
+              // Value is a primitive
+              return `${traitObj.name} ${traitObj.value}`
+            }
+            return traitObj.name // Trait with no value
+          }
+          if (typeof traitObj === 'string') return traitObj // Fallback for old string format
+          return ''
         })
-        .join(', ') ?? 'N/A'
+        .filter(Boolean)
+        .join(', ') || 'None'
 
     return {
       title: `${wpn.name} [${range}] (Dmg: ${damageRating}, Cost: ${costToAddNext}T) - Tr: [${traitsDisplay}]`,
@@ -262,26 +322,43 @@ const formattedWeapons = computed(() => {
     }
   })
 })
+
 const formattedUpgrades = computed(() => {
   const selectedUpgradeIds = selectedUpgrades.value.map((upg) => upg.id)
+  const currentClassName = selectedClass.value?.name
+
   return props.gameRules.upgrades
     .filter((upg) => !selectedUpgradeIds.includes(upg.id))
-    .map((upg) => ({
-      title: `${upg.name} (${upg.tonnage}T / 1S) - [${upg.traits?.join(', ') ?? ''}]`,
-      value: upg.id,
-    }))
+    .map((upg) => {
+      let tonnageDisplay
+      if (typeof upg.tonnage === 'object' && upg.tonnage !== null) {
+        tonnageDisplay =
+          currentClassName && upg.tonnage[currentClassName] !== undefined
+            ? upg.tonnage[currentClassName]
+            : `(${Object.entries(upg.tonnage)
+                .map(([k, v]) => `${k[0]}:${v}`)
+                .join('/')})`
+      } else {
+        tonnageDisplay = upg.tonnage
+      }
+      const traitsDisplay = upg.traits?.join(', ') || 'None'
+      return {
+        title: `${upg.name} (${tonnageDisplay}T / 1S) - [${traitsDisplay}]`,
+        value: upg.id,
+      }
+    })
 })
 // --- END Computed Properties ---
 
 // --- Methods ---
 const addWeapon = (weapon) => {
-  if (weapon) selectedWeapons.value.push({ ...weapon }) // Add a copy
+  if (weapon) selectedWeapons.value.push(JSON.parse(JSON.stringify(weapon)))
 }
 const removeWeapon = (index) => {
   selectedWeapons.value.splice(index, 1)
 }
 const addUpgrade = (upgrade) => {
-  if (upgrade) selectedUpgrades.value.push({ ...upgrade }) // Add a copy
+  if (upgrade) selectedUpgrades.value.push(JSON.parse(JSON.stringify(upgrade)))
 }
 const removeUpgrade = (index) => {
   selectedUpgrades.value.splice(index, 1)
@@ -299,7 +376,11 @@ const handleWeaponAdd = (event) => {
       return
     }
     const currentClassName = selectedClass.value?.name
-    if (!currentClassName) return
+    if (!currentClassName) {
+      toast.error('Please select a HE-V class first.')
+      if (weaponSelectRef.value) weaponSelectRef.value.value = ''
+      return
+    }
     const currentCount = selectedWeapons.value.filter((w) => w.id === weaponToAdd.id).length
     const costOfThisWeapon = calculateNthWeaponCost(weaponToAdd, currentCount + 1, currentClassName)
     const currentUsedWithoutArmorStructure =
@@ -314,7 +395,7 @@ const handleWeaponAdd = (event) => {
       if (weaponSelectRef.value) weaponSelectRef.value.value = ''
       return
     }
-    addWeapon(weaponToAdd) // Add a copy of the weapon data
+    addWeapon(weaponToAdd)
     if (weaponSelectRef.value) {
       weaponSelectRef.value.value = ''
     }
@@ -331,20 +412,38 @@ const handleUpgradeAdd = (event) => {
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
       return
     }
-    const costOfThisUpgrade = upgradeToAdd.tonnage || 0
-    const currentUsedWithoutArmorStructure =
-      totalUnitTonnageUsed.value - armorCost.value - structureCost.value
-    const potentialTotal =
-      currentUsedWithoutArmorStructure + armorCost.value + structureCost.value + costOfThisUpgrade
+    const currentClassName = selectedClass.value?.name
+    if (!currentClassName && typeof upgradeToAdd.tonnage === 'object') {
+      toast.error(
+        `Cannot determine tonnage for ${upgradeToAdd.name} without a selected HE-V class.`,
+      )
+      if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
+      return
+    }
 
-    if (potentialTotal > baseTonnage.value) {
+    let costOfThisUpgrade = 0
+    if (typeof upgradeToAdd.tonnage === 'object' && upgradeToAdd.tonnage !== null) {
+      if (currentClassName && upgradeToAdd.tonnage[currentClassName] !== undefined) {
+        costOfThisUpgrade = upgradeToAdd.tonnage[currentClassName]
+      } else {
+        console.warn(
+          `Tonnage for ${upgradeToAdd.name} on class ${currentClassName} not defined, using 0 for cost check.`,
+        )
+      }
+    } else if (typeof upgradeToAdd.tonnage === 'number') {
+      costOfThisUpgrade = upgradeToAdd.tonnage
+    }
+
+    const potentialFinalTonnage = totalUnitTonnageUsed.value + costOfThisUpgrade
+
+    if (potentialFinalTonnage > baseTonnage.value) {
       toast.error(
         `Cannot add ${upgradeToAdd.name}: Exceeds maximum tonnage (${baseTonnage.value}T). Cost of this upgrade: ${costOfThisUpgrade}T.`,
       )
       if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
       return
     }
-    addUpgrade(upgradeToAdd) // Add a copy
+    addUpgrade(upgradeToAdd)
     if (upgradeSelectRef.value) {
       upgradeSelectRef.value.value = ''
     }
@@ -405,7 +504,6 @@ const loadHevForEditing = (unitData) => {
         structureModification.value = 'standard'
       }
 
-      // Make sure to load copies, not references, especially for traits which are now objects
       selectedWeapons.value = unitData.selectedWeapons
         ? JSON.parse(JSON.stringify(unitData.selectedWeapons))
         : []
@@ -516,9 +614,7 @@ defineExpose({ resetForm, loadHevForEditing })
   <section class="hev-customizer card">
     <h2 class="component-title">HE-V Configuration</h2>
 
-    <!-- Wrapper for Class and Defense Sections -->
     <div class="form-inline class-defense-wrapper">
-      <!-- Class Section -->
       <div class="form-section class-section">
         <h3 class="section-title">Classification & Movement</h3>
         <div class="form-group">
@@ -568,11 +664,9 @@ defineExpose({ resetForm, loadHevForEditing })
         </div>
       </div>
 
-      <!-- Combined Armor & Structure Section -->
       <div class="form-section defense-section" v-if="selectedClass">
         <h3 class="section-title">Armor & Structure</h3>
         <div class="defense-layout-container">
-          <!-- Armor Row -->
           <div class="defense-row armor-row">
             <label class="defense-label">Armor:</label>
             <div
@@ -600,7 +694,6 @@ defineExpose({ resetForm, loadHevForEditing })
             <span class="die-cost">({{ armorCost }}T)</span>
           </div>
 
-          <!-- Structure Row -->
           <div class="defense-row structure-row">
             <label class="defense-label">Structure:</label>
             <div
@@ -613,20 +706,17 @@ defineExpose({ resetForm, loadHevForEditing })
                     v-if="n === structureMarker_25_Percent"
                     class="threshold-divider divider-green"
                     title="25% Damage Threshold"
-                  ></span
-                  ><!-- 25% Marker -> GREEN -->
+                  ></span>
                   <span
                     v-else-if="n === structureMarker_50_Percent"
                     class="threshold-divider divider-yellow"
                     title="50% Damage Threshold"
-                  ></span
-                  ><!-- 50% Marker -> YELLOW -->
+                  ></span>
                   <span
                     v-else-if="n === structureMarker_75_Percent"
                     class="threshold-divider divider-red"
                     title="75% Damage Threshold"
-                  ></span
-                  ><!-- 75% Marker -> RED -->
+                  ></span>
                   <span class="bubble"></span>
                 </template>
               </template>
@@ -648,7 +738,6 @@ defineExpose({ resetForm, loadHevForEditing })
             <span class="die-cost">({{ structureCost }}T)</span>
           </div>
 
-          <!-- Structure Threshold Descriptions -->
           <div class="threshold-descriptions" v-if="structureSides > 0">
             <p v-if="structureMarker_25_Percent > 1" class="threshold-desc-green">
               <strong>25% Dmg:</strong> All Move/Jump Orders -1
@@ -661,17 +750,13 @@ defineExpose({ resetForm, loadHevForEditing })
             </p>
           </div>
         </div>
-        <!-- end defense-layout-container -->
       </div>
       <div class="form-section defense-section placeholder-section" v-else>
         <h3 class="section-title">Armor & Structure</h3>
         <p class="text-muted text-center mt-4">Select Class to configure Defense</p>
       </div>
-      <!-- End Combined Section -->
     </div>
-    <!-- End Class/Defense Wrapper -->
 
-    <!-- Weapon Systems Selection -->
     <div class="form-group equipment-section" v-if="selectedClass">
       <h3 class="section-title">Weapon Systems</h3>
       <div class="selection-layout">
@@ -732,7 +817,6 @@ defineExpose({ resetForm, loadHevForEditing })
       </div>
     </div>
 
-    <!-- Upgrades Selection -->
     <div class="form-group equipment-section" v-if="selectedClass">
       <h3 class="section-title">Upgrades</h3>
       <div class="selection-layout">
@@ -790,6 +874,19 @@ defineExpose({ resetForm, loadHevForEditing })
             >
               <div class="item-info-line">
                 <span class="item-name">{{ upgrade.name }}</span>
+                <span class="item-stats">
+                  (Cost:
+                  {{
+                    typeof upgrade.tonnage === 'object' &&
+                    upgrade.tonnage !== null &&
+                    selectedClass?.name &&
+                    upgrade.tonnage[selectedClass.name] !== undefined
+                      ? upgrade.tonnage[selectedClass.name]
+                      : typeof upgrade.tonnage === 'number'
+                        ? upgrade.tonnage
+                        : '?'
+                  }}T / 1S)
+                </span>
                 <span class="item-traits">Tr: [{{ upgrade.traits?.join(', ') || 'None' }}]</span>
               </div>
               <button @click="removeUpgrade(index)" class="btn btn-remove" title="Remove Upgrade">
@@ -802,7 +899,6 @@ defineExpose({ resetForm, loadHevForEditing })
       </div>
     </div>
 
-    <!-- Unit Summary Display -->
     <div class="summary card summary-compact" v-if="selectedClass">
       <h4>Unit Summary</h4>
       <div class="summary-grid">
@@ -853,7 +949,6 @@ defineExpose({ resetForm, loadHevForEditing })
       </div>
     </div>
 
-    <!-- Action Button to Add HE-V -->
     <div class="action-buttons" v-if="selectedClass">
       <button
         @click="submitHev"
