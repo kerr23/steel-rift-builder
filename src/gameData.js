@@ -192,7 +192,7 @@ export const gameData = {
       id: 'u9',
       name: 'Optic Camouflage',
       tonnage: { Light: 5, Medium: 4, Heavy: 3, 'Ultra-Heavy': 2 },
-      description: 'Add +1 to Defense Rolls for this unit when the attacker is outside of 10”.',
+      description: 'Add +1 to Defense Rolls for this unit when the attacker is outside of 18”.',
     },
     {
       id: 'u10',
