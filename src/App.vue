@@ -293,13 +293,11 @@ const formatForPrint = () => {
                                     <span class="print-defense-label">Armor:</span>
                                     ${generateBubbleHtml(unit.effectiveArmorDie?.sides ?? 0, false)}
                                     ${getModificationText(baseArmorDie, unit.effectiveArmorDie)}
-                                    <span class="die-cost-print">(${unit.effectiveArmorDie?.armorCost ?? 0}T)</span>
                                 </div>
                                 <div class="print-defense-row structure-row">
                                     <span class="print-defense-label">Structure:</span>
                                     ${generateBubbleHtml(unit.effectiveStructureDie?.sides ?? 0, true)}
                                     ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
-                                    <span class="die-cost-print">(${unit.effectiveStructureDie?.structureCost ?? unit.effectiveStructureDie?.armorCost ?? 0}T)</span>
                                 </div>`
       const structureSides = unit.effectiveStructureDie?.sides ?? 0
       if (structureSides > 0) {
