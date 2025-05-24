@@ -85,7 +85,8 @@ const generateBubbleHtml = (sides, isStructureTrack = false) => {
     // Armor bubbles get armor-bubble class for specific styling if needed (e.g. green border)
     // Structure bubbles just use the default .bubble style (black border)
     if (!isStructureTrack) {
-      bubbleClass += ' armor-bubble'
+      // Armor bubbles
+      bubbleClass += ' armor-bubble' // This class can be styled green in CSS
     }
     bubblesHtml += `<span class="${bubbleClass}"></span>`
   }
@@ -100,7 +101,6 @@ const getModificationText = (baseDie, effectiveDie) => {
   return ''
 }
 
-// Helper for "Limited" trait bubbles in print
 const generateLimitedTraitBubbleHtml = (count) => {
   if (count <= 0) return ''
   let bubbles = ''
@@ -110,16 +110,30 @@ const generateLimitedTraitBubbleHtml = (count) => {
   return `(${bubbles})`
 }
 
-// Helper to format a single trait object for print
-const formatPrintTrait = (traitObj) => {
+const formatPrintTrait = (traitObj, forClassName) => {
+  // Added forClassName parameter
   if (typeof traitObj === 'string') return traitObj
   if (!traitObj || !traitObj.name) return 'Unknown Trait'
 
   if (traitObj.name === 'Limited' && traitObj.value !== undefined) {
     return `Limited${generateLimitedTraitBubbleHtml(traitObj.value)}`
   }
+
+  // Handle class-specific values for traits like AP, Melee
+  if (typeof traitObj.value === 'object' && traitObj.value !== null) {
+    if (forClassName && traitObj.value[forClassName] !== undefined) {
+      return `${traitObj.name} ${traitObj.value[forClassName]}`
+    } else {
+      // Fallback for print if class-specific value not found for the current unit's class
+      const classValues = Object.entries(traitObj.value)
+        .map(([k, v]) => `${k[0]}:${v}`)
+        .join('/')
+      return `${traitObj.name} (${classValues})`
+    }
+  }
+
   if (traitObj.value !== undefined) {
-    // For traits like AP 1
+    // For other traits with a primitive value
     return `${traitObj.name} ${traitObj.value}`
   }
   return traitObj.name // For traits with only a name
@@ -154,6 +168,12 @@ const formatForPrint = () => {
             .class-section p { margin: 0.1rem 0; font-size: 0.85rem; display: flex; }
             .class-section p strong { display: inline-block; min-width: 100px; font-weight: bold; margin-right: 0.5em; }
 
+            /* Motive Description Section Styles */
+            .motive-description-section { margin-top: 0.8rem; padding-top: 0.5rem; border-top: 1px dashed var(--medium-grey); }
+            .motive-description-section .section-title { font-size: 0.85rem; color: var(--secondary-color); border-bottom: none; padding-bottom: 0.1rem; margin-bottom: 0.3rem; font-weight: 600; }
+            .motive-description-text { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-left: 0.5em; }
+            .motive-description-text strong { font-weight: 600; color: var(--dark-grey); }
+
 
             /* Defense Section Styles */
             .defense-section { display: flex; flex-direction: column; }
@@ -162,14 +182,15 @@ const formatForPrint = () => {
             .print-defense-label { font-weight: bold; min-width: 65px; text-align: right; flex-shrink: 0; font-size: 0.85rem; }
             .print-defense-row .bubble-display { display: flex; flex-wrap: nowrap; gap: 1.5px; align-items: center; flex-shrink: 0; min-width: 140px; overflow: hidden; }
             .bubble { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--black-color); flex-shrink: 0; background-color: transparent; box-sizing: border-box; }
-            .bubble.armor-bubble { border-color: var(--success-color); } /* Armor bubbles green */
+            .bubble.armor-bubble { border-color: var(--success-color); }
             .threshold-divider { display: inline-block; width: 1.5px; height: 10px; margin: 0 1px; vertical-align: middle; flex-shrink: 0; }
             .divider-green { background-color: var(--success-color); }
             .divider-yellow { background-color: var(--warning-color); }
             .divider-red { background-color: var(--danger-color); }
             .placeholder-text-inline { font-style: italic; color: var(--text-muted); font-size: 0.75rem; padding-left: 5px; }
             .modification-text { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; margin-left: 0.2em; }
-            .die-cost-print { font-size: 0.8rem; font-weight: 500; color: var(--dark-grey); margin-left: auto; white-space: nowrap; padding-left: 0.4em; }
+            /* .die-cost-print class can be removed if not used elsewhere after removing from armor/structure */
+            /* .die-cost-print { font-size: 0.8rem; font-weight: 500; color: var(--dark-grey); margin-left: auto; white-space: nowrap; padding-left: 0.4em; } */
             .threshold-descriptions { margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px dashed var(--border-color); font-size: 0.7rem; line-height: 1.2; }
             .threshold-descriptions p { margin: 0; display: flex;}
             .threshold-descriptions p strong { min-width: 50px; text-align: right; flex-shrink: 0; display: inline-block; font-weight: bold; margin-right: 3px; }
@@ -231,7 +252,8 @@ const formatForPrint = () => {
       const baseStructDie = findDieObjectPrint(unit.selectedClass.defaultStructureDie)
 
       const unitBaseMovement = unit.selectedClass?.baseMovement ?? 0
-      const unitHasJumpJets = unit.selectedUpgrades?.some((upg) => upg.id === 'u3') ?? false
+      const unitHasJumpJets =
+        unit.selectedUpgrades?.some((upg) => upg.id === 'u3' || upg.id === 'u6') ?? false
       let unitJumpMovement = 0
       if (unitHasJumpJets) {
         if (unitBaseMovement === 12) unitJumpMovement = 10
@@ -240,19 +262,25 @@ const formatForPrint = () => {
         else if (unitBaseMovement === 6) unitJumpMovement = 4
       }
 
-      const uniqueUnitTraits = new Set()
+      const uniqueUnitTraitNames = new Set()
       if (unit.selectedWeapons && unit.selectedWeapons.length > 0) {
         unit.selectedWeapons.forEach((weaponInstance) => {
           const weaponData = gameRulesData.weapons.find((w) => w.id === weaponInstance.id)
           if (weaponData?.traits?.length) {
-            weaponData.traits.forEach((traitObj) => uniqueUnitTraits.add(traitObj.name))
+            weaponData.traits.forEach((traitObj) => {
+              if (typeof traitObj === 'object' && traitObj !== null && traitObj.name) {
+                uniqueUnitTraitNames.add(traitObj.name)
+              } else if (typeof traitObj === 'string') {
+                uniqueUnitTraitNames.add(traitObj)
+              }
+            })
           }
         })
       }
       if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
         unit.selectedUpgrades.forEach((upgradeInstance) => {
           if (upgradeInstance?.traits?.length) {
-            upgradeInstance.traits.forEach((traitStr) => uniqueUnitTraits.add(traitStr))
+            upgradeInstance.traits.forEach((traitStr) => uniqueUnitTraitNames.add(traitStr))
           }
         })
       }
@@ -274,6 +302,7 @@ const formatForPrint = () => {
 
       htmlBody += `<div class="section-wrapper class-defense-wrapper">`
 
+      // Classification Section with Motive Description
       htmlBody += `<div class="form-section class-section">
                            <h4 class="section-title">Classification</h4>
                            <p><strong>Class:</strong> ${unitClassName}</p>
@@ -283,9 +312,17 @@ const formatForPrint = () => {
         htmlBody += `<p><strong>Jump:</strong> ${unitJumpMovement}"</p>`
       }
       htmlBody += `<p><strong>Unit Tonnage:</strong> ${unit.totalUnitTonnage || '?'}</p>
-                         <p><strong>Slots Used:</strong> ${unit.usedSlots === undefined ? '?' : unit.usedSlots} / ${unit.maxSlots === undefined ? '?' : unit.maxSlots}</p>
-                         </div>`
+                         <p><strong>Slots Used:</strong> ${unit.usedSlots === undefined ? '?' : unit.usedSlots} / ${unit.maxSlots === undefined ? '?' : unit.maxSlots}</p>`
 
+      if (unit.selectedMotiveType && unit.selectedMotiveType.description) {
+        htmlBody += `<div class="motive-description-section">
+                                <h5 class="section-title">Motive Ability: ${unit.selectedMotiveType.name}</h5>
+                                <p class="motive-description-text">${unit.selectedMotiveType.description}</p>
+                             </div>`
+      }
+      htmlBody += `</div>` // End class-section
+
+      // Defense Section
       htmlBody += `<div class="form-section defense-section">
                             <h4 class="section-title">Armor & Structure</h4>
                             <div class="print-defense-layout-container">
@@ -293,11 +330,13 @@ const formatForPrint = () => {
                                     <span class="print-defense-label">Armor:</span>
                                     ${generateBubbleHtml(unit.effectiveArmorDie?.sides ?? 0, false)}
                                     ${getModificationText(baseArmorDie, unit.effectiveArmorDie)}
+                                    {/* Tonnage cost removed */}
                                 </div>
                                 <div class="print-defense-row structure-row">
                                     <span class="print-defense-label">Structure:</span>
                                     ${generateBubbleHtml(unit.effectiveStructureDie?.sides ?? 0, true)}
                                     ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
+                                    {/* Tonnage cost removed */}
                                 </div>`
       const structureSides = unit.effectiveStructureDie?.sides ?? 0
       if (structureSides > 0) {
@@ -321,6 +360,7 @@ const formatForPrint = () => {
       htmlBody += `</div></div>`
       htmlBody += `</div>`
 
+      // Weapon Systems Section
       htmlBody += `<div class="equipment-section">
                            <h4 class="section-title">Weapon Systems</h4>`
       if (unit.selectedWeapons && unit.selectedWeapons.length > 0) {
@@ -339,7 +379,10 @@ const formatForPrint = () => {
           if (weaponData) {
             const damage = weaponData.damageRating?.[unitClassName] ?? '?'
             const range = weaponData.rangeCategory || 'N/A'
-            const traitsHtml = weaponData.traits?.map(formatPrintTrait).join(', ') || 'None'
+            const traitsHtml =
+              weaponData.traits
+                ?.map((traitObj) => formatPrintTrait(traitObj, unitClassName))
+                .join(', ') || 'None'
             htmlBody += `<tr>
                                         <td>${weaponData.name || 'Unknown'}</td>
                                         <td>${range}</td>
@@ -361,13 +404,28 @@ const formatForPrint = () => {
       }
       htmlBody += `</div>`
 
+      // Upgrades Section
       htmlBody += `<div class="equipment-section"><h4 class="section-title">Upgrades</h4>`
       if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
         htmlBody += `<ul class="item-list">`
         unit.selectedUpgrades.forEach((upgrade) => {
           if (upgrade && upgrade.name) {
             const traits = upgrade.traits?.join(', ') ?? 'None'
-            const tonnage = upgrade.tonnage ?? '?'
+            let tonnage = '?' // Default tonnage if not found
+            if (typeof upgrade.tonnage === 'number') {
+              tonnage = upgrade.tonnage
+            } else if (
+              typeof upgrade.tonnage === 'object' &&
+              upgrade.tonnage !== null &&
+              unitClassName &&
+              upgrade.tonnage[unitClassName] !== undefined
+            ) {
+              tonnage = upgrade.tonnage[unitClassName]
+            } else if (typeof upgrade.tonnage === 'object' && upgrade.tonnage !== null) {
+              // Fallback for object tonnage if class specific not found (e.g. show Light value or first value)
+              tonnage = Object.values(upgrade.tonnage)[0] || '?'
+            }
+
             htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span><span class="item-stats">(${tonnage}T / 1S)</span><span class="item-traits">Tr:[${traits}]</span></div></li>`
           } else {
             htmlBody += `<li><i>Unknown Upgrade</i></li>`
@@ -379,12 +437,13 @@ const formatForPrint = () => {
       }
       htmlBody += `</div>`
 
-      if (uniqueUnitTraits.size > 0) {
+      // Trait Definitions Section
+      if (uniqueUnitTraitNames.size > 0) {
         htmlBody += `<div class="equipment-section trait-definitions-section">
                                <h4 class="section-title">Trait Key</h4>
                                <ul class="trait-list">`
-        const sortedTraits = Array.from(uniqueUnitTraits).sort()
-        sortedTraits.forEach((traitName) => {
+        const sortedTraitNames = Array.from(uniqueUnitTraitNames).sort()
+        sortedTraitNames.forEach((traitName) => {
           const definition = gameRulesData.traitDefinitions?.[traitName] || 'Definition not found.'
           htmlBody += `<li><strong>${traitName}:</strong> ${definition}</li>`
         })
@@ -547,7 +606,6 @@ const importRosterJson = (event) => {
         <p v-else class="placeholder-text">No HE-Vs added to the roster yet.</p>
       </div>
       <div class="action-buttons">
-        <!-- Hidden File Input for Import -->
         <input
           type="file"
           ref="fileInputRef"
@@ -555,7 +613,6 @@ const importRosterJson = (event) => {
           accept=".json,application/json"
           style="display: none"
         />
-        <!-- Import Button -->
         <button
           @click="triggerFileInput"
           class="btn btn-secondary"
@@ -563,7 +620,6 @@ const importRosterJson = (event) => {
         >
           Import Roster (JSON)
         </button>
-        <!-- Export Button -->
         <button
           @click="exportRosterJson"
           :disabled="roster.length === 0 && !rosterName"
@@ -572,7 +628,6 @@ const importRosterJson = (event) => {
         >
           Export Roster (JSON)
         </button>
-        <!-- Print Button -->
         <button
           @click="formatForPrint"
           :disabled="roster.length === 0"
@@ -585,12 +640,9 @@ const importRosterJson = (event) => {
     </section>
 
     <hr class="divider" />
-    <!-- Visual separator -->
 
-    <!-- HE-V Customization Section -->
     <HevCustomizer ref="hevCustomizerRef" :game-rules="gameRulesData" @add-hev="addHevToRoster" />
   </div>
 </template>
 
-<!-- No <style> block here, styles are in src/assets/main.css -->
-<!-- Component-specific styles are in hevCustomizer.css -->
+<!-- Styles are in src/assets/main.css and src/components/hevCustomizer.css -->

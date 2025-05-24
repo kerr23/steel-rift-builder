@@ -76,7 +76,7 @@ export const gameData = {
       id: 'w_melee_weapon',
       name: 'Melee Weapon',
       tonnage: { Light: 1, Medium: 2, Heavy: 3, 'Ultra-Heavy': 4 },
-      damageRating: { Light: 0, Medium: 0, Heavy: 0, 'Ultra-Heavy': 0 },
+      damageRating: { Light: 0, Medium: 0, Heavy: 0, 'Ultra-Heavy': 0 }, // Damage is from trait
       traits: [{ name: 'Melee', value: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 } }],
       rangeCategory: 'N/A',
     },
@@ -93,7 +93,7 @@ export const gameData = {
       name: 'Particle Cannon',
       tonnage: { Light: 2, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
       damageRating: { Light: 2, Medium: 4, Heavy: 6, 'Ultra-Heavy': 8 },
-      traits: [],
+      traits: [], // No traits example
       rangeCategory: '18"',
     },
     {
@@ -140,12 +140,12 @@ export const gameData = {
       rangeCategory: '6"',
     },
   ],
-  // === UPDATED Upgrades (Traits Removed) ===
   upgrades: [
     {
       id: 'u1',
       name: 'Ablative Armour ',
       tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
+      traits: [],
       description:
         'Reduce the Attack Pool for attacks using the Blast trait by 1, to a minimum of 1.',
       type: 'armor',
@@ -154,6 +154,7 @@ export const gameData = {
       id: 'u3',
       name: 'Anti Missile System',
       tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
+      traits: [],
       description:
         'This unit may not be targeted by a Weapon System using the Smart trait to Engage them from outside of Line of Sight of the Active Model.',
     },
@@ -161,12 +162,14 @@ export const gameData = {
       id: 'u4',
       name: 'Electronic Countermeasures',
       tonnage: { Light: 2, Medium: 2, Heavy: 1, 'Ultra-Heavy': 1 },
+      traits: [],
       description: 'The Lock On order may not be taken against this model.',
     },
     {
       id: 'u5',
       name: 'Heavy Reactor',
       tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
+      traits: [],
       description:
         'Roll 1D6 when this model would take Structure damage from Redlining, on a 4+ this damage is ignored.',
     },
@@ -174,12 +177,14 @@ export const gameData = {
       id: 'u6',
       name: 'Jump Jets',
       tonnage: { Light: 3, Medium: 3, Heavy: 2, 'Ultra-Heavy': 2 },
+      traits: ['Jump Movement'],
       description: 'This model may take the Jump Jet action.',
     },
     {
       id: 'u7',
       name: 'Minefield Drone Carrier System',
       tonnage: { Medium: 3, Heavy: 6, 'Ultra-Heavy': 6 },
+      traits: [{ name: 'Limited', value: { Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 } }],
       description:
         'ORDER: Place a Mine Drone token (as per the Support Asset ) within 3” of the Active model and not within 6” of another Mine Drone token. This Upgrade has the Limited (*/1/2/2) trait.',
       allowedClasses: ['Medium', 'Heavy', 'Ultra-Heavy'],
@@ -188,6 +193,7 @@ export const gameData = {
       id: 'u8',
       name: 'Mine Drone Tracking Submunitions',
       tonnage: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 2 },
+      traits: [],
       description:
         'ORDER: This model makes an immediate Engage order against a Mine Field token in range. The Commander of the target Minefield makes a Defense Roll on a 3+. If at least one point of Damage would be inflicted, remove the Token. (Model with Submunitions Only).',
     },
@@ -195,12 +201,14 @@ export const gameData = {
       id: 'u9',
       name: 'Optic Camouflage',
       tonnage: { Light: 5, Medium: 4, Heavy: 3, 'Ultra-Heavy': 2 },
+      traits: [],
       description: 'Add +1 to Defense Rolls for this unit when the attacker is outside of 10”.',
     },
     {
       id: 'u10',
       name: 'Reactive Armour',
       tonnage: { Light: 1, Medium: 1, Heavy: 1, 'Ultra-Heavy': 1 },
+      traits: [],
       description:
         'Reduce the Attack Pool for Missile and Rocket Pack attacks by 1, to a minimum of 1.',
       type: 'armor',
@@ -209,6 +217,7 @@ export const gameData = {
       id: 'u11',
       name: 'Ceramic Plating',
       tonnage: { Light: 2, Medium: 2, Heavy: 1, 'Ultra-Heavy': 1 },
+      traits: [],
       description:
         'Each time this unit would take damage from the AP trait of a Laser Weapon System roll 1D6 - on a 5+ that damage is negated.',
       type: 'armor',
@@ -217,16 +226,17 @@ export const gameData = {
       id: 'u12',
       name: 'Target Designator',
       tonnage: { Light: 1, Medium: 1, Heavy: 1, 'Ultra-Heavy': 1 },
+      traits: ['Target Designator Effect'],
       description:
         'Once per turn, friendly models in the same force may use this vehicle to draw Line of Sight for Weapon Systems using the Smart trait. Use this model for determining the AttackPool and Line of Sight. Its use can be canceled by Electronic Counter measures.',
     },
   ],
-  // === END UPDATED Upgrades ===
   motiveTypes: [
     {
       id: 'm1',
       name: 'Biped',
       classApplicability: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy'],
+      tonnageModifier: 0,
       slotModifier: 0,
       description: null,
     },
@@ -234,22 +244,23 @@ export const gameData = {
       id: 'm2',
       name: 'Tracked',
       classApplicability: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy'],
+      tonnageModifier: 0,
       slotModifier: -1,
       description:
-        'PLOW THROUGH: Pivot this HE-V up to 90° and then move up to its current move speed in a straight line while ignoring Rough terrain. This HE-Vs Facing does not change at the end of this Order.',
+        'Plow Through: Pivot this HE-V up to 90° and then move up to its current move speed in a straight line while ignoring Rough terrain. This HE-Vs Facing does not change at the end of this Order.',
     },
     {
       id: 'm3',
       name: 'Multi-Limbed',
       classApplicability: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy'],
+      tonnageModifier: 0,
       slotModifier: -1,
       description:
-        'HUNKERD DOWN:  While this HE-V is ‘Hunkered Down’ any attacks on this Unit originating from attackers within Line of Sight must count the Hunkered Unit as being obscured by Covering Terrain. If the Hunkered Unit was already obscured by Covering Terrain, it must be treated as being obscured by Blocking Terrain',
+        "Hunker Down: Any attacks on the unit while the HE-V is 'Hunkered Down' count as being obscured by Covering Terrain. If the Hunkered Unit was already obscured by Covering Terrain it should be treated as being obscured by Blocking Terrain",
     },
   ],
-  // === UPDATED Trait Definitions (Removed upgrade-only traits) ===
   traitDefinitions: {
-    // == Weapon Traits ==
+    // == Weapon Traits (keys are the 'name' property from weapon traits objects) ==
     AP: 'Armor Penetrating: If any damage is inflicted by this Attack, apply AP(X) damage directly to the target units Structure (value depends on HE-V class).',
     Blast:
       'Area Effect: All units (friend or foe) within (X) of the original target must also make a Defense Roll against this Attack at -1 to the Attack Pool (to a minimum of 1).',
@@ -263,15 +274,20 @@ export const gameData = {
       'If any damage is inflicted by this attack, roll 1D6. Add +1 to the roll for each Class Size larger the Active model is than the target model. Subtract -1 from the roll for each Class Size smaller the Active model is than the target model. On a result of 4+, rotate the target model 45° away from the Active Unit, in a direction chosen by the Active Player.',
     Light:
       'This attack will cause 1 damage to Armor or Structure for every 2 hits that are not evaded, rounding down.',
-    Limited: 'This weapon system can only be fired (X) times per battle.',
-    Long: 'Weapon has a minimim effective firing distance, can only be fired at targets (X) inches or beyond.',
+    Limited: 'This weapon system has a limited number of uses per battle (represented by bubbles).',
+    Long: 'Weapon has a minimum effective firing distance, can only be fired at targets (X) inches or beyond.',
     Melee:
       'Add (X) to the Attack Pool of this mech when it is performing a Smash Order (value depends on HE-V class). This model counts as one Class Size larger during a Smash order. This weapon System is not used in an Engage Order.',
     Smart:
       'The Active Unit may use any friendly unit with a Target Designator for determining Line of Sight for attacks with this Weapon System.',
-    // Remove any definitions that were ONLY used by upgrades here
+
+    // == Upgrade "Traits" (if you want to list their effects in the key) ==
+    // These are based on the strings found in `upgrades[X].traits`
+    'Jump Movement':
+      'This model may take the Jump Jet action. (Effect provided by Jump Jets upgrade).',
+    'Target Designator Effect':
+      'Allows this unit to act as a spotter for Smart weapons. (Effect provided by Target Designator upgrade).',
   },
-  // === END Trait Definitions ===
 }
 
 // Helper function to find the maximum die step available

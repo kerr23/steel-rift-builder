@@ -3,6 +3,7 @@
 import { ref, computed, watch, defineProps, defineEmits, defineExpose, nextTick } from 'vue'
 import { useToast } from 'vue-toastification'
 import { gameData as importedGameRulesData, getMaxDieStep } from '../gameData.js'
+// NO import for CustomSelect.vue
 
 // --- Initialize Toast ---
 const toast = useToast()
@@ -68,15 +69,13 @@ const calculateNthWeaponCost = (weaponData, n, className) => {
   return baseCost + totalPenaltyForNth
 }
 
-// Helper to format traits for display in the selected list (handles bubbles and class-specific values)
+// Helper to format traits for display in the selected list (handles bubbles)
 const formatTraitDisplay = (trait) => {
   if (typeof trait === 'string') {
-    // Fallback for old data structure
     return trait
   }
   if (!trait || !trait.name) return 'Unknown Trait'
-
-  const currentClassNameForTrait = selectedClass.value?.name // Get current class for context
+  const currentClassNameForTrait = selectedClass.value?.name
 
   if (trait.name === 'Limited' && trait.value !== undefined) {
     let bubbles = ''
@@ -85,25 +84,20 @@ const formatTraitDisplay = (trait) => {
     }
     return `Limited(${bubbles})`
   }
-
-  // Handle traits where the value is an object (e.g., class-specific AP/Melee values)
   if (typeof trait.value === 'object' && trait.value !== null) {
     if (currentClassNameForTrait && trait.value[currentClassNameForTrait] !== undefined) {
       return `${trait.name} ${trait.value[currentClassNameForTrait]}`
     } else {
-      // Fallback for display in list if class not selected or specific value missing
       const classValues = Object.entries(trait.value)
         .map(([k, v]) => `${k[0]}:${v}`)
         .join('/')
       return `${trait.name} (${classValues})`
     }
   }
-
   if (trait.value !== undefined) {
-    // Value is a primitive (string or number)
     return `${trait.name} ${trait.value}`
   }
-  return trait.name // Trait with only a name
+  return trait.name
 }
 // --- END Helper Functions ---
 
@@ -171,7 +165,7 @@ const baseMovementSpeed = computed(() => {
   return selectedClass.value?.baseMovement ?? 0
 })
 const hasJumpJets = computed(() => {
-  return selectedUpgrades.value.some((upg) => upg.id === 'u3') // Ensure 'u3' is your jump jet ID
+  return selectedUpgrades.value.some((upg) => upg.id === 'u3' || upg.id === 'u6')
 })
 const jumpMovementSpeed = computed(() => {
   if (!hasJumpJets.value) return 0
@@ -263,20 +257,19 @@ const formattedClasses = computed(() =>
     value: cls,
   })),
 )
+
 const formattedMotiveTypes = computed(() =>
   availableMotiveTypes.value.map((mt) => ({
-    title: `${mt.name} (T: ${mt.tonnageModifier >= 0 ? '+' : ''}${mt.tonnageModifier}, S: ${mt.slotModifier >= 0 ? '+' : ''}${mt.slotModifier})`,
+    title: `${mt.name} (S: ${mt.slotModifier >= 0 ? '+' : ''}${mt.slotModifier})`,
     value: mt,
   })),
 )
 
+// **** ENSURE THIS COMPUTED PROPERTY IS PRESENT AND CORRECT ****
 const formattedWeapons = computed(() => {
   const currentClassName = selectedClass.value?.name
-  // It's important that formattedWeapons can run even if no class is selected yet,
-  // as the dropdown might be visible before a class is chosen.
-  // The class-specific parts will just show '?' or a fallback.
-
-  const currentCounts = {} // For Nth weapon cost, not directly for trait display in dropdown
+  // If no class selected, some values will be '?' but options should still list
+  const currentCounts = {}
   selectedWeapons.value.forEach((w) => {
     if (w && w.id) currentCounts[w.id] = (currentCounts[w.id] || 0) + 1
   })
@@ -284,7 +277,6 @@ const formattedWeapons = computed(() => {
   return props.gameRules.weapons.map((wpn) => {
     const currentQuantity = currentCounts[wpn.id] || 0
     const nextQuantityIndex = currentQuantity + 1
-    // Pass currentClassName (which might be null/undefined) to calculateNthWeaponCost
     const costToAddNext = calculateNthWeaponCost(wpn, nextQuantityIndex, currentClassName)
     const damageRating = currentClassName ? (wpn.damageRating?.[currentClassName] ?? '?') : '?'
     const range = wpn.rangeCategory || 'N/A'
@@ -293,22 +285,22 @@ const formattedWeapons = computed(() => {
       wpn.traits
         ?.map((traitObj) => {
           if (typeof traitObj === 'object' && traitObj !== null && traitObj.name) {
-            // For dropdown, show class-specific value if class is selected, otherwise a generic placeholder or summary
             if (typeof traitObj.value === 'object' && traitObj.value !== null) {
+              // Class-specific trait values in dropdown
               if (currentClassName && traitObj.value[currentClassName] !== undefined) {
                 return `${traitObj.name} ${traitObj.value[currentClassName]}`
               } else {
-                // Fallback for object values when class isn't selected or value is missing
+                // Fallback for object values if class not selected or specific value missing
                 const classValuesSummary = Object.keys(traitObj.value)
                   .map((k) => k[0])
-                  .join('/') // e.g. (L/M/H/U)
+                  .join('/')
                 return `${traitObj.name} (${classValuesSummary})` // e.g. "AP (L/M/H/U)"
               }
             } else if (traitObj.value !== undefined) {
-              // Value is a primitive
+              // Primitive value
               return `${traitObj.name} ${traitObj.value}`
             }
-            return traitObj.name // Trait with no value
+            return traitObj.name // Name only
           }
           if (typeof traitObj === 'string') return traitObj // Fallback for old string format
           return ''
@@ -317,7 +309,7 @@ const formattedWeapons = computed(() => {
         .join(', ') || 'None'
 
     return {
-      title: `${wpn.name} [${costToAddNext}T] [RNG: ${range} | DMG: ${damageRating} | TR: ${traitsDisplay}]`,
+      title: `${wpn.name} [${range}] (Dmg: ${damageRating}, Cost: ${costToAddNext}T) - Tr: [${traitsDisplay}]`,
       value: wpn.id,
     }
   })
@@ -348,9 +340,13 @@ const formattedUpgrades = computed(() => {
       }
     })
 })
-// --- END Computed Properties ---
+// **** END COMPUTED PROPERTIES TO CHECK ****
 
 // --- Methods ---
+// ... (addWeapon, removeWeapon, addUpgrade, removeUpgrade - keep these) ...
+// ... (handleWeaponAdd, handleUpgradeAdd - keep these, they use standard select refs) ...
+// ... (resetForm, loadHevForEditing, submitHev - keep these) ...
+
 const addWeapon = (weapon) => {
   if (weapon) selectedWeapons.value.push(JSON.parse(JSON.stringify(weapon)))
 }
@@ -413,7 +409,11 @@ const handleUpgradeAdd = (event) => {
       return
     }
     const currentClassName = selectedClass.value?.name
-    if (!currentClassName && typeof upgradeToAdd.tonnage === 'object') {
+    if (
+      !currentClassName &&
+      typeof upgradeToAdd.tonnage === 'object' &&
+      upgradeToAdd.tonnage !== null
+    ) {
       toast.error(
         `Cannot determine tonnage for ${upgradeToAdd.name} without a selected HE-V class.`,
       )
@@ -459,8 +459,8 @@ const resetForm = () => {
   armorModification.value = 'standard'
   structureModification.value = 'standard'
   selectedMotiveType.value = null
-  if (weaponSelectRef.value) weaponSelectRef.value.value = ''
-  if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
+  if (weaponSelectRef.value) weaponSelectRef.value.value = '' // For standard select
+  if (upgradeSelectRef.value) upgradeSelectRef.value.value = '' // For standard select
 }
 
 const loadHevForEditing = (unitData) => {
@@ -574,6 +574,8 @@ watch(selectedClass, (newClass, oldClass) => {
   } else {
     selectedMotiveType.value = null
   }
+  if (weaponSelectRef.value) weaponSelectRef.value.value = ''
+  if (upgradeSelectRef.value) upgradeSelectRef.value.value = ''
 })
 
 watch(armorModification, (newValue, oldValue) => {

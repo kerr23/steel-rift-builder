@@ -28,7 +28,7 @@
   flex-wrap: wrap;
   gap: 1.5rem;
   margin-bottom: 1rem;
-  align-items: stretch; /* Align tops and stretch sections */
+  align-items: stretch;
 }
 
 .form-section {
@@ -78,9 +78,9 @@
 .defense-layout-container {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* Space between Armor row, Structure row, and Thresholds */
-  flex-grow: 1; /* Allow container to fill space */
-  border: 1px solid var(--medium-grey); /* Optional border */
+  gap: 0.75rem;
+  flex-grow: 1;
+  border: 1px solid var(--medium-grey);
   border-radius: var(--border-radius);
   padding: 0.75rem;
 }
@@ -88,20 +88,19 @@
 .defense-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* Space between label, bubbles, select, cost */
-  min-height: 38px; /* Ensure consistent row height */
+  gap: 0.75rem;
+  min-height: 38px;
 }
 
 .defense-label {
   font-weight: 600;
-  min-width: 70px; /* Fixed width for alignment */
+  min-width: 70px;
   text-align: right;
   color: var(--dark-grey);
   font-size: 0.9rem;
-  flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0;
 }
 
-/* Bubble display within the row */
 .defense-row .bubble-display {
   display: flex;
   flex-wrap: nowrap;
@@ -109,51 +108,46 @@
   line-height: 1;
   align-items: center;
   overflow: hidden;
-  flex-grow: 1; /* Allow bubbles to take up space */
-  min-width: 100px; /* But not get too small */
+  flex-grow: 1;
+  min-width: 100px;
 }
 
-/* Modification select within the row */
 .defense-row .modification-select {
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
-  min-width: 90px; /* Adjust as needed */
-  flex-shrink: 0; /* Prevent shrinking */
+  min-width: 90px;
+  flex-shrink: 0;
 }
 .defense-row .modification-select option:disabled {
   color: var(--text-muted);
   background-color: var(--light-grey);
 }
 
-/* Cost display within the row */
 .defense-row .die-cost {
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--dark-grey);
   white-space: nowrap;
   flex-shrink: 0;
-  min-width: 40px; /* Ensure space for cost */
+  min-width: 40px;
   text-align: right;
 }
 
-/* Bubble Styles */
 .bubble {
   display: inline-block;
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  border: 1.5px solid var(--black-color); /* Structure bubbles are black */
+  border: 1.5px solid var(--black-color);
   background-color: transparent;
   vertical-align: middle;
   box-sizing: border-box;
   flex-shrink: 0;
 }
 .armor-row .bubble {
-  /* Armor bubbles remain green (or their default) */
   border-color: var(--success-color);
 }
 
-/* Threshold Divider Styles */
 .threshold-divider {
   display: inline-block;
   width: 2px;
@@ -181,7 +175,6 @@
   padding-left: 5px;
 }
 
-/* Threshold Descriptions */
 .threshold-descriptions {
   margin-top: 0.25rem;
   padding: 0.5rem 0 0.2rem 0.5rem;
@@ -240,30 +233,32 @@
 }
 /* --- END Placeholder Section --- */
 
-/* --- Equipment Sections --- */
+/* --- Equipment Sections (Single Column Layout Reverted) --- */
 .equipment-section {
-  margin-bottom: 1rem;
+  margin-bottom: 1rem; /* Original spacing */
   margin-top: 1.5rem;
   width: 100%;
 }
 
 .selection-layout {
-  display: flex;
+  display: flex; /* Original flex row for select and list */
   flex-wrap: wrap;
   gap: 1rem;
   align-items: flex-start;
 }
 .selection-control {
-  flex: 1;
+  flex: 1; /* Select control takes some space */
   min-width: 230px;
   display: flex;
   flex-direction: column;
 }
 .selection-control select {
+  /* Standard select styling */
   margin-bottom: 0.3rem;
+  width: 100%; /* Make standard select take full width of its control area */
 }
 .selection-list-container {
-  flex: 2;
+  flex: 2; /* List takes more space */
   min-width: 280px;
 }
 
@@ -320,11 +315,8 @@
 .single-line-item .item-traits {
   font-size: 0.8em;
   color: var(--text-muted);
-  white-space: normal; /* Allow trait text to wrap if needed with bubbles */
-  /* overflow: hidden; */ /* Can be problematic with wrapped content */
-  /* text-overflow: ellipsis; */
+  white-space: normal;
 }
-/* Trait Bubble Style for customizer list */
 .item-traits .trait-bubble {
   display: inline-block;
   width: 10px;
