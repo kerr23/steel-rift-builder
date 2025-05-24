@@ -330,13 +330,11 @@ const formatForPrint = () => {
                                     <span class="print-defense-label">Armor:</span>
                                     ${generateBubbleHtml(unit.effectiveArmorDie?.sides ?? 0, false)}
                                     ${getModificationText(baseArmorDie, unit.effectiveArmorDie)}
-                                    {/* Tonnage cost removed */}
                                 </div>
                                 <div class="print-defense-row structure-row">
                                     <span class="print-defense-label">Structure:</span>
                                     ${generateBubbleHtml(unit.effectiveStructureDie?.sides ?? 0, true)}
                                     ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
-                                    {/* Tonnage cost removed */}
                                 </div>`
       const structureSides = unit.effectiveStructureDie?.sides ?? 0
       if (structureSides > 0) {
@@ -426,7 +424,7 @@ const formatForPrint = () => {
               tonnage = Object.values(upgrade.tonnage)[0] || '?'
             }
 
-            htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span><span class="item-stats">(${tonnage}T / 1S)</span><span class="item-traits">Tr:[${traits}]</span></div></li>`
+            htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span></div></li>`
           } else {
             htmlBody += `<li><i>Unknown Upgrade</i></li>`
           }
