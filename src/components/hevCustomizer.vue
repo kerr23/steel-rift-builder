@@ -317,7 +317,7 @@ const formattedWeapons = computed(() => {
         .join(', ') || 'None'
 
     return {
-      title: `${wpn.name} [${range}] (Dmg: ${damageRating}, Cost: ${costToAddNext}T) - Tr: [${traitsDisplay}]`,
+      title: `${wpn.name} [${costToAddNext}T] [RNG: ${range} | DMG: ${damageRating} | TR: ${traitsDisplay}]`,
       value: wpn.id,
     }
   })
