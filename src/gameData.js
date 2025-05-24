@@ -66,9 +66,7 @@ export const gameData = {
       name: 'Laser',
       tonnage: { Light: 3, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
       damageRating: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 },
-      traits: [
-        { name: 'AP', value: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 } },
-      ],
+      traits: [{ name: 'AP', value: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 } }],
       rangeCategory: '18+"',
     },
     {
@@ -92,7 +90,7 @@ export const gameData = {
       name: 'Particle Cannon',
       tonnage: { Light: 2, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
       damageRating: { Light: 2, Medium: 4, Heavy: 6, 'Ultra-Heavy': 8 },
-      traits: [{name: 'Plasma', value: 2}],
+      traits: [{ name: 'Plasma', value: 2 }],
       rangeCategory: '18"',
     },
     {
@@ -194,7 +192,7 @@ export const gameData = {
       id: 'u9',
       name: 'Optic Camouflage',
       tonnage: { Light: 5, Medium: 4, Heavy: 3, 'Ultra-Heavy': 2 },
-      description: 'If the units previous order was not a Move order - Add +1 to Defense Rolls for this unit when the attacker is outside of 10”.',
+      description: 'Add +1 to Defense Rolls for this unit when the attacker is outside of 10”.',
     },
     {
       id: 'u10',
@@ -251,7 +249,8 @@ export const gameData = {
   traitDefinitions: {
     // == Weapon Traits (keys are the 'name' property from weapon traits objects) ==
     AP: 'Armor Penetrating: If any damage is inflicted by this Attack, apply AP(X) damage directly to the target units Structure (value depends on HE-V class).',
-    Plasma: 'Plasma: If any damage is inflicted by this Attack, apply AM(X) damage to armor. If armor remains apply hits to structure',
+    Plasma:
+      'If any damage is inflicted by this Attack, apply Plasma(X) damage to armor. If armor remains apply hits to structure',
     Blast:
       'Area Effect: All units (friend or foe) within (X) of the original target must also make a Defense Roll against this Attack at -1 to the Attack Pool (to a minimum of 1).',
     Disruptive:

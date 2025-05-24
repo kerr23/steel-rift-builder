@@ -73,7 +73,7 @@ const generateBubbleHtml = (sides, isStructureTrack = false) => {
     : null
 
   for (let n = 1; n <= sides; n++) {
-    let bubbleClass = 'bubble' // Base class for armor/structure bubbles
+    let bubbleClass = 'bubble'
     if (isStructureTrack && thresholds) {
       if (n === thresholds.markerYellow && thresholds.markerYellow <= sides)
         bubblesHtml += `<span class="threshold-divider divider-green"></span>`
@@ -82,11 +82,8 @@ const generateBubbleHtml = (sides, isStructureTrack = false) => {
       else if (n === thresholds.markerRed && thresholds.markerRed <= sides)
         bubblesHtml += `<span class="threshold-divider divider-red"></span>`
     }
-    // Armor bubbles get armor-bubble class for specific styling if needed (e.g. green border)
-    // Structure bubbles just use the default .bubble style (black border)
     if (!isStructureTrack) {
-      // Armor bubbles
-      bubbleClass += ' armor-bubble' // This class can be styled green in CSS
+      bubbleClass += ' armor-bubble'
     }
     bubblesHtml += `<span class="${bubbleClass}"></span>`
   }
@@ -111,32 +108,26 @@ const generateLimitedTraitBubbleHtml = (count) => {
 }
 
 const formatPrintTrait = (traitObj, forClassName) => {
-  // Added forClassName parameter
   if (typeof traitObj === 'string') return traitObj
   if (!traitObj || !traitObj.name) return 'Unknown Trait'
 
   if (traitObj.name === 'Limited' && traitObj.value !== undefined) {
     return `Limited${generateLimitedTraitBubbleHtml(traitObj.value)}`
   }
-
-  // Handle class-specific values for traits like AP, Melee
   if (typeof traitObj.value === 'object' && traitObj.value !== null) {
     if (forClassName && traitObj.value[forClassName] !== undefined) {
       return `${traitObj.name} ${traitObj.value[forClassName]}`
     } else {
-      // Fallback for print if class-specific value not found for the current unit's class
       const classValues = Object.entries(traitObj.value)
         .map(([k, v]) => `${k[0]}:${v}`)
         .join('/')
       return `${traitObj.name} (${classValues})`
     }
   }
-
   if (traitObj.value !== undefined) {
-    // For other traits with a primitive value
     return `${traitObj.name} ${traitObj.value}`
   }
-  return traitObj.name // For traits with only a name
+  return traitObj.name
 }
 // --- END Print Formatting Helpers ---
 
@@ -189,8 +180,6 @@ const formatForPrint = () => {
             .divider-red { background-color: var(--danger-color); }
             .placeholder-text-inline { font-style: italic; color: var(--text-muted); font-size: 0.75rem; padding-left: 5px; }
             .modification-text { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; margin-left: 0.2em; }
-            /* .die-cost-print class can be removed if not used elsewhere after removing from armor/structure */
-            /* .die-cost-print { font-size: 0.8rem; font-weight: 500; color: var(--dark-grey); margin-left: auto; white-space: nowrap; padding-left: 0.4em; } */
             .threshold-descriptions { margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px dashed var(--border-color); font-size: 0.7rem; line-height: 1.2; }
             .threshold-descriptions p { margin: 0; display: flex;}
             .threshold-descriptions p strong { min-width: 50px; text-align: right; flex-shrink: 0; display: inline-block; font-weight: bold; margin-right: 3px; }
@@ -210,14 +199,37 @@ const formatForPrint = () => {
 
             .print-trait-bubble { display: inline-block; width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--secondary-color); background-color: transparent; margin: 0 1px; vertical-align: middle; box-sizing: border-box; }
 
+            /* Updated Upgrade List Styles for Print */
             .item-list { list-style: none; padding: 0; margin: 0.4rem 0 0 0; border: 1px solid var(--border-color); border-radius: var(--border-radius); }
-            .item-list li { display: flex; justify-content: space-between; align-items: baseline; padding: 0.2rem 0.4rem; border-bottom: 1px solid var(--medium-grey); font-size: 0.8rem; }
+            .item-list li {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.3rem 0.6rem;
+                border-bottom: 1px solid var(--medium-grey);
+                font-size: 0.8rem;
+            }
             .item-list li:last-child { border-bottom: none; }
             .item-list li i { color: var(--text-muted); font-style: italic; width: 100%; text-align: center; padding: 0.4rem; }
-            .item-info-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3em; flex-grow: 1; }
-            .item-name { font-weight: 500; margin-right: 0.2em; }
-            .item-stats { font-size: 0.9em; color: var(--secondary-color); margin-right: 0.2em; }
-            .item-traits { font-size: 0.85em; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .item-info-line {
+                display: flex;
+                flex-wrap: nowrap;
+                align-items: baseline;
+                gap: 0.5em;
+                width: 100%;
+            }
+            .item-name { font-weight: 600; margin-right: auto; color: var(--dark-grey); }
+            .item-stats { font-size: 0.9em; color: var(--secondary-color); white-space: nowrap; margin-left: 0.5em; }
+            .item-traits { font-size: 0.85em; color: var(--text-muted); white-space: nowrap; margin-left: 0.5em; }
+            .upgrade-description {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                line-height: 1.3;
+                margin-top: 0.25rem;
+                padding-left: 0.5em;
+                width: 100%;
+            }
+
 
             /* Trait Definitions Section Styles */
             .trait-definitions-section { margin-top: 1rem; }
@@ -280,7 +292,15 @@ const formatForPrint = () => {
       if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
         unit.selectedUpgrades.forEach((upgradeInstance) => {
           if (upgradeInstance?.traits?.length) {
-            upgradeInstance.traits.forEach((traitStr) => uniqueUnitTraitNames.add(traitStr))
+            // Check if upgrade has traits array
+            upgradeInstance.traits.forEach((traitStr) => {
+              // If upgrade traits can also be objects, add similar handling as for weapons
+              if (typeof traitStr === 'object' && traitStr !== null && traitStr.name) {
+                uniqueUnitTraitNames.add(traitStr.name)
+              } else if (typeof traitStr === 'string') {
+                uniqueUnitTraitNames.add(traitStr)
+              }
+            })
           }
         })
       }
@@ -408,23 +428,14 @@ const formatForPrint = () => {
         htmlBody += `<ul class="item-list">`
         unit.selectedUpgrades.forEach((upgrade) => {
           if (upgrade && upgrade.name) {
-            const traits = upgrade.traits?.join(', ') ?? 'None'
-            let tonnage = '?' // Default tonnage if not found
-            if (typeof upgrade.tonnage === 'number') {
-              tonnage = upgrade.tonnage
-            } else if (
-              typeof upgrade.tonnage === 'object' &&
-              upgrade.tonnage !== null &&
-              unitClassName &&
-              upgrade.tonnage[unitClassName] !== undefined
-            ) {
-              tonnage = upgrade.tonnage[unitClassName]
-            } else if (typeof upgrade.tonnage === 'object' && upgrade.tonnage !== null) {
-              // Fallback for object tonnage if class specific not found (e.g. show Light value or first value)
-              tonnage = Object.values(upgrade.tonnage)[0] || '?'
+            htmlBody += `<li>
+                                       <div class="item-info-line">
+                                         <span class="item-name">${upgrade.name}</span>`
+            htmlBody += `</div>` // End item-info-line
+            if (upgrade.description) {
+              htmlBody += `<p class="upgrade-description">${upgrade.description}</p>`
             }
-
-            htmlBody += `<li class="single-line-item"><div class="item-info-line"><span class="item-name">${upgrade.name}</span></div></li>`
+            htmlBody += `</li>`
           } else {
             htmlBody += `<li><i>Unknown Upgrade</i></li>`
           }
