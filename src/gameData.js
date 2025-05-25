@@ -250,7 +250,7 @@ export const gameData = {
     // == Weapon Traits (keys are the 'name' property from weapon traits objects) ==
     AP: 'Armor Penetrating: If any damage is inflicted by this Attack, apply AP(X) damage directly to the target units Structure (value depends on HE-V class).',
     Plasma:
-      'If any damage is inflicted by this Attack, apply Plasma(X) damage to armor. If armor remains apply hits to structure',
+      'If any damage is inflicted by this Attack, apply Plasma(X) damage to armor. If no armor remains apply normal hits to structure',
     Blast:
       'Area Effect: All units (friend or foe) within (X) of the original target must also make a Defense Roll against this Attack at -1 to the Attack Pool (to a minimum of 1).',
     Disruptive:
