@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 // Correct import capitalization
 import HevCustomizer from './components/hevCustomizer.vue'
 import { gameData as importedGameData } from './gameData.js'
@@ -10,6 +10,8 @@ const roster = ref([])
 const hevCustomizerRef = ref(null)
 const gameRulesData = importedGameData
 const fileInputRef = ref(null)
+const versionTag = import.meta.env.VITE_GIT_COMMIT_SHA || 'dev'
+const isDarkMode = ref(false)
 
 // --- Computed Properties ---
 const totalRosterTonnage = computed(() => {
@@ -262,7 +264,7 @@ const formatForPrint = () => {
     // --- HTML Body Generation ---
     let htmlBody = `
             <button class="no-print" onclick="window.print()">Print this page</button>
-            <div class="print-header">
+            <div class="print-header>
                 <h1>${rosterName.value || 'Unnamed Roster'}</h1>
             </div>
         `
@@ -585,10 +587,32 @@ const importRosterJson = (event) => {
   reader.readAsText(file)
 }
 // --- END Export/Import Functionality ---
+
+watchEffect(() => {
+  const html = document.documentElement
+  if (isDarkMode.value) {
+    html.classList.add('dark-theme')
+  } else {
+    html.classList.remove('dark-theme')
+  }
+})
+
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value
+}
 </script>
 
 <template>
   <div id="app" class="container">
+    <button
+      class="dark-mode-toggle"
+      :aria-pressed="isDarkMode.value"
+      @click="toggleDarkMode"
+      title="Toggle dark mode"
+    >
+      {{ isDarkMode.value ? '☀️ Light Mode' : '🌙 Dark Mode' }}
+    </button>
+    <span class="version-tag">v{{ versionTag }}</span>
     <h1>Steel Rift Force Roster & HE-V Customizer</h1>
 
     <!-- Roster Management Section -->
@@ -672,3 +696,69 @@ const importRosterJson = (event) => {
 </template>
 
 <!-- Styles are in src/assets/main.css and src/components/hevCustomizer.css -->
+<style>
+.version-tag {
+  position: fixed;
+  top: 16px;
+  right: 160px;
+  z-index: 2000;
+  background: var(--card-bg-color);
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 1rem;
+  font-family: monospace;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.dark-mode-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2000;
+  background: var(--card-bg-color);
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+body,
+.dark-mode,
+body.dark-mode {
+  background: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.card,
+.unit-card,
+.form-section,
+.section-title,
+.print-defense-layout-container,
+.print-weapon-table th,
+.print-weapon-table td,
+.item-list,
+.trait-list,
+.no-print {
+  background: var(--card-bg-color) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+  font-weight: 500;
+}
+.section-title {
+  color: var(--secondary-color) !important;
+  border-bottom-color: var(--border-color) !important;
+  font-weight: 600;
+}
+.print-special-attribute {
+  color: var(--warning-color) !important;
+  font-weight: 600;
+}
+.threshold-desc-green strong { color: var(--success-color) !important; }
+.threshold-desc-yellow strong { color: var(--warning-color) !important; }
+.threshold-desc-red strong { color: var(--danger-color) !important; }
+</style>
