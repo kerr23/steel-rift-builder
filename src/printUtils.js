@@ -10,6 +10,17 @@ export function generatePrintHtml({
   formatPrintTrait,
   gameRulesData
 }) {
+  // Ensure we have UL_HEV_UPGRADE_PODS in gameRulesData
+  if (!gameRulesData.UL_HEV_UPGRADE_PODS) {
+    // Import directly from gameData.js if not available in gameRulesData
+    try {
+      console.log('Importing UL_HEV_UPGRADE_PODS directly from gameData.js')
+      const { UL_HEV_UPGRADE_PODS } = require('./gameData.js')
+      gameRulesData.UL_HEV_UPGRADE_PODS = UL_HEV_UPGRADE_PODS
+    } catch (e) {
+      console.warn('UL_HEV_UPGRADE_PODS not found in gameRulesData and could not be imported:', e)
+    }
+  }
   const cssLink = '<link rel="stylesheet" href="print.css">'
   let htmlBody = `
     <button class="no-print" onclick="window.print()">Print this page</button>
@@ -33,27 +44,7 @@ export function generatePrintHtml({
       }
       htmlBody += `</h3>`
 
-      htmlBody += `<div class="section-wrapper support-asset-wrapper">`
-      htmlBody += `<div class="form-section support-section">`
-      htmlBody += `<h4 class="section-title">Support Asset Details</h4>`
-
-      // Extract class information if available
-      const assetClass = unit.class || (unit.type && unit.type.includes('Squadron') ? 'Ultra-Light HE-V Squadron' : 'Support Asset')
-      htmlBody += `<p><strong>Class:</strong> ${assetClass}</p>`
-
-      // For Ultra-Light HEV Squadron, extract composition if available
-      if (Array.isArray(unit.details)) {
-        const compositionLine = unit.details.find(line => line.includes('Squadron Composition'))
-        if (compositionLine) {
-          htmlBody += `<p>${compositionLine}</p>`
-        }
-      }
-
-      // Add Tonnage information
-      htmlBody += `<p><strong>Tonnage:</strong> ${unit.totalUnitTonnage || 10}T</p>`
-
-      htmlBody += `</div>` // End form-section
-      htmlBody += `</div>` // End section-wrapper
+      // Removed support asset details header and section as requested
 
       // Determine if this is a weapon system or support asset
       const isWeaponSystem = unit.details?.some(line => (/Damage:/.test(line) || /Range:/.test(line))) || false
@@ -149,7 +140,7 @@ export function generatePrintHtml({
         if (Array.isArray(unit.details)) {
           unit.details.forEach(line => {
             if (/Tonnage:/.test(line) || /Squadron Composition:/.test(line)) {
-              return // Skip, already handled
+              return // Skip tonnage and squadron composition lines
             }
 
             if (/<u>.*<\/u>/.test(line)) {
@@ -184,16 +175,106 @@ export function generatePrintHtml({
         })
         htmlBody += `</div>`
 
-        // Find upgrade pod info
-        const upgradePodLine = unit.details?.find(line => line.startsWith('<strong>Upgrade Pod:</strong>'))
-        if (upgradePodLine) {
-          htmlBody += `<div class="upgrade-pod-info">
-            <h5>Upgrade Pod</h5>
-            <p>${upgradePodLine.replace('<strong>Upgrade Pod:</strong>', '').trim()}</p>
-          </div>`
+        htmlBody += `</div></div>` // End squadron-container and equipment-section
+
+        // Add separate section for Upgrade Pod
+        htmlBody += `<div class="equipment-section">`
+        htmlBody += `<h4 class="section-title">Upgrade Pod</h4>`
+
+        // Get upgradePodId from unit if available
+        const upgradePodId = unit.upgradePodId || ''
+
+        // Use UL_HEV_UPGRADE_PODS data if available in gameRulesData
+        if (upgradePodId && gameRulesData.UL_HEV_UPGRADE_PODS) {
+          // Find the upgrade pod data from gameRulesData
+          const upgradePod = gameRulesData.UL_HEV_UPGRADE_PODS.find(pod => pod.id === upgradePodId)
+
+          if (upgradePod) {
+            htmlBody += `<div class="upgrade-pod-info">
+              <h5>${upgradePod.name}</h5>
+              <div class="upgrade-pod-details">`
+
+            // Display damage if available and not N/A
+            if (upgradePod.damage && upgradePod.damage !== 'N/A') {
+              htmlBody += `<p><strong>Damage:</strong> ${upgradePod.damage}</p>`
+            }
+
+            // Display range if available and not N/A
+            if (upgradePod.range && upgradePod.range !== 'N/A') {
+              htmlBody += `<p><strong>Range:</strong> ${upgradePod.range}</p>`
+            }
+
+            // Display traits if available
+            if (upgradePod.traits && upgradePod.traits.length > 0) {
+              const traitsStr = upgradePod.traits.join(', ')
+              const formattedTraits = /Limited\(\d+\)/.test(traitsStr)
+                ? renderLimitedTraitWithBubbles(`<strong>Traits:</strong> ${traitsStr}`)
+                : `<strong>Traits:</strong> ${traitsStr}`
+              htmlBody += `<p>${formattedTraits}</p>`
+            }
+
+            // Display description if available
+            if (upgradePod.description) {
+              htmlBody += `<p class="upgrade-pod-description">${upgradePod.description}</p>`
+            }
+
+            htmlBody += `</div>
+            </div>`
+          } else {
+            // Fallback to the old method if the pod is not found in gameRulesData
+            const upgradePodLine = unit.details?.find(line => line.startsWith('<strong>Upgrade Pod:</strong>'))
+            const upgradePodName = upgradePodLine ? upgradePodLine.replace('<strong>Upgrade Pod:</strong>', '').trim() : ''
+
+            if (upgradePodName) {
+              htmlBody += `<div class="upgrade-pod-info">
+                <h5>${upgradePodName}</h5>
+                <div class="upgrade-pod-details">`
+
+              // Look for related attributes in unit.details
+              if (Array.isArray(unit.details)) {
+                // Find damage info (if any)
+                const damageLine = unit.details.find(line => line.includes('<strong>Damage:</strong>'))
+                if (damageLine) {
+                  htmlBody += `<p>${damageLine}</p>`
+                }
+
+                // Find range info (if any)
+                const rangeLine = unit.details.find(line => line.includes('<strong>Range:</strong>'))
+                if (rangeLine) {
+                  htmlBody += `<p>${rangeLine}</p>`
+                }
+
+                // Find traits info (if any)
+                const traitsLine = unit.details.find(line => line.includes('<strong>Traits:</strong>'))
+                if (traitsLine) {
+                  htmlBody += `<p>${traitsLine}</p>`
+                }
+
+                // Find description (if any)
+                const descriptionLines = unit.details.filter(line =>
+                  !line.includes('<strong>') &&
+                  !line.includes('Squadron Composition:') &&
+                  !line.startsWith('<u>') &&
+                  !line.includes('Tonnage:')
+                )
+
+                descriptionLines.forEach(line => {
+                  if (line.trim()) {
+                    htmlBody += `<p class="upgrade-pod-description">${line}</p>`
+                  }
+                })
+              }
+
+              htmlBody += `</div>
+              </div>`
+            }
+          }
+        } else {
+          // If no upgrade pod data is available
+          htmlBody += `<p class="placeholder-text-inline" style="text-align: center; padding: 0.5rem;"><i>No Upgrade Pod equipped</i></p>`
         }
 
-        htmlBody += `</div></div>` // End squadron-container and equipment-section
+        htmlBody += `</div>` // End equipment-section for Upgrade Pod
       } else {
         // Default display for other support assets
         htmlBody += `<div class="equipment-section">`
@@ -201,9 +282,9 @@ export function generatePrintHtml({
         htmlBody += `<ul class="item-list">`
         if (Array.isArray(unit.details)) {
           unit.details.forEach(line => {
-            // Skip tonnage line as we already rendered it above
+            // Skip tonnage line completely as requested
             if (/Tonnage:/.test(line)) return
-            // Skip Squadron Composition as we already rendered it above
+            // Skip Squadron Composition as we already rendered it elsewhere
             if (/Squadron Composition:/.test(line)) return
 
             // Format Limited trait with bubbles
@@ -244,13 +325,7 @@ export function generatePrintHtml({
         htmlBody += `</ul></div>`
       }
 
-      // If this is a limited use asset, add a reminder
-      const hasLimited = unit.details?.some(line => /Limited\(\d+\)/.test(line))
-      if (hasLimited) {
-        htmlBody += `<div class="equipment-section trait-definitions-section">
-          <p class="reminder-text">Each use expends one Limited bubble.</p>
-        </div>`
-      }
+      // Removed Limited bubble reminder as requested
 
       htmlBody += `</div>` // End unit-card
       return

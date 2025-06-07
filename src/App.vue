@@ -2,7 +2,7 @@
 import { ref, computed, watchEffect } from 'vue'
 import HevCustomizer from './components/hevCustomizer.vue'
 import SupportAssets from './components/SupportAssets.vue'
-import { gameData as importedGameData } from './gameData.js'
+import { gameData as importedGameData, UL_HEV_UPGRADE_PODS } from './gameData.js'
 import { generatePrintHtml } from './printUtils.js'
 import { useToast } from 'vue-toastification'
 
@@ -10,7 +10,11 @@ import { useToast } from 'vue-toastification'
 const rosterName = ref('')
 const roster = ref([])
 const hevCustomizerRef = ref(null)
-const gameRulesData = importedGameData
+// Add UL_HEV_UPGRADE_PODS to gameRulesData for print display
+const gameRulesData = {
+  ...importedGameData,
+  UL_HEV_UPGRADE_PODS
+}
 const fileInputRef = ref(null)
 const versionTag = import.meta.env.VITE_GIT_COMMIT_SHA || 'dev'
 const isDarkMode = ref(false)
