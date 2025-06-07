@@ -610,8 +610,7 @@ defineExpose({ resetForm, loadHevForEditing })
       <div class="form-section class-section flex-1 min-w-[280px] flex flex-col">
         <h3 class="section-title text-[1.05rem] text-secondary border-b border-border pb-1 mb-3 font-medium">Classification & Movement</h3>
         <div class="form-group mb-3">
-          <label for="hevName" class="block mb-2 font-medium text-text">HE-V Name (Optional):</label>
-          <input type="text" id="hevName" v-model="unitName" placeholder="e.g., 'Brawler Alpha'" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary" />
+          <input type="text" id="hevName" v-model="unitName" placeholder="HE-V Name" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary" />
         </div>
         <div class="form-group mb-3">
           <label for="hevClass" class="block mb-2 font-medium text-text">HE-V Class:</label>
@@ -645,11 +644,7 @@ defineExpose({ resetForm, loadHevForEditing })
             Please select a motive type.
           </p>
         </div>
-        <div class="form-group form-group-placeholder min-w-[200px]" v-else>
-          <label>&nbsp;</label>
-          <div class="placeholder-input h-[calc(1.5em+0.75rem+2px)] border border-border bg-light-grey rounded box-border"></div>
-        </div>
-        <div class="movement-info mt-3 pt-2 border-t border-dashed border-border">
+        <div class="movement-info mt-3 pt-2 border-t border-dashed border-border" v-if="selectedClass">
           <p class="my-[0.15rem] text-[0.9rem]"><strong class="inline-block min-w-[80px] font-semibold">Movement:</strong> {{ baseMovementSpeed }}"</p>
           <p v-if="hasJumpJets" class="my-[0.15rem] text-[0.9rem]"><strong class="inline-block min-w-[80px] font-semibold">Jump:</strong> {{ jumpMovementSpeed }}"</p>
         </div>
@@ -910,4 +905,4 @@ defineExpose({ resetForm, loadHevForEditing })
   </section>
 </template>
 
-<style src="./hevCustomizer.css" scoped></style>
+<style scoped></style>

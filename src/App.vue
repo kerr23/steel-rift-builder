@@ -603,49 +603,48 @@ const toggleDarkMode = () => {
 </script>
 
 <template>
-  <div id="app" class="container">
-    <button
-      class="dark-mode-toggle"
-      :aria-pressed="isDarkMode.value"
-      @click="toggleDarkMode"
-      title="Toggle dark mode"
-    >
-      {{ isDarkMode.value ? '☀️ Light Mode' : '🌙 Dark Mode' }}
-    </button>
-    <span class="version-tag">v{{ versionTag }}</span>
-    <h1>Steel Rift Force Roster & HE-V Customizer</h1>
+  <div id="app" class="container px-4 py-6 max-w-5xl min-h-screen mx-auto relative">
+    <div class="absolute top-4 right-4 flex flex-col items-end gap-2 z-50">
+      <button
+        class="dark-mode-toggle btn bg-card-bg text-primary border border-border-color rounded px-4 py-1 text-base cursor-pointer transition-colors duration-200 hover:bg-primary hover:text-white shadow"
+        :aria-pressed="isDarkMode"
+        @click="toggleDarkMode"
+        title="Toggle dark mode"
+      >
+        <span v-if="isDarkMode">☀️ Light Mode</span>
+        <span v-else>🌙 Dark Mode</span>
+      </button>
+    </div>
+    <h1 class="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+      Steel Rift Force Builder
+      <span class="text-xs text-muted font-mono">(v{{ versionTag }})</span>
+    </h1>
 
     <!-- Roster Management Section -->
-    <section class="roster-manager card">
-      <h2>Roster Management</h2>
-      <div class="form-group">
-        <label for="rosterName">Roster Name:</label>
-        <input type="text" id="rosterName" v-model="rosterName" placeholder="Enter Roster Name" />
+    <section class="roster-manager card bg-card-bg border border-border-color rounded-lg shadow-md p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-4">Roster Management</h2>
+      <div class="form-group mb-4 flex flex-col md:flex-row md:items-center gap-2">
+        <input type="text" id="rosterName" v-model="rosterName" placeholder="Enter Roster Name" class="input input-bordered w-full md:w-1/2 px-3 py-2 rounded border border-border-color focus:outline-none focus:ring-2 focus:ring-primary" />
       </div>
-      <div class="roster-summary">
-        <h3>
-          Roster Units <span class="tonnage-badge">(Total: {{ totalRosterTonnage }} T)</span>
+      <div class="roster-summary mb-6">
+        <h3 class="text-lg font-semibold mb-2 flex items-center gap-2">
+          Roster Units <span class="tonnage-badge bg-primary text-white rounded px-2 py-1 text-xs">(Total: {{ totalRosterBaseTonnage }}T)</span>
         </h3>
-        <ul v-if="roster.length > 0">
-          <li v-for="unit in roster" :key="unit.id" class="roster-item">
-            <div class="roster-item-info">
-              <span class="roster-item-name">{{ unit.unitName || 'Unnamed HE-V' }}</span>
-              <span class="roster-item-details">
-                ({{ unit.selectedClass?.name || 'N/A' }} /
-                {{ unit.selectedMotiveType?.name || 'Standard' }}) [A:{{
-                  unit.effectiveArmorDie?.die || '?'
-                }}
-                S:{{ unit.effectiveStructureDie?.die || '?' }}] -
-                {{ unit.totalUnitTonnage ?? '?' }} T
+        <ul v-if="roster.length > 0" class="space-y-2">
+          <li v-for="unit in roster" :key="unit.id" class="roster-item flex flex-col md:flex-row md:items-center justify-between bg-light-grey border border-border-color rounded p-3">
+            <div class="roster-item-info flex flex-col md:flex-row md:items-center gap-2">
+              <span class="roster-item-name font-semibold">{{ unit.unitName || 'Unnamed HE-V' }}</span>
+              <span class="roster-item-details text-sm text-muted">
+                ({{ unit.selectedClass?.name || 'N/A' }} - {{ unit.totalUnitTonnage ?? '?' }}T / {{ getBaseTonnage(unit) ?? '?' }}T)
               </span>
             </div>
-            <div class="roster-item-actions">
-              <button @click="editHev(unit)" class="btn btn-edit" title="Edit this HE-V">
+            <div class="roster-item-actions flex gap-2 mt-2 md:mt-0">
+              <button @click="editHev(unit)" class="btn btn-edit bg-secondary text-white px-3 py-1 rounded hover:bg-primary transition" title="Edit this HE-V">
                 Edit
               </button>
               <button
                 @click="removeHevFromRoster(unit.id)"
-                class="btn btn-remove-roster"
+                class="btn btn-remove-roster bg-danger text-white px-3 py-1 rounded hover:bg-black transition"
                 title="Remove this HE-V"
               >
                 Remove
@@ -653,19 +652,19 @@ const toggleDarkMode = () => {
             </div>
           </li>
         </ul>
-        <p v-else class="placeholder-text">No HE-Vs added to the roster yet.</p>
+        <p v-else class="placeholder-text italic text-muted text-center py-4">No HE-Vs added to the roster yet.</p>
       </div>
-      <div class="action-buttons">
+      <div class="action-buttons flex flex-wrap gap-2">
         <input
           type="file"
           ref="fileInputRef"
           @change="importRosterJson"
           accept=".json,application/json"
-          style="display: none"
+          class="hidden"
         />
         <button
           @click="triggerFileInput"
-          class="btn btn-secondary"
+          class="btn btn-secondary bg-secondary text-white px-4 py-2 rounded hover:bg-primary transition"
           title="Load roster from a JSON file"
         >
           Import Roster (JSON)
@@ -673,7 +672,7 @@ const toggleDarkMode = () => {
         <button
           @click="exportRosterJson"
           :disabled="roster.length === 0 && !rosterName"
-          class="btn btn-info"
+          class="btn btn-info bg-info text-white px-4 py-2 rounded hover:bg-primary transition disabled:opacity-50"
           title="Save current roster to a JSON file"
         >
           Export Roster (JSON)
@@ -681,7 +680,7 @@ const toggleDarkMode = () => {
         <button
           @click="formatForPrint"
           :disabled="roster.length === 0"
-          class="btn btn-warning"
+          class="btn btn-warning bg-warning text-black px-4 py-2 rounded hover:bg-primary hover:text-white transition disabled:opacity-50"
           title="Open a printer-friendly version of the roster"
         >
           Format for Print
@@ -689,76 +688,12 @@ const toggleDarkMode = () => {
       </div>
     </section>
 
-    <hr class="divider" />
+    <hr class="divider my-8 border-t border-border-color" />
 
     <HevCustomizer ref="hevCustomizerRef" :game-rules="gameRulesData" @add-hev="addHevToRoster" />
   </div>
 </template>
 
-<!-- Styles are in src/assets/main.css and src/components/hevCustomizer.css -->
 <style>
-.version-tag {
-  position: fixed;
-  top: 16px;
-  right: 160px;
-  z-index: 2000;
-  background: var(--card-bg-color);
-  color: var(--primary-color);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 6px 14px;
-  font-size: 1rem;
-  font-family: monospace;
-  opacity: 0.85;
-  pointer-events: none;
-}
-.dark-mode-toggle {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 2000;
-  background: var(--card-bg-color);
-  color: var(--primary-color);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 6px 14px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-body,
-.dark-mode,
-body.dark-mode {
-  background: var(--bg-color) !important;
-  color: var(--text-color) !important;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-.card,
-.unit-card,
-.form-section,
-.section-title,
-.print-defense-layout-container,
-.print-weapon-table th,
-.print-weapon-table td,
-.item-list,
-.trait-list,
-.no-print {
-  background: var(--card-bg-color) !important;
-  color: var(--text-color) !important;
-  border-color: var(--border-color) !important;
-  font-weight: 500;
-}
-.section-title {
-  color: var(--secondary-color) !important;
-  border-bottom-color: var(--border-color) !important;
-  font-weight: 600;
-}
-.print-special-attribute {
-  color: var(--warning-color) !important;
-  font-weight: 600;
-}
-.threshold-desc-green strong { color: var(--success-color) !important; }
-.threshold-desc-yellow strong { color: var(--warning-color) !important; }
-.threshold-desc-red strong { color: var(--danger-color) !important; }
+/* All styles for .version-tag and .dark-mode-toggle are now handled by Tailwind utility classes in the template. Remove legacy CSS. */
 </style>
