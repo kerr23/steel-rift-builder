@@ -16,6 +16,16 @@ const totalRosterTonnage = computed(() => {
   return roster.value.reduce((total, unit) => total + (unit?.totalUnitTonnage || 0), 0)
 })
 
+const getBaseTonnage = (unit) => {
+  if (!unit.selectedClass || !gameRulesData?.classes) return 0
+  const cls = gameRulesData.classes.find((c) => c.name === unit.selectedClass.name)
+  return cls ? cls.baseTonnage : 0
+}
+
+const totalRosterBaseTonnage = computed(() => {
+  return roster.value.reduce((total, unit) => total + getBaseTonnage(unit), 0)
+})
+
 // --- Methods ---
 const addHevToRoster = (hevData) => {
   console.log('Adding HEV to roster:', hevData)
@@ -311,11 +321,11 @@ const formatForPrint = () => {
       if (rosterName.value) {
         htmlBody += `<span class="unit-title-roster-info">
                                <span class="unit-title-roster-name">(${rosterName.value})</span>
-                               <span class="unit-title-total-tonnage">- ${totalRosterTonnage.value}T Total</span>
+                               <span class="unit-title-total-tonnage">- ${totalRosterBaseTonnage.value}T Total</span>
                              </span>`
       } else {
         htmlBody += `<span class="unit-title-roster-info">
-                               <span class="unit-title-total-tonnage">${totalRosterTonnage.value}T Total</span>
+                               <span class="unit-title-total-tonnage">${totalRosterBaseTonnage.value}T Total</span>
                              </span>`
       }
       htmlBody += `</h3>`
@@ -331,7 +341,7 @@ const formatForPrint = () => {
       if (unitHasJumpJets) {
         htmlBody += `<p><strong>Jump:</strong> ${unitJumpMovement}"</p>`
       }
-      htmlBody += `<p><strong>Unit Tonnage:</strong> ${unit.totalUnitTonnage || '?'}</p>
+      htmlBody += `<p><strong>Unit Tonnage:</strong> ${getBaseTonnage(unit) || '?'}</p>
                          <p><strong>Slots Used:</strong> ${unit.usedSlots === undefined ? '?' : unit.usedSlots} / ${unit.maxSlots === undefined ? '?' : unit.maxSlots}</p>`
 
       if (unit.selectedMotiveType && unit.selectedMotiveType.description) {
