@@ -2,7 +2,6 @@
 // Import necessary functions from Vue and data/helpers from gameData.js
 import { ref, computed, watch, defineProps, defineEmits, defineExpose, nextTick } from 'vue'
 import { useToast } from 'vue-toastification'
-import { getMaxDieStep } from '../gameData.js'
 
 // --- Initialize Toast ---
 const toast = useToast()
@@ -32,9 +31,14 @@ const weaponSelectRef = ref(null)
 const upgradeSelectRef = ref(null)
 
 // --- Game Data Access ---
-const maxDieStep = computed(() => (props.gameRules ? getMaxDieStep() : -1))
-const allDice = computed(() => props.gameRules?.dice || [])
 
+// Ensure these are defined at the top of the script:
+const baseTonnage = computed(() => selectedClass.value?.baseTonnage ?? 0)
+const baseSlots = computed(() => selectedClass.value?.baseSlots ?? 0)
+const motiveSlotModifier = computed(() => selectedMotiveType.value?.slotModifier ?? 0)
+const maxSlots = computed(() => baseSlots.value + motiveSlotModifier.value)
+
+// --- Remove dice/die/step/side logic and functions ---
 // --- Modification Options ---
 const modificationOptions = ref([
   { value: 'stripped', label: 'Stripped' },
@@ -42,75 +46,41 @@ const modificationOptions = ref([
   { value: 'reinforced', label: 'Reinforced' },
 ])
 
-// --- Helper Functions ---
-const findDieObject = (dieString) => allDice.value.find((d) => d.die === dieString)
-const findDieByStep = (step) => (step < 0 ? null : allDice.value.find((d) => d.step === step))
-const calculateNthWeaponCost = (weaponData, n, className) => {
-  if (
-    n <= 0 ||
-    !weaponData ||
-    !className ||
-    !weaponData.tonnage ||
-    weaponData.tonnage[className] === undefined
-  ) return 0
-  const baseCost = weaponData.tonnage[className]
-  if (n === 1) return baseCost
-  const penaltyAmount = Math.ceil(baseCost * 0.5)
-  return baseCost + (n - 1) * penaltyAmount
-}
+// --- Armor/Structure Model (new) ---
+const baseArmor = computed(() => selectedClass.value?.baseArmor ?? 0)
+const baseStructure = computed(() => selectedClass.value?.baseStructure ?? 0)
 
-// DRY trait formatting for both weapons and upgrades
-const formatTraitDisplay = (trait) => {
-  if (!trait || typeof trait !== 'object' || !trait.name) return 'Unknown Trait'
-  const currentClassName = selectedClass.value?.name
-  if (trait.name === 'Limited' && typeof trait.value === 'number') {
-    // Use unfilled bubbles for Limited
-    return `Limited(${Array(trait.value).fill('○').join('')})`
-  }
-  if (typeof trait.value === 'object' && trait.value !== null) {
-    if (currentClassName && trait.value[currentClassName] !== undefined) {
-      return `${trait.name} ${trait.value[currentClassName]}`
-    } else {
-      return `${trait.name} (${Object.entries(trait.value).map(([k, v]) => `${k[0]}:${v}`).join('/')})`
-    }
-  }
-  if (trait.value !== undefined) return `${trait.name} ${trait.value}`
-  return trait.name
-}
-// --- END Helper Functions ---
+const armorBaseValue = computed(() => {
+  if (!selectedClass.value) return 0
+  let val = baseArmor.value
+  if (armorModification.value === 'stripped') val -= 2
+  if (armorModification.value === 'reinforced') val += 2
+  return Math.max(0, val)
+})
+const structureBaseValue = computed(() => {
+  if (!selectedClass.value) return 0
+  let val = baseStructure.value
+  if (structureModification.value === 'stripped') val -= 2
+  if (structureModification.value === 'reinforced') val += 2
+  return Math.max(0, val)
+})
 
-// --- Computed Properties ---
-const baseTonnage = computed(() => selectedClass.value?.baseTonnage ?? 0)
-const baseSlots = computed(() => selectedClass.value?.baseSlots ?? 0)
-const motiveTonnageModifier = computed(() => selectedMotiveType.value?.tonnageModifier ?? 0)
-const motiveSlotModifier = computed(() => selectedMotiveType.value?.slotModifier ?? 0)
-const maxSlots = computed(() => baseSlots.value + motiveSlotModifier.value)
-const baseArmorDieObject = computed(() => findDieObject(selectedClass.value?.defaultArmorDie))
-const baseStructureDieObject = computed(() => findDieObject(selectedClass.value?.defaultStructureDie))
+const armorCost = computed(() => {
+  // 1T per point of armor (can be adjusted if needed)
+  return armorBaseValue.value
+})
+const structureCost = computed(() => {
+  // 1T per point of structure (can be adjusted if needed)
+  return structureBaseValue.value
+})
 
-function getModifiedDie(baseDieObj, mod, maxStep) {
-  if (!baseDieObj) return null
-  let step = baseDieObj.step
-  if (mod === 'stripped') step = Math.max(0, step - 1)
-  else if (mod === 'reinforced') step = Math.min(maxStep, step + 1)
-  return findDieByStep(step)
-}
-
-const effectiveArmorDie = computed(() => getModifiedDie(baseArmorDieObject.value, armorModification.value, maxDieStep.value))
-const effectiveStructureDie = computed(() => getModifiedDie(baseStructureDieObject.value, structureModification.value, maxDieStep.value))
-
-const armorCost = computed(() => effectiveArmorDie.value?.armorCost ?? 0)
-const armorSides = computed(() => effectiveArmorDie.value?.sides ?? 0)
-const structureCost = computed(() => effectiveStructureDie.value?.structureCost ?? effectiveStructureDie.value?.armorCost ?? 0)
-const structureSides = computed(() => effectiveStructureDie.value?.sides ?? 0)
-
-const canStripArmor = computed(() => baseArmorDieObject.value && baseArmorDieObject.value.step > 0)
-const canReinforceArmor = computed(() => baseArmorDieObject.value && baseArmorDieObject.value.step < maxDieStep.value)
-const canStripStructure = computed(() => baseStructureDieObject.value && baseStructureDieObject.value.step > 0)
-const canReinforceStructure = computed(() => baseStructureDieObject.value && baseStructureDieObject.value.step < maxDieStep.value)
+const canStripArmor = computed(() => baseArmor.value > 2)
+const canReinforceArmor = computed(() => true)
+const canStripStructure = computed(() => baseStructure.value > 2)
+const canReinforceStructure = computed(() => true)
 
 function getStructureMarker(percent) {
-  const s = structureSides.value
+  const s = structureBaseValue.value
   return s > 0 ? s - Math.floor(s * percent) + 1 : 0
 }
 const structureMarker_25_Percent = computed(() => getStructureMarker(0.75))
@@ -163,13 +133,15 @@ const upgradeDetails = computed(() => {
   return { totalTonnage, totalSlots: selectedUpgrades.value.length }
 })
 
+// Removed motiveTonnageModifier computed property
+
 const usedSlots = computed(() => weaponDetails.value.totalSlots + upgradeDetails.value.totalSlots)
 const totalUnitTonnageUsed = computed(() =>
-  armorCost.value + structureCost.value + weaponDetails.value.totalTonnage + upgradeDetails.value.totalTonnage + motiveTonnageModifier.value
+  armorCost.value + structureCost.value + weaponDetails.value.totalTonnage + upgradeDetails.value.totalTonnage
 )
 const remainingUnitTonnage = computed(() => baseTonnage.value - totalUnitTonnageUsed.value)
 const isValidUnit = computed(() =>
-  !!selectedClass.value && !!effectiveArmorDie.value && !!effectiveStructureDie.value && !!selectedMotiveType.value
+  !!selectedClass.value && !!selectedMotiveType.value
 )
 const isOverTonnage = computed(() => remainingUnitTonnage.value < 0)
 const isOverSlots = computed(() => usedSlots.value > maxSlots.value)
@@ -362,23 +334,24 @@ const loadHevForEditing = (unitData) => {
           availableMotiveTypes.value.find((mt) => mt.id === unitData.selectedMotiveType?.id) ||
           availableMotiveTypes.value[0] ||
           null
-        const baseArmor = baseArmorDieObject.value
-        const baseStruct = baseStructureDieObject.value
+        const baseArmor = selectedClass.value?.baseArmor
+        const baseStruct = selectedClass.value?.baseStructure
 
-        if (baseArmor && unitData.effectiveArmorDie) {
-          if (unitData.effectiveArmorDie.step > baseArmor.step)
+        // Set modification based on loaded effective values
+        if (baseArmor !== undefined && unitData.effectiveArmor !== undefined) {
+          if (unitData.effectiveArmor > baseArmor)
             armorModification.value = 'reinforced'
-          else if (unitData.effectiveArmorDie.step < baseArmor.step)
+          else if (unitData.effectiveArmor < baseArmor)
             armorModification.value = 'stripped'
           else armorModification.value = 'standard'
         } else {
           armorModification.value = 'standard'
         }
 
-        if (baseStruct && unitData.effectiveStructureDie) {
-          if (unitData.effectiveStructureDie.step > baseStruct.step)
+        if (baseStruct !== undefined && unitData.effectiveStructure !== undefined) {
+          if (unitData.effectiveStructure > baseStruct)
             structureModification.value = 'reinforced'
-          else if (unitData.effectiveStructureDie.step < baseStruct.step)
+          else if (unitData.effectiveStructure < baseStruct)
             structureModification.value = 'stripped'
           else structureModification.value = 'standard'
         } else {
@@ -425,14 +398,12 @@ const submitHev = () => {
     return
   }
 
-  const finalArmorDie = effectiveArmorDie.value
-  const finalStructDie = effectiveStructureDie.value
-
+  // Use armorBaseValue/structureBaseValue as effective values
   const hevData = {
     unitName: unitName.value,
     selectedClass: JSON.parse(JSON.stringify(selectedClass.value)),
-    effectiveArmorDie: finalArmorDie ? JSON.parse(JSON.stringify(finalArmorDie)) : null,
-    effectiveStructureDie: finalStructDie ? JSON.parse(JSON.stringify(finalStructDie)) : null,
+    effectiveArmor: armorBaseValue.value,
+    effectiveStructure: structureBaseValue.value,
     selectedWeapons: JSON.parse(JSON.stringify(selectedWeapons.value)),
     selectedUpgrades: JSON.parse(JSON.stringify(selectedUpgrades.value)),
     selectedMotiveType: JSON.parse(JSON.stringify(selectedMotiveType.value)),
@@ -496,6 +467,39 @@ watch(structureModification, (newValue, oldValue) => {
 // --- Expose Methods ---
 defineExpose({ resetForm, loadHevForEditing })
 // --- END Expose Methods ---
+
+// Helper for weapon cost calculation
+const calculateNthWeaponCost = (weaponData, n, className) => {
+  if (
+    n <= 0 ||
+    !weaponData ||
+    !className ||
+    !weaponData.tonnage ||
+    weaponData.tonnage[className] === undefined
+  ) return 0
+  const baseCost = weaponData.tonnage[className]
+  if (n === 1) return baseCost
+  const penaltyAmount = Math.ceil(baseCost * 0.5)
+  return baseCost + (n - 1) * penaltyAmount
+}
+
+// Helper for trait display
+const formatTraitDisplay = (trait) => {
+  if (!trait || typeof trait !== 'object' || !trait.name) return 'Unknown Trait'
+  const currentClassName = selectedClass.value?.name
+  if (trait.name === 'Limited' && typeof trait.value === 'number') {
+    return `Limited(${Array(trait.value).fill('○').join('')})`
+  }
+  if (typeof trait.value === 'object' && trait.value !== null) {
+    if (currentClassName && trait.value[currentClassName] !== undefined) {
+      return `${trait.name} ${trait.value[currentClassName]}`
+    } else {
+      return `${trait.name} (${Object.entries(trait.value).map(([k, v]) => `${k[0]}:${v}`).join('/')})`
+    }
+  }
+  if (trait.value !== undefined) return `${trait.name} ${trait.value}`
+  return trait.name
+}
 </script>
 
 <template>
@@ -552,9 +556,9 @@ defineExpose({ resetForm, loadHevForEditing })
             <div class="flex items-center gap-1 min-w-0">
               <span class="font-bold text-left flex-shrink-0 text-[0.85rem]">Armor:</span>
               <div class="flex flex-nowrap gap-[1.5px] items-center flex-shrink-0 min-w-[140px] overflow-hidden">
-                <template v-if="armorSides > 0">
+                <template v-if="armorBaseValue > 0">
                   <span
-                    v-for="n in armorSides"
+                    v-for="n in armorBaseValue"
                     :key="`armor-bubble-${n}`"
                     class="inline-block w-[9px] h-[9px] rounded-full border border-black bg-transparent box-border"
                   ></span>
@@ -575,20 +579,20 @@ defineExpose({ resetForm, loadHevForEditing })
             <div class="flex items-center gap-1 min-w-0">
               <span class="font-bold text-left flex-shrink-0 text-[0.85rem]">Structure:</span>
               <div class="flex flex-nowrap gap-[1.5px] items-center flex-shrink-0 min-w-[140px] overflow-hidden">
-                <template v-if="structureSides > 0">
-                  <template v-for="n in structureSides" :key="`struct-bubble-group-${n}`">
+                <template v-if="structureBaseValue > 0">
+                  <template v-for="n in structureBaseValue" :key="`struct-bubble-group-${n}`">
                     <span
-                      v-if="n === structureSides - Math.floor(structureSides * 0.25) && structureSides >= 4"
+                      v-if="n === structureBaseValue - Math.floor(structureBaseValue * 0.25) && structureBaseValue >= 4"
                       class="threshold-divider divider-green"
                       style="display:inline-block;width:1.5px;height:10px;margin:0 1px;vertical-align:middle;background-color:var(--success-color);"
                     ></span>
                     <span
-                      v-if="n === structureSides - Math.floor(structureSides * 0.5) && structureSides >= 2"
+                      v-if="n === structureBaseValue - Math.floor(structureBaseValue * 0.5) && structureBaseValue >= 2"
                       class="threshold-divider divider-yellow"
                       style="display:inline-block;width:1.5px;height:10px;margin:0 1px;vertical-align:middle;background-color:#b38600;"
                     ></span>
                     <span
-                      v-if="n === structureSides - Math.floor(structureSides * 0.75) && structureSides >= 1"
+                      v-if="n === structureBaseValue - Math.floor(structureBaseValue * 0.75) && structureBaseValue >= 1"
                       class="threshold-divider divider-red"
                       style="display:inline-block;width:1.5px;height:10px;margin:0 1px;vertical-align:middle;background-color:var(--danger-color);"
                     ></span>
@@ -769,13 +773,6 @@ defineExpose({ resetForm, loadHevForEditing })
         <div class="summary-item flex justify-between">
           <span class="summary-label pr-2 text-secondary">Structure Cost:</span>
           <strong class="summary-value font-semibold text-right">{{ structureCost }}T</strong>
-        </div>
-        <div class="summary-item flex justify-between">
-          <span class="summary-label pr-2 text-secondary">Motive Mods:</span>
-          <strong class="summary-value font-semibold text-right">
-            {{ motiveTonnageModifier >= 0 ? '+' : '' }}{{ motiveTonnageModifier }}T /
-            {{ motiveSlotModifier >= 0 ? '+' : '' }}{{ motiveSlotModifier }}S
-          </strong>
         </div>
         <div class="summary-item summary-item-full col-span-full mt-1 flex justify-between">
           <span class="summary-label pr-2 text-secondary">Weapons Cost:</span>
