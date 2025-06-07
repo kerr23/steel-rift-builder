@@ -14,6 +14,20 @@ export const traitDefinitions = {
   Long: 'Weapon has a minimum effective firing distance, can only be fired at targets (X) inches or beyond.',
   Melee: 'Add (X) to the Attack Pool of this mech when it is performing a Smash Order (value depends on HE-V class). This model counts as one Class Size larger during a Smash order. This weapon System is not used in an Engage Order.',
   Smart: 'The Active Unit may use any friendly unit with a Target Designator for determining Line of Sight for attacks with this Weapon System.',
+  // UL-HEV and support asset component traits
+  'All-Terrain': 'Units with this trait ignore rough terrain.',
+  'Close Support': 'If an HE-V of class light or larger performs an Engage or Smash order and there are friendly units with this trait within 6" of the target unit, add +1 to the damage rating of the order. (This bonus is only applied once regardless of how many friendly units are nearby.)',
+  'Command': 'Units with the Command Trait issue orders to their Garrison. Once per activation, instead of performing an order itself, it can issue orders to up to (X) units within its garrison.',
+  'Fortification': 'A unit with this trait will only ever perform the following orders (if eligible): Engage, Lock On, Return Fire. Units with this trait only ever pass defense rolls on a 6+. Counts as Light for purpose of Kinetics. Always targeted as if from the Front Arc.',
+  'Garrison': 'A Unit with this trait contains a number of its assigned units and tokens up to (X). If this unit is destroyed, all the units and tokens assigned to it are destroyed.',
+  'Infantry': 'Units with this trait do not receive orders normally and are not eligible to activate. They will instead activate as part of the order issued to their Garrison using the Command trait.',
+  'Inferno Gear': 'If 50% or more of the Units in a Squadron have this trait, the Squadron ignores the effect of the Disruptive Trait.',
+  'Magnetic Grapnels': 'When an enemy Unit attempts to move or jump out of contact with one or more Units with this Trait, before moving, that model rolls 1D6, adding +1 for each additional model with this Trait in contact after the first. On a 1-2 result, reduce the Speed distance that the Unit may move by 50%. On a 3-4 result, reduce the distance by 75%. On a 5-6 result, the Active Unit may only move 1” regardless of how far it would normally be allowed to go during that Order.',
+  'Minefield': 'Once deployed, these Tokens operate in exactly the same way as those described in the Mine-Drone Barrage Support Asset from the Steel Rift Core Rulebook. The one exception is that the Fortification they are garrisoned-to is never affected by their Blast Trait.',
+  'Minesweeper': 'Using sophisticated drone systems to detect and destroy enemy Mines, a Unit with this Trait may perform the following Order: CLEAR MINEFIELD: Target a Mine Token of any type within 8” and Line of Sight of any active Units with the Minesweeper Trait. Roll 1D6, adding +1 for each additional Unit with the Minesweeper Trait if they are in a Squadron. On a roll of 4+, the Mine Token is neutralized and removed from play.',
+  'Outrider': 'If these Units are part of a mixed Squadron and the Squadron Leader is a different type of Unit from the Unit with this Trait, the range they must be deployed at and remain inside is 12” instead of 3”. However, all Units with this Trait in a formation must still be within 3” of each other. All Outrider units in a formation also must perform the same Orders, and remain inside that maximum distance.',
+  'Scramblers': 'No Unit, regardless of its Commander, within 6” of a model equipped with a Scrambler may be targeted by an Off-Table Support Asset or Target Designator. In addition they can not be the target of Lock On orders, or weapons using the SMART Trait.',
+  'Suppressive Fire': 'If an Active enemy Unit within 10” of a Unit with this Trait performs an Engage Order, the target of that Order receives +1 to their Defense Rolls.'
 }
 
 export const gameData = {
@@ -237,6 +251,71 @@ export const gameData = {
   ],
   traitDefinitions,
 }
+
+// Ultra-Light HE-V weapon system definitions for print and trait key rendering
+export const UL_HEV_WEAPONS = [
+  {
+    id: 'ul-autocannon',
+    name: 'UL Autocannon',
+    damage: '2 x (X)',
+    range: '10"',
+    traits: ['Kinetic']
+  },
+  {
+    id: 'ul-grenades',
+    name: 'UL Grenades',
+    damage: '3 x (X)',
+    range: '6',
+    traits: ['Blast(2")', 'Light', 'Limited(1)']
+  },
+  {
+    id: 'ul-incinerators',
+    name: 'UL Incinerators',
+    damage: '4 x (X)',
+    range: '4',
+    traits: ['Disruptive', 'Light']
+  },
+  {
+    id: 'ul-melee',
+    name: 'UL Melee Weapons',
+    damage: 'N/A',
+    range: 'N/A',
+    traits: ['Melee (X)', 'AP1 x (X)']
+  },
+  {
+    id: 'submunitions',
+    name: 'Submunitions',
+    damage: '1 x (X)',
+    range: '6"',
+    traits: ['Flak']
+  }
+]
+
+// Ultra-Light HE-V Upgrade Pods
+export const UL_HEV_UPGRADE_PODS = [
+  {
+    id: 'ul-upg-srm',
+    name: 'Short Range Missile Pack',
+    damage: '3 x (X)',
+    range: '12"',
+    traits: ['Smart', 'Limited(2)']
+  },
+  {
+    id: 'ul-upg-rocket',
+    name: 'Rocket Pack',
+    damage: '2 x (X)',
+    range: 'N/A',
+    traits: ['Smart', 'Limited(2)', 'Blast(3")']
+  },
+  {
+    id: 'ul-upg-launch',
+    name: 'Launch Gear',
+    damage: 'N/A',
+    range: 'N/A',
+    traits: [],
+    description: 'Squad can Jump: +2 to their movement for jumps'
+  }
+]
 
 export const findClassByName = (name) => gameData.classes.find(c => c.name === name) || null
 export const findWeaponById = (id) => gameData.weapons.find(w => w.id === id) || null
