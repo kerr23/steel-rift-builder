@@ -1,7 +1,7 @@
 // scripts/set-versiontag.js
 // This script writes the current git commit SHA to .env file for Vite to use as VITE_GIT_COMMIT_SHA
-const { execSync } = require('child_process');
-const { writeFileSync } = require('fs');
+import { execSync } from 'child_process';
+import { writeFileSync } from 'fs';
 
 try {
   const sha = execSync('git rev-parse --short HEAD').toString().trim();
