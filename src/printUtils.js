@@ -106,7 +106,7 @@ export function generatePrintHtml({
         </div>
         <div class="print-defense-row structure-row">
           <span class="print-defense-label">Structure:</span>
-          ${generateBubbleHtml(unit.effectiveStructureDie?.sides ?? 0, true)}
+          ${generateStructureBubbleHtml(unit.effectiveStructureDie?.sides ?? 0)}
           ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
         </div>`
     const structureSides = unit.effectiveStructureDie?.sides ?? 0
@@ -211,4 +211,23 @@ export function generatePrintHtml({
     htmlBody += `</div>` // End unit-card
   })
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Print Roster - ${rosterName || 'Unnamed'}</title>${cssLink}</head><body><div class="print-container">${htmlBody}</div></body></html>`
+}
+
+function generateStructureBubbleHtml(sides) {
+  if (!sides || sides <= 0) return '<span class="placeholder-text-inline italic text-text-muted text-xs pl-1">N/A</span>';
+  let html = '';
+  for (let n = 1; n <= sides; n++) {
+    // Insert dividers after the correct pip, counting from left to right
+    if (n === sides - Math.floor(sides * 0.25) && sides >= 4) {
+      html += '<span class="threshold-divider divider-green" style="display:inline-block;width:1.5px;height:10px;vertical-align:middle;background-color:var(--success-color);"></span>';
+    }
+    if (n === sides - Math.floor(sides * 0.5) && sides >= 2) {
+      html += '<span class="threshold-divider divider-yellow" style="display:inline-block;width:1.5px;height:10px;vertical-align:middle;background-color:#b38600;"></span>';
+    }
+    if (n === sides - Math.floor(sides * 0.75) && sides >= 1) {
+      html += '<span class="threshold-divider divider-red" style="display:inline-block;width:1.5px;height:10px;vertical-align:middle;background-color:var(--danger-color);"></span>';
+    }
+    html += '<span class="bubble" style="display:inline-block;width:9px;height:9px;border-radius:50%;border:1px solid #000;background:transparent;box-sizing:border-box;"></span>';
+  }
+  return html;
 }
