@@ -18,6 +18,28 @@ export function generatePrintHtml({
     </div>
   `
   roster.forEach((unit) => {
+    if (unit.isSupportAsset) {
+      htmlBody += `<div class="unit-card support-asset-card">`
+      htmlBody += `<h3 class="unit-title"><span class="unit-title-hev-name">${unit.type || 'Support Asset'}</span></h3>`
+      htmlBody += `<div class="support-asset-details">`
+      htmlBody += `<ul class="support-asset-list">`
+      if (Array.isArray(unit.details)) {
+        unit.details.forEach(line => {
+          // Skip tonnage line if present (we'll render it below)
+          if (/Tonnage:/.test(line)) return;
+          // If this is the traits line, render Limited(N) with bubbles
+          if (/Traits:/.test(line) && /Limited\(\d+\)/.test(line)) {
+            htmlBody += `<li><span>${renderLimitedTraitWithBubbles(line)}</span></li>`
+          } else {
+            htmlBody += `<li>${line}</li>`
+          }
+        })
+      }
+      htmlBody += `</ul>`
+      htmlBody += `<div class="support-asset-meta"><strong>Tonnage:</strong> ${unit.totalUnitTonnage || 10}T</div>`
+      htmlBody += `</div></div>`
+      return
+    }
     if (!unit || !unit.selectedClass) return
     const unitClassName = unit.selectedClass.name
     const unitBaseMovement = unit.selectedClass?.baseMovement ?? 0
@@ -233,4 +255,15 @@ function generateStructureBubbleHtml(value) {
     html += '<span class="bubble" style="display:inline-block;width:9px;height:9px;border-radius:50%;border:1px solid #000;background:transparent;box-sizing:border-box;"></span>';
   }
   return html;
+}
+
+function renderLimitedTraitWithBubbles(traitsHtml) {
+  // Replace Limited(N) with Limited and N bubbles
+  return traitsHtml.replace(/Limited\((\d+)\)/g, (match, count) => {
+    let bubbles = ''
+    for (let i = 0; i < Number(count); i++) {
+      bubbles += '<span class="print-trait-bubble"></span>'
+    }
+    return `Limited${bubbles ? `(${bubbles})` : ''}`
+  })
 }

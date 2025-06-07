@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watchEffect } from 'vue'
 import HevCustomizer from './components/hevCustomizer.vue'
+import SupportAssets from './components/SupportAssets.vue'
 import { gameData as importedGameData } from './gameData.js'
 import { generatePrintHtml } from './printUtils.js'
 import { useToast } from 'vue-toastification'
@@ -14,9 +15,11 @@ const fileInputRef = ref(null)
 const versionTag = import.meta.env.VITE_GIT_COMMIT_SHA || 'dev'
 const isDarkMode = ref(false)
 const toast = useToast()
+const activeTab = ref('hev')
 
 // --- Computed Properties ---
 const getBaseTonnage = (unit) => {
+  if (unit.isSupportAsset) return unit.totalUnitTonnage || 10
   if (!unit.selectedClass) return 0
   const cls = findClassByName(unit.selectedClass.name)
   return cls ? cls.baseTonnage : 0
@@ -40,6 +43,16 @@ const addHevToRoster = (hevData) => {
     console.warn('Could not access hevCustomizerRef to reset form.')
     toast.warning('Could not reset customizer form.', { timeout: 1000 })
   }
+}
+
+function addSupportAssetToRoster(asset) {
+  roster.value.push({
+    ...asset,
+    id: generateUniqueId(),
+    isSupportAsset: true,
+    totalUnitTonnage: 10 // Always 10T for support assets
+  })
+  toast.success('Support Asset added to roster!', { timeout: 1000 })
 }
 
 // --- Roster Manipulation ---
@@ -171,6 +184,7 @@ const formatForPrint = () => {
 // --- Export/Import Functionality ---
 const exportRosterJson = () => {
   try {
+    // Export all units, including support assets, as-is
     const dataToExport = { rosterName: rosterName.value, roster: roster.value }
     const jsonString = JSON.stringify(dataToExport, null, 2)
     const blob = new Blob([jsonString], { type: 'application/json' })
@@ -212,17 +226,16 @@ const importRosterJson = (event) => {
       const content = e.target.result
       const importedData = JSON.parse(content)
       if (typeof importedData.rosterName === 'string' && Array.isArray(importedData.roster)) {
+        // Accept both HE-Vs and support assets
         const validUnits = importedData.roster.filter(
           (unit) =>
-            unit &&
-            typeof unit === 'object' &&
-            unit.selectedClass &&
-            unit.effectiveArmorDie &&
-            unit.effectiveStructureDie &&
-            Array.isArray(unit.selectedWeapons) &&
-            Array.isArray(unit.selectedUpgrades) &&
-            typeof unit.totalUnitTonnage === 'number' &&
-            unit.id !== undefined,
+            unit && typeof unit === 'object' &&
+            (
+              // HE-Vs: must have selectedClass, weapons, upgrades, tonnage, id
+              (unit.selectedClass && Array.isArray(unit.selectedWeapons) && Array.isArray(unit.selectedUpgrades) && typeof unit.totalUnitTonnage === 'number' && unit.id !== undefined)
+              // Support assets: must have isSupportAsset, type, details, tonnage, id
+              || (unit.isSupportAsset && unit.type && Array.isArray(unit.details) && typeof unit.totalUnitTonnage === 'number' && unit.id !== undefined)
+            )
         )
         if (validUnits.length !== importedData.roster.length) {
           const skippedCount = importedData.roster.length - validUnits.length
@@ -324,20 +337,26 @@ function showError(message, log = true) {
         <ul v-show="roster.length > 0" class="space-y-2" role="list">
           <li v-for="unit in roster" :key="unit.id" class="roster-item flex flex-col md:flex-row md:items-center justify-between bg-light-grey border border-border-color rounded p-3" role="listitem">
             <div class="roster-item-info flex flex-col md:flex-row md:items-center gap-2">
-              <span class="roster-item-name font-semibold">{{ unit.unitName || 'Unnamed HE-V' }}</span>
-              <span class="roster-item-details text-sm text-muted">
-                ({{ unit.selectedClass?.name || 'N/A' }} - {{ unit.totalUnitTonnage ?? '?' }}T / {{ getBaseTonnage(unit) ?? '?' }}T)
-              </span>
+              <template v-if="unit.isSupportAsset">
+                <span class="roster-item-name font-semibold">{{ unit.type }}</span>
+                <span class="roster-item-details text-sm text-muted">(Support Asset - {{ unit.totalUnitTonnage }}T)</span>
+              </template>
+              <template v-else>
+                <span class="roster-item-name font-semibold">{{ unit.unitName || 'Unnamed HE-V' }}</span>
+                <span class="roster-item-details text-sm text-muted">
+                  ({{ unit.selectedClass?.name || 'N/A' }} - {{ unit.totalUnitTonnage ?? '?' }}T / {{ getBaseTonnage(unit) ?? '?' }}T)
+                </span>
+              </template>
             </div>
             <div class="roster-item-actions flex gap-2 mt-2 md:mt-0">
-              <button @click="editHev(unit)" class="btn btn-edit bg-secondary text-white px-3 py-1 rounded hover:bg-primary transition" title="Edit this HE-V" aria-label="Edit {{ unit.unitName || 'Unnamed HE-V' }}" role="button">
+              <button @click="editHev(unit)" v-if="!unit.isSupportAsset" class="btn btn-edit bg-secondary text-white px-3 py-1 rounded hover:bg-primary transition" title="Edit this HE-V" aria-label="Edit {{ unit.unitName || 'Unnamed HE-V' }}" role="button">
                 Edit
               </button>
               <button
                 @click="removeHevFromRoster(unit.id)"
                 class="btn btn-remove-roster bg-danger text-white px-3 py-1 rounded hover:bg-black transition"
-                title="Remove this HE-V"
-                aria-label="Remove {{ unit.unitName || 'Unnamed HE-V' }}"
+                title="Remove this item"
+                aria-label="Remove {{ unit.unitName || unit.type || 'Unnamed' }}"
                 role="button"
               >
                 Remove
@@ -390,6 +409,56 @@ function showError(message, log = true) {
 
     <hr class="divider my-8 border-t border-border-color" />
 
-    <HevCustomizer ref="hevCustomizerRef" :game-rules="gameRulesData" @add-hev="addHevToRoster" />
+    <div class="tabbed-section">
+      <div class="tab-header flex gap-2 mb-4">
+        <button
+          :class="['tab-btn', activeTab === 'hev' ? 'tab-btn-active' : '']"
+          @click="activeTab = 'hev'"
+        >HE-V Configuration</button>
+        <button
+          :class="['tab-btn', activeTab === 'support' ? 'tab-btn-active' : '']"
+          @click="activeTab = 'support'"
+        >Support Assets</button>
+      </div>
+      <div class="tab-content">
+        <HevCustomizer
+          v-if="activeTab === 'hev'"
+          ref="hevCustomizerRef"
+          :game-rules="gameRulesData"
+          @add-hev="addHevToRoster"
+        />
+        <SupportAssets v-if="activeTab === 'support'" @add-support-asset="addSupportAssetToRoster" />
+      </div>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.tabbed-section {
+  margin-top: 2rem;
+}
+.tab-header {
+  margin-bottom: 1rem;
+}
+.tab-btn {
+  padding: 0.5rem 1.5rem;
+  border: 1px solid var(--border-color, #ccc);
+  background: var(--card-bg, #f9f9f9);
+  color: var(--primary, #333);
+  border-radius: 0.5rem 0.5rem 0 0;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+.tab-btn-active {
+  background: var(--primary, #333);
+  color: #fff;
+  border-bottom: 2px solid var(--primary, #333);
+}
+.tab-content {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 0 0 0.5rem 0.5rem;
+  padding: 2rem 1rem 1rem 1rem;
+}
+</style>
