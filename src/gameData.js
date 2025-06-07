@@ -1,49 +1,39 @@
 // src/gameData.js
 
+export const traitDefinitions = {
+  AP: 'Armor Penetrating: If any damage is inflicted by this Attack, apply AP(X) damage directly to the target units Structure (value depends on HE-V class).',
+  Plasma: 'If any damage is inflicted by this Attack, apply Plasma(X) damage to armor. If no armor remains apply normal hits to structure',
+  Blast: 'Area Effect: All units (friend or foe) within (X) of the original target must also make a Defense Roll against this Attack at -1 to the Attack Pool (to a minimum of 1).',
+  Disruptive: 'If a target model suffers any damage from a weapon with this Trait, the Active Player rolls 1D6. On a 5 or 6, mark the target unit with a Redlined marker.',
+  Draining: 'If a model uses this Weapon System during an activation, mark it with a Redline marker as well as an Activated token when it has completed its Orders. This does not cause Structure damage. If a model has a Redlined token when it activates, it may not use Weapon Systems with this Trait.',
+  Flak: 'Reduce the number of dice in an attack from Mine Drones (Missiles or Rocket Packs by 2) to a minimum of 1 if this model doesn’t have a Redlined marker.',
+  Frag: 'Targets are -1 to Defense Rolls from attacks with this Trait.',
+  Kinetic: 'If any damage is inflicted by this attack, roll 1D6. Add +1 to the roll for each Class Size larger the Active model is than the target model. Subtract -1 from the roll for each Class Size smaller the Active model is than the target model. On a result of 4+, rotate the target model 45° away from the Active Unit, in a direction chosen by the Active Player.',
+  Light: 'This attack will cause 1 damage to Armor or Structure for every 2 hits that are not evaded, rounding down.',
+  Limited: 'This weapon system has a limited number of uses per battle (represented by bubbles).',
+  Long: 'Weapon has a minimum effective firing distance, can only be fired at targets (X) inches or beyond.',
+  Melee: 'Add (X) to the Attack Pool of this mech when it is performing a Smash Order (value depends on HE-V class). This model counts as one Class Size larger during a Smash order. This weapon System is not used in an Engage Order.',
+  Smart: 'The Active Unit may use any friendly unit with a Target Designator for determining Line of Sight for attacks with this Weapon System.',
+}
+
 export const gameData = {
   classes: [
-    // Keep class names consistent (used as keys)
     {
-      name: 'Light',
-      baseTonnage: 20,
-      baseSlots: 4,
-      defaultArmorDie: 'd6',
-      defaultStructureDie: 'd4',
-      baseMovement: 12,
-      defenseRoll: '3+',
+      name: 'Light', baseTonnage: 20, baseSlots: 4, defaultArmorDie: 'd6', defaultStructureDie: 'd4', baseMovement: 12, defenseRoll: '3+',
       special: "Roll 1D6 for each point of Structure Damage it has lost during this Attack. On a 5+, the Target takes an additional point of Damage"
     },
     {
-      name: 'Medium',
-      baseTonnage: 30,
-      baseSlots: 5,
-      defaultArmorDie: 'd8',
-      defaultStructureDie: 'd6',
-      baseMovement: 10,
-      defenseRoll: '4+',
+      name: 'Medium', baseTonnage: 30, baseSlots: 5, defaultArmorDie: 'd8', defaultStructureDie: 'd6', baseMovement: 10, defenseRoll: '4+',
     },
     {
-      name: 'Heavy',
-      baseTonnage: 40,
-      baseSlots: 6,
-      defaultArmorDie: 'd10',
-      defaultStructureDie: 'd8',
-      baseMovement: 8,
-      defenseRoll: '5+',
+      name: 'Heavy', baseTonnage: 40, baseSlots: 6, defaultArmorDie: 'd10', defaultStructureDie: 'd8', baseMovement: 8, defenseRoll: '5+',
     },
     {
-      name: 'Ultra-Heavy',
-      baseTonnage: 50,
-      baseSlots: 7,
-      defaultArmorDie: 'd12',
-      defaultStructureDie: 'd10',
-      baseMovement: 6,
-      defenseRoll: '6+',
+      name: 'Ultra-Heavy', baseTonnage: 50, baseSlots: 7, defaultArmorDie: 'd12', defaultStructureDie: 'd10', baseMovement: 6, defenseRoll: '6+',
       special: "Rolls 1D6 for each point of Structure Damage it has lost during this Attack. On a 5+, the Damage is ignored"
     },
   ],
   dice: [
-    // Added 'sides' property
     { step: 0, die: 'd4', sides: 4, armorCost: 4, structureCost: 4 },
     { step: 1, die: 'd6', sides: 6, armorCost: 6, structureCost: 6 },
     { step: 2, die: 'd8', sides: 8, armorCost: 8, structureCost: 8 },
@@ -252,37 +242,10 @@ export const gameData = {
         "Hunker Down: Any attacks on the unit while the HE-V is 'Hunkered Down' count as being obscured by Covering Terrain. If the Hunkered Unit was already obscured by Covering Terrain it should be treated as being obscured by Blocking Terrain",
     },
   ],
-  traitDefinitions: {
-    // == Weapon Traits (keys are the 'name' property from weapon traits objects) ==
-    AP: 'Armor Penetrating: If any damage is inflicted by this Attack, apply AP(X) damage directly to the target units Structure (value depends on HE-V class).',
-    Plasma:
-      'If any damage is inflicted by this Attack, apply Plasma(X) damage to armor. If no armor remains apply normal hits to structure',
-    Blast:
-      'Area Effect: All units (friend or foe) within (X) of the original target must also make a Defense Roll against this Attack at -1 to the Attack Pool (to a minimum of 1).',
-    Disruptive:
-      'If a target model suffers any damage from a weapon with this Trait, the Active Player rolls 1D6. On a 5 or 6, mark the target unit with a Redlined marker.',
-    Draining:
-      'If a model uses this Weapon System during an activation, mark it with a Redline marker as well as an Activated token when it has completed its Orders. This does not cause Structure damage. If a model has a Redlined token when it activates, it may not use Weapon Systems with this Trait.',
-    Flak: 'Reduce the number of dice in an attack from Mine Drones (Missiles or Rocket Packs by 2) to a minimum of 1 if this model doesn’t have a Redlined marker.',
-    Frag: 'Targets are -1 to Defense Rolls from attacks with this Trait.',
-    Kinetic:
-      'If any damage is inflicted by this attack, roll 1D6. Add +1 to the roll for each Class Size larger the Active model is than the target model. Subtract -1 from the roll for each Class Size smaller the Active model is than the target model. On a result of 4+, rotate the target model 45° away from the Active Unit, in a direction chosen by the Active Player.',
-    Light:
-      'This attack will cause 1 damage to Armor or Structure for every 2 hits that are not evaded, rounding down.',
-    Limited: 'This weapon system has a limited number of uses per battle (represented by bubbles).',
-    Long: 'Weapon has a minimum effective firing distance, can only be fired at targets (X) inches or beyond.',
-    Melee:
-      'Add (X) to the Attack Pool of this mech when it is performing a Smash Order (value depends on HE-V class). This model counts as one Class Size larger during a Smash order. This weapon System is not used in an Engage Order.',
-    Smart:
-      'The Active Unit may use any friendly unit with a Target Designator for determining Line of Sight for attacks with this Weapon System.',
-  },
+  traitDefinitions,
 }
 
-// Helper function to find the maximum die step available
-export const getMaxDieStep = () => {
-  if (!gameData.dice || gameData.dice.length === 0) {
-    console.error('gameData.dice is missing or empty!')
-    return -1
-  }
-  return Math.max(...gameData.dice.map((d) => d.step))
-}
+export const getMaxDieStep = () => Array.isArray(gameData.dice) && gameData.dice.length ? Math.max(...gameData.dice.map(d => d.step)) : -1
+export const findClassByName = (name) => gameData.classes.find(c => c.name === name) || null
+export const findWeaponById = (id) => gameData.weapons.find(w => w.id === id) || null
+export const findUpgradeById = (id) => gameData.upgrades.find(u => u.id === id) || null
