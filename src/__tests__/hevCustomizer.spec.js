@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import HevCustomizer from '../components/hevCustomizer.vue'
 import { gameData } from '../gameData.js'
+import { describe, it, expect } from 'vitest'
 
 describe('HevCustomizer.vue', () => {
   it('renders and emits add-hev', async () => {
@@ -11,8 +12,8 @@ describe('HevCustomizer.vue', () => {
     wrapper.vm.$emit('add-hev', {
       unitName: 'Test Unit',
       selectedClass: gameData.classes[0],
-      effectiveArmorDie: { die: 'd6', step: 1 },
-      effectiveStructureDie: { die: 'd4', step: 0 },
+      effectiveArmor: 6, // Light baseArmor
+      effectiveStructure: 4, // Light baseStructure
       selectedWeapons: [],
       selectedUpgrades: [],
       totalUnitTonnage: 20,

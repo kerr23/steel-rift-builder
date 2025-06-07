@@ -19,26 +19,19 @@ export const traitDefinitions = {
 export const gameData = {
   classes: [
     {
-      name: 'Light', baseTonnage: 20, baseSlots: 4, defaultArmorDie: 'd6', defaultStructureDie: 'd4', baseMovement: 12, defenseRoll: '3+',
+      name: 'Light', baseTonnage: 20, baseSlots: 4, baseArmor: 6, baseStructure: 4, baseMovement: 12, defenseRoll: '3+',
       special: "Roll 1D6 for each point of Structure Damage it has lost during this Attack. On a 5+, the Target takes an additional point of Damage"
     },
     {
-      name: 'Medium', baseTonnage: 30, baseSlots: 5, defaultArmorDie: 'd8', defaultStructureDie: 'd6', baseMovement: 10, defenseRoll: '4+',
+      name: 'Medium', baseTonnage: 30, baseSlots: 5, baseArmor: 8, baseStructure: 6, baseMovement: 10, defenseRoll: '4+',
     },
     {
-      name: 'Heavy', baseTonnage: 40, baseSlots: 6, defaultArmorDie: 'd10', defaultStructureDie: 'd8', baseMovement: 8, defenseRoll: '5+',
+      name: 'Heavy', baseTonnage: 40, baseSlots: 6, baseArmor: 10, baseStructure: 8, baseMovement: 8, defenseRoll: '5+',
     },
     {
-      name: 'Ultra-Heavy', baseTonnage: 50, baseSlots: 7, defaultArmorDie: 'd12', defaultStructureDie: 'd10', baseMovement: 6, defenseRoll: '6+',
+      name: 'Ultra-Heavy', baseTonnage: 50, baseSlots: 7, baseArmor: 12, baseStructure: 10, baseMovement: 6, defenseRoll: '6+',
       special: "Rolls 1D6 for each point of Structure Damage it has lost during this Attack. On a 5+, the Damage is ignored"
     },
-  ],
-  dice: [
-    { step: 0, die: 'd4', sides: 4, armorCost: 4, structureCost: 4 },
-    { step: 1, die: 'd6', sides: 6, armorCost: 6, structureCost: 6 },
-    { step: 2, die: 'd8', sides: 8, armorCost: 8, structureCost: 8 },
-    { step: 3, die: 'd10', sides: 10, armorCost: 10, structureCost: 10 },
-    { step: 4, die: 'd12', sides: 12, armorCost: 12, structureCost: 12 },
   ],
   weapons: [
     {
@@ -245,7 +238,6 @@ export const gameData = {
   traitDefinitions,
 }
 
-export const getMaxDieStep = () => Array.isArray(gameData.dice) && gameData.dice.length ? Math.max(...gameData.dice.map(d => d.step)) : -1
 export const findClassByName = (name) => gameData.classes.find(c => c.name === name) || null
 export const findWeaponById = (id) => gameData.weapons.find(w => w.id === id) || null
 export const findUpgradeById = (id) => gameData.upgrades.find(u => u.id === id) || null

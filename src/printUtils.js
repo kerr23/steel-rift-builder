@@ -6,9 +6,7 @@ export function generatePrintHtml({
   rosterName,
   totalRosterBaseTonnage,
   getBaseTonnage,
-  findDieObjectPrint,
   generateBubbleHtml,
-  getModificationText,
   formatPrintTrait,
   gameRulesData
 }) {
@@ -22,8 +20,6 @@ export function generatePrintHtml({
   roster.forEach((unit) => {
     if (!unit || !unit.selectedClass) return
     const unitClassName = unit.selectedClass.name
-    const baseArmorDie = findDieObjectPrint(unit.selectedClass.defaultArmorDie)
-    const baseStructDie = findDieObjectPrint(unit.selectedClass.defaultStructureDie)
     const unitBaseMovement = unit.selectedClass?.baseMovement ?? 0
     const unitHasJumpJets = unit.selectedUpgrades?.some((upg) => upg.id === 'u3' || upg.id === 'u6') ?? false
     let unitJumpMovement = 0
@@ -101,22 +97,29 @@ export function generatePrintHtml({
         </div>
         <div class="print-defense-row armor-row">
           <span class="print-defense-label">Armor:</span>
-          ${generateBubbleHtml(unit.effectiveArmorDie?.sides ?? 0, false)}
-          ${getModificationText(baseArmorDie, unit.effectiveArmorDie)}
+          <span class="bubble-display">
+            ${generateBubbleHtml(
+              unit.armorBaseValue ?? unit.effectiveArmor ?? 0,
+              false
+            )}
+          </span>
         </div>
         <div class="print-defense-row structure-row">
           <span class="print-defense-label">Structure:</span>
-          ${generateStructureBubbleHtml(unit.effectiveStructureDie?.sides ?? 0)}
-          ${getModificationText(baseStructDie, unit.effectiveStructureDie)}
+          <span class="bubble-display">
+            ${generateStructureBubbleHtml(
+              unit.structureBaseValue ?? unit.effectiveStructure ?? 0
+            )}
+          </span>
         </div>`
-    const structureSides = unit.effectiveStructureDie?.sides ?? 0
-    if (structureSides > 0) {
-      const yellowThresholdPips = Math.floor(structureSides * 0.75)
-      const orangeThresholdPips = Math.floor(structureSides * 0.5)
-      const redThresholdPips = Math.floor(structureSides * 0.25)
-      const hasYellowThreshold = yellowThresholdPips < structureSides
-      const hasOrangeThreshold = orangeThresholdPips < structureSides
-      const hasRedThreshold = redThresholdPips < structureSides
+    const structureValue = unit.structureBaseValue ?? unit.effectiveStructure ?? 0
+    if (structureValue > 0) {
+      const yellowThresholdPips = Math.floor(structureValue * 0.75)
+      const orangeThresholdPips = Math.floor(structureValue * 0.5)
+      const redThresholdPips = Math.floor(structureValue * 0.25)
+      const hasYellowThreshold = yellowThresholdPips < structureValue
+      const hasOrangeThreshold = orangeThresholdPips < structureValue
+      const hasRedThreshold = redThresholdPips < structureValue
       if (hasYellowThreshold || hasOrangeThreshold || hasRedThreshold) {
         htmlBody += `<div class="threshold-descriptions">`
         if (hasYellowThreshold)
@@ -213,18 +216,18 @@ export function generatePrintHtml({
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Print Roster - ${rosterName || 'Unnamed'}</title>${cssLink}</head><body><div class="print-container">${htmlBody}</div></body></html>`
 }
 
-function generateStructureBubbleHtml(sides) {
-  if (!sides || sides <= 0) return '<span class="placeholder-text-inline italic text-text-muted text-xs pl-1">N/A</span>';
+function generateStructureBubbleHtml(value) {
+  if (!value || value <= 0) return '<span class="placeholder-text-inline italic text-text-muted text-xs pl-1">N/A</span>';
   let html = '';
-  for (let n = 1; n <= sides; n++) {
+  for (let n = 1; n <= value; n++) {
     // Insert dividers after the correct pip, counting from left to right
-    if (n === sides - Math.floor(sides * 0.25) && sides >= 4) {
+    if (n === value - Math.floor(value * 0.25) && value >= 4) {
       html += '<span class="threshold-divider divider-green" style="display:inline-block;width:1.5px;height:10px;vertical-align:middle;background-color:var(--success-color);"></span>';
     }
-    if (n === sides - Math.floor(sides * 0.5) && sides >= 2) {
+    if (n === value - Math.floor(value * 0.5) && value >= 2) {
       html += '<span class="threshold-divider divider-yellow" style="display:inline-block;width:1.5px;height:10px;vertical-align:middle;background-color:#b38600;"></span>';
     }
-    if (n === sides - Math.floor(sides * 0.75) && sides >= 1) {
+    if (n === value - Math.floor(value * 0.75) && value >= 1) {
       html += '<span class="threshold-divider divider-red" style="display:inline-block;width:1.5px;height:10px;vertical-align:middle;background-color:var(--danger-color);"></span>';
     }
     html += '<span class="bubble" style="display:inline-block;width:9px;height:9px;border-radius:50%;border:1px solid #000;background:transparent;box-sizing:border-box;"></span>';
