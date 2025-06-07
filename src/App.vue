@@ -70,11 +70,6 @@ const editHev = (unitToEdit) => {
 }
 
 // --- Print Formatting Helpers ---
-const findDieObjectPrint = (dieString) => {
-  if (!gameRulesData?.dice || !dieString) return null
-  return gameRulesData.dice.find((d) => d.die === dieString)
-}
-
 const generateBubbleHtml = (sides, isStructureTrack = false) => {
   if (sides <= 0) return `<span class="placeholder-text-inline">N/A</span>`
   let bubblesHtml = ''
@@ -154,7 +149,6 @@ const formatForPrint = () => {
       rosterName: rosterName.value,
       totalRosterBaseTonnage: totalRosterBaseTonnage.value,
       getBaseTonnage,
-      findDieObjectPrint,
       generateBubbleHtml,
       getModificationText,
       formatPrintTrait,
