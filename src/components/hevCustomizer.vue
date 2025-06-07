@@ -545,53 +545,53 @@ defineExpose({ resetForm, loadHevForEditing })
           <p v-if="hasJumpJets" class="my-[0.15rem] text-[0.9rem]"><strong class="inline-block min-w-[80px] font-semibold">Jump:</strong> {{ jumpMovementSpeed }}"</p>
         </div>
       </div>
-
-      <div class="form-section defense-section flex-1 min-w-[280px]" v-if="selectedClass">
+      <div v-if="selectedClass" class="form-section defense-section flex-1 min-w-[280px]">
         <h3 class="section-title text-[1.05rem] text-secondary border-b border-border pb-1 mb-3 font-medium">Armor & Structure</h3>
-        <div class="defense-layout-container flex flex-col gap-3 flex-grow border border-medium-grey rounded p-3">
-          <div class="defense-row flex items-center gap-3 min-h-[38px] armor-row">
-            <label class="defense-label font-semibold min-w-[70px] text-right text-dark-grey text-[0.9rem] flex-shrink-0">Armor:</label>
-            <div class="bubble-display flex flex-nowrap gap-[2px] leading-none items-center overflow-hidden flex-grow min-w-[100px]" :title="`Effective Armor: ${effectiveArmorDie?.die || 'N/A'}`">
-              <template v-if="armorSides > 0">
-                <span class="bubble border-success" v-for="n in armorSides" :key="`armor-bubble-${n}`"></span>
-              </template>
-              <span v-else class="placeholder-text-inline italic text-text-muted text-sm w-full text-left pl-1">N/A</span>
-            </div>
-            <select class="modification-select px-2 py-1 text-sm min-w-[90px] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="armorModification">
-              <option v-for="opt in modificationOptions" :key="`armor-mod-${opt.value}`" :value="opt.value" :disabled="(opt.value === 'stripped' && !canStripArmor) || (opt.value === 'reinforced' && !canReinforceArmor)">
-                {{ opt.label }}
-              </option>
-            </select>
-            <span class="die-cost text-[0.85rem] font-medium text-dark-grey whitespace-nowrap flex-shrink-0 min-w-[40px] text-right">({{ armorCost }}T)</span>
+        <div class="defense-row flex items-center mb-2">
+          <label class="defense-label font-semibold min-w-[70px] text-right text-dark-grey text-[0.9rem] flex-shrink-0">Armor:</label>
+          <div class="bubble-display flex flex-nowrap gap-[2px] leading-none items-center overflow-hidden flex-grow min-w-[100px]" :title="`Effective Armor: ${effectiveArmorDie?.die || 'N/A'}`">
+            <template v-if="armorSides > 0">
+              <span
+                v-for="n in armorSides"
+                :key="`armor-bubble-${n}`"
+                class="inline-block w-4 h-4 rounded-full border-2 border-black mr-1 bg-transparent"
+              ></span>
+            </template>
+            <span v-else class="placeholder-text-inline italic text-text-muted text-sm w-full text-left pl-1">N/A</span>
           </div>
-          <div class="defense-row flex items-center gap-3 min-h-[38px] structure-row">
-            <label class="defense-label font-semibold min-w-[70px] text-right text-dark-grey text-[0.9rem] flex-shrink-0">Structure:</label>
-            <div class="bubble-display flex flex-nowrap gap-[2px] leading-none items-center overflow-hidden flex-grow min-w-[100px]" :title="`Effective Structure: ${effectiveStructureDie?.die || 'N/A'}`">
-              <template v-if="structureSides > 0">
-                <template v-for="n in structureSides" :key="`struct-bubble-${n}`">
-                  <span v-if="n === structureMarker_25_Percent" class="threshold-divider divider-green bg-success"></span>
-                  <span v-else-if="n === structureMarker_50_Percent" class="threshold-divider divider-yellow bg-warning"></span>
-                  <span v-else-if="n === structureMarker_75_Percent" class="threshold-divider divider-red bg-danger"></span>
-                  <span class="bubble"></span>
-                </template>
-              </template>
-              <span v-else class="placeholder-text-inline italic text-text-muted text-sm w-full text-left pl-1">N/A</span>
-            </div>
-            <select class="modification-select px-2 py-1 text-sm min-w-[90px] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="structureModification">
-              <option v-for="opt in modificationOptions" :key="`struct-mod-${opt.value}`" :value="opt.value" :disabled="(opt.value === 'stripped' && !canStripStructure) || (opt.value === 'reinforced' && !canReinforceStructure)">
-                {{ opt.label }}
-              </option>
-            </select>
-            <span class="die-cost text-[0.85rem] font-medium text-dark-grey whitespace-nowrap flex-shrink-0 min-w-[40px] text-right">({{ structureCost }}T)</span>
+          <select class="modification-select px-2 py-1 text-sm min-w-[90px] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="armorModification">
+            <option v-for="opt in modificationOptions" :key="`armor-mod-${opt.value}`" :value="opt.value" :disabled="(opt.value === 'stripped' && !canStripArmor) || (opt.value === 'reinforced' && !canReinforceArmor)">
+              {{ opt.label }}
+            </option>
+          </select>
+          <span class="die-cost text-[0.85rem] font-medium text-dark-grey whitespace-nowrap flex-shrink-0 min-w-[40px] text-right">({{ armorCost }}T)</span>
+        </div>
+        <div class="defense-row flex items-center mb-2">
+          <label class="defense-label font-semibold min-w-[70px] text-right text-dark-grey text-[0.9rem] flex-shrink-0">Structure:</label>
+          <div class="bubble-display flex flex-nowrap gap-[2px] leading-none items-center overflow-hidden flex-grow min-w-[100px]" :title="`Effective Structure: ${effectiveStructureDie?.die || 'N/A'}`">
+            <template v-if="structureSides > 0">
+              <span
+                v-for="n in structureSides"
+                :key="`struct-bubble-${n}`"
+                class="inline-block w-4 h-4 rounded-full border-2 border-black mr-1 bg-transparent"
+              ></span>
+            </template>
+            <span v-else class="placeholder-text-inline italic text-text-muted text-sm w-full text-left pl-1">N/A</span>
           </div>
-          <div class="threshold-descriptions mt-1 pt-2 border-t border-dashed border-border text-xs leading-tight w-full">
-            <p v-if="structureMarker_25_Percent > 1" class="threshold-desc-green my-[0.15rem] p-0 flex items-start"><strong class="min-w-[55px] text-right flex-shrink-0 inline-block font-bold mr-1 text-success">25% Dmg:</strong> All Move/Jump Orders -1</p>
-            <p v-if="structureMarker_50_Percent > 1" class="threshold-desc-yellow my-[0.15rem] p-0 flex items-start"><strong class="min-w-[55px] text-right flex-shrink-0 inline-block font-bold mr-1 text-[#b38600]">50% Dmg:</strong> Weapon Damage -1 (min 1)</p>
-            <p v-if="structureMarker_75_Percent > 1" class="threshold-desc-red my-[0.15rem] p-0 flex items-start"><strong class="min-w-[55px] text-right flex-shrink-0 inline-block font-bold mr-1 text-danger">75% Dmg:</strong> Only 1 Order per activation</p>
-          </div>
+          <select class="modification-select px-2 py-1 text-sm min-w-[90px] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="structureModification">
+            <option v-for="opt in modificationOptions" :key="`struct-mod-${opt.value}`" :value="opt.value" :disabled="(opt.value === 'stripped' && !canStripStructure) || (opt.value === 'reinforced' && !canReinforceStructure)">
+              {{ opt.label }}
+            </option>
+          </select>
+          <span class="die-cost text-[0.85rem] font-medium text-dark-grey whitespace-nowrap flex-shrink-0 min-w-[40px] text-right">({{ structureCost }}T)</span>
+        </div>
+        <div class="threshold-descriptions mt-1 pt-2 border-t border-dashed border-border text-xs leading-tight w-full">
+          <p v-if="structureMarker_25_Percent > 1" class="threshold-desc-green my-[0.15rem] p-0 flex items-start"><strong class="min-w-[55px] text-right flex-shrink-0 inline-block font-bold mr-1 text-success">25% Dmg:</strong> All Move/Jump Orders -1</p>
+          <p v-if="structureMarker_50_Percent > 1" class="threshold-desc-yellow my-[0.15rem] p-0 flex items-start"><strong class="min-w-[55px] text-right flex-shrink-0 inline-block font-bold mr-1 text-[#b38600]">50% Dmg:</strong> Weapon Damage -1 (min 1)</p>
+          <p v-if="structureMarker_75_Percent > 1" class="threshold-desc-red my-[0.15rem] p-0 flex items-start"><strong class="min-w-[55px] text-right flex-shrink-0 inline-block font-bold mr-1 text-danger">75% Dmg:</strong> Only 1 Order per activation</p>
         </div>
       </div>
-      <div class="form-section defense-section placeholder-section flex-1 min-w-[280px]" v-else>
+      <div v-else class="form-section defense-section placeholder-section flex-1 min-w-[280px]">
         <h3 class="section-title text-[1.05rem] text-secondary border-b border-border pb-1 mb-3 font-medium">Armor & Structure</h3>
         <p class="text-text-muted text-center mt-4">Select Class to configure Defense</p>
       </div>
@@ -801,4 +801,8 @@ defineExpose({ resetForm, loadHevForEditing })
   </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+.bubble-display {
+  min-height: 1.2em;
+}
+</style>
