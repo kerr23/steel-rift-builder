@@ -1,3 +1,4 @@
+/* eslint-env jest */
 import { gameData, getMaxDieStep, findClassByName, findWeaponById, findUpgradeById } from '../gameData.js'
 
 describe('gameData helpers', () => {

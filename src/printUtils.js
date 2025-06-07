@@ -12,7 +12,7 @@ export function generatePrintHtml({
   formatPrintTrait,
   gameRulesData
 }) {
-  const cssLink = '<link rel="stylesheet" href="src/assets/print.css">'
+  const cssLink = '<link rel="stylesheet" href="print.css">'
   let htmlBody = `
     <button class="no-print" onclick="window.print()">Print this page</button>
     <div class="print-header">
