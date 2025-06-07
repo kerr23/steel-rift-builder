@@ -12,7 +12,7 @@
     "lint:eslint": "eslint . --fix",
     "lint": "run-s lint:*",
     "format": "prettier --write src/",
-    "predeploy": "npm run build",
+    "predeploy": "node scripts/set-versiontag.js && npm run build",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
