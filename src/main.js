@@ -5,7 +5,8 @@ import Toast from 'vue-toastification' // Import plugin
 import 'vue-toastification/dist/index.css' // Import the CSS
 
 // Import global styles (assuming it was named main.css)
-import './assets/main.css'
+import '@/assets/main.css'
+import './assets/tailwind.css'
 
 // Configuration options for toasts (optional)
 const toastOptions = {

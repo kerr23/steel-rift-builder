@@ -1,3 +1,9 @@
+/*
+  This file previously contained your global styles.
+  Tailwind CSS is now included. You can migrate your custom styles here, or use Tailwind utility classes in your components.
+*/
+@import './tailwind.css';
+
 /* src/assets/main.css */
 
 /* Default Light Theme Variables */
