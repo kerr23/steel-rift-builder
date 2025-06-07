@@ -101,7 +101,7 @@
         <ul class="text-sm mb-2">
           <li v-for="line in getOffTableAsset(selectedOffTableType).details" :key="line"><span v-html="line"></span></li>
         </ul>
-        <p class="text-xs text-muted italic">Add this Support Asset to your force. Each use expends one Limited bubble.</p>
+        <p class="text-xs text-muted italic">Add this Support Asset to your force.</p>
       </div>
     </div>
   </section>

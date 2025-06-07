@@ -55,52 +55,194 @@ export function generatePrintHtml({
       htmlBody += `</div>` // End form-section
       htmlBody += `</div>` // End section-wrapper
 
-      htmlBody += `<div class="equipment-section">`
-      htmlBody += `<h4 class="section-title">Support Asset Properties</h4>`
-      htmlBody += `<ul class="item-list">`
-      if (Array.isArray(unit.details)) {
-        unit.details.forEach(line => {
-          // Skip tonnage line as we already rendered it above
-          if (/Tonnage:/.test(line)) return
-          // Skip Squadron Composition as we already rendered it above
-          if (/Squadron Composition:/.test(line)) return
+      // Determine if this is a weapon system or support asset
+      const isWeaponSystem = unit.details?.some(line => (/Damage:/.test(line) || /Range:/.test(line))) || false
+      const isUltraLightSquad = unit.type?.includes('Squadron') || false
 
-          // Format Limited trait with bubbles
-          if (/Traits:/.test(line) && /Limited\(\d+\)/.test(line)) {
-            htmlBody += `<li>
-              <div class="item-info-line">
-                <span>${renderLimitedTraitWithBubbles(line)}</span>
-              </div>
-            </li>`
+      if (isWeaponSystem) {
+        // Display weapon-like support assets in a table format like HEVs
+        htmlBody += `<div class="equipment-section">`
+        htmlBody += `<h4 class="section-title">Weapon Systems</h4>`
+        htmlBody += `<table class="print-weapon-table">
+          <thead>
+            <tr>
+              <th>System</th>
+              <th>Damage</th>
+              <th>Traits</th>
+            </tr>
+          </thead>
+          <tbody>`
+
+        // Extract the relevant details
+        let systemName = unit.type || 'Support System'
+        let damage = 'N/A'
+        let traits = 'None'
+        let targeting = ''
+
+        if (Array.isArray(unit.details)) {
+          // Find damage value
+          const damageDetail = unit.details.find(line => /Damage:/.test(line))
+          if (damageDetail) {
+            damage = damageDetail.replace(/<strong>Damage:<\/strong>\s*/, '')
           }
-          // Format HE-V details in the Ultra-Light squadron
-          else if (/<u>.*<\/u>/.test(line)) {
-            // This is a HE-V name in Ultra-Light Squadron
-            htmlBody += `<li>
-              <div class="item-info-line">
-                <span class="item-name">${line}</span>
-              </div>
-            </li>`
+
+          // Find traits
+          const traitsDetail = unit.details.find(line => /Traits:/.test(line) && /Limited\(\d+\)/.test(line))
+          if (traitsDetail) {
+            traits = renderLimitedTraitWithBubbles(traitsDetail.replace(/<strong>Traits:<\/strong>\s*/, ''))
+          } else {
+            const regularTraitsDetail = unit.details.find(line => /Traits:/.test(line))
+            if (regularTraitsDetail) {
+              traits = regularTraitsDetail.replace(/<strong>Traits:<\/strong>\s*/, '')
+            }
           }
-          // For Upgrade Pod information
-          else if (line.startsWith('<strong>Upgrade Pod:</strong>')) {
-            htmlBody += `<li>
-              <div class="item-info-line">
-                <span class="item-name">${line}</span>
-              </div>
-            </li>`
+
+          // Find targeting restrictions
+          const targetingDetail = unit.details.find(line => /Targeting Restriction:/.test(line))
+          if (targetingDetail) {
+            targeting = targetingDetail.replace(/<strong>Targeting Restriction:<\/strong>\s*/, '')
           }
-          // For regular stats and properties
-          else {
-            htmlBody += `<li>
-              <div class="item-info-line">
-                <span>${line}</span>
-              </div>
-            </li>`
+        }
+
+        htmlBody += `<tr>
+          <td>${systemName}</td>
+          <td class="text-center">${damage}</td>
+          <td>${traits}</td>
+        </tr>`
+
+        htmlBody += `</tbody></table>`
+
+        if (targeting) {
+          htmlBody += `<div class="targeting-restriction">
+            <p><strong>Targeting:</strong> ${targeting}</p>
+          </div>`
+        }
+
+        // If there are any notes, display them
+        if (Array.isArray(unit.details)) {
+          const notes = unit.details.filter(line => /Note:/.test(line))
+          if (notes.length > 0) {
+            htmlBody += `<div class="support-asset-notes">
+              <ul class="notes-list">`
+            notes.forEach(note => {
+              htmlBody += `<li>${note}</li>`
+            })
+            htmlBody += `</ul>
+            </div>`
           }
+        }
+
+        htmlBody += `</div>`
+      } else if (isUltraLightSquad) {
+        // Enhanced display for Ultra-Light squadrons
+        htmlBody += `<div class="equipment-section">`
+        htmlBody += `<h4 class="section-title">Squadron Composition</h4>`
+
+        // Create a nice table for the UL HE-V squadron
+        htmlBody += `<div class="squadron-container">`
+
+        // Group UL HE-Vs and their details
+        let currentHEV = null
+        let hevDetails = []
+        const hevs = []
+
+        if (Array.isArray(unit.details)) {
+          unit.details.forEach(line => {
+            if (/Tonnage:/.test(line) || /Squadron Composition:/.test(line)) {
+              return // Skip, already handled
+            }
+
+            if (/<u>.*<\/u>/.test(line)) {
+              // New HE-V found
+              if (currentHEV) {
+                hevs.push({ name: currentHEV, details: [...hevDetails] })
+                hevDetails = []
+              }
+              currentHEV = line.replace(/<\/?u>/g, '')
+            } else if (currentHEV && !line.startsWith('<strong>Upgrade Pod:</strong>')) {
+              hevDetails.push(line)
+            }
+          })
+
+          // Don't forget the last HE-V
+          if (currentHEV && hevDetails.length > 0) {
+            hevs.push({ name: currentHEV, details: [...hevDetails] })
+          }
+        }
+
+        // Display each HE-V with its details
+        htmlBody += `<div class="ultra-light-grid">`
+        hevs.forEach(hev => {
+          htmlBody += `<div class="ultra-light-card">
+            <div class="ultra-light-name">${hev.name}</div>
+            <ul class="ultra-light-details">`
+          hev.details.forEach(detail => {
+            htmlBody += `<li>${detail}</li>`
+          })
+          htmlBody += `</ul>
+          </div>`
         })
+        htmlBody += `</div>`
+
+        // Find upgrade pod info
+        const upgradePodLine = unit.details?.find(line => line.startsWith('<strong>Upgrade Pod:</strong>'))
+        if (upgradePodLine) {
+          htmlBody += `<div class="upgrade-pod-info">
+            <h5>Upgrade Pod</h5>
+            <p>${upgradePodLine.replace('<strong>Upgrade Pod:</strong>', '').trim()}</p>
+          </div>`
+        }
+
+        htmlBody += `</div></div>` // End squadron-container and equipment-section
+      } else {
+        // Default display for other support assets
+        htmlBody += `<div class="equipment-section">`
+        htmlBody += `<h4 class="section-title">Support Asset Properties</h4>`
+        htmlBody += `<ul class="item-list">`
+        if (Array.isArray(unit.details)) {
+          unit.details.forEach(line => {
+            // Skip tonnage line as we already rendered it above
+            if (/Tonnage:/.test(line)) return
+            // Skip Squadron Composition as we already rendered it above
+            if (/Squadron Composition:/.test(line)) return
+
+            // Format Limited trait with bubbles
+            if (/Traits:/.test(line) && /Limited\(\d+\)/.test(line)) {
+              htmlBody += `<li>
+                <div class="item-info-line">
+                  <span>${renderLimitedTraitWithBubbles(line)}</span>
+                </div>
+              </li>`
+            }
+            // Format HE-V details in the Ultra-Light squadron
+            else if (/<u>.*<\/u>/.test(line)) {
+              // This is a HE-V name in Ultra-Light Squadron
+              htmlBody += `<li>
+                <div class="item-info-line">
+                  <span class="item-name">${line}</span>
+                </div>
+              </li>`
+            }
+            // For Upgrade Pod information
+            else if (line.startsWith('<strong>Upgrade Pod:</strong>')) {
+              htmlBody += `<li>
+                <div class="item-info-line">
+                  <span class="item-name">${line}</span>
+                </div>
+              </li>`
+            }
+            // For regular stats and properties
+            else {
+              htmlBody += `<li>
+                <div class="item-info-line">
+                  <span>${line}</span>
+                </div>
+              </li>`
+            }
+          })
+        }
+        htmlBody += `</ul></div>`
       }
-      htmlBody += `</ul></div>`
 
       // If this is a limited use asset, add a reminder
       const hasLimited = unit.details?.some(line => /Limited\(\d+\)/.test(line))
