@@ -100,6 +100,11 @@ body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; padding:
 .trait-list li:last-child { margin-bottom: 0; }
 .trait-list li strong { font-weight: bold; color: var(--dark-grey); margin-right: 0.4em; }
 
+/* Support Asset Card Styles */
+.support-asset-wrapper { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.8rem; align-items: stretch; }
+.support-section { flex: 1; min-width: 230px; display: flex; flex-direction: column; }
+.reminder-text { font-size: 0.75rem; font-style: italic; color: var(--text-muted); text-align: center; padding: 0.4rem; margin: 0; background-color: var(--light-grey); border: 1px solid var(--medium-grey); border-radius: var(--border-radius); }
+
 /* Print specific overrides */
 @media print {
     body { margin: 0; padding: 0; background-color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; }

@@ -20,24 +20,97 @@ export function generatePrintHtml({
   roster.forEach((unit) => {
     if (unit.isSupportAsset) {
       htmlBody += `<div class="unit-card support-asset-card">`
-      htmlBody += `<h3 class="unit-title"><span class="unit-title-hev-name">${unit.type || 'Support Asset'}</span></h3>`
-      htmlBody += `<div class="support-asset-details">`
-      htmlBody += `<ul class="support-asset-list">`
+      htmlBody += `<h3 class="unit-title"><span class="unit-title-hev-name">${unit.type || 'Support Asset'}</span>`
+      if (rosterName) {
+        htmlBody += `<span class="unit-title-roster-info">
+          <span class="unit-title-roster-name">(${rosterName})</span>
+          <span class="unit-title-total-tonnage">- ${totalRosterBaseTonnage}T Total</span>
+        </span>`
+      } else {
+        htmlBody += `<span class="unit-title-roster-info">
+          <span class="unit-title-total-tonnage">${totalRosterBaseTonnage}T Total</span>
+        </span>`
+      }
+      htmlBody += `</h3>`
+
+      htmlBody += `<div class="section-wrapper support-asset-wrapper">`
+      htmlBody += `<div class="form-section support-section">`
+      htmlBody += `<h4 class="section-title">Support Asset Details</h4>`
+
+      // Extract class information if available
+      const assetClass = unit.class || (unit.type && unit.type.includes('Squadron') ? 'Ultra-Light HE-V Squadron' : 'Support Asset')
+      htmlBody += `<p><strong>Class:</strong> ${assetClass}</p>`
+
+      // For Ultra-Light HEV Squadron, extract composition if available
+      if (Array.isArray(unit.details)) {
+        const compositionLine = unit.details.find(line => line.includes('Squadron Composition'))
+        if (compositionLine) {
+          htmlBody += `<p>${compositionLine}</p>`
+        }
+      }
+
+      // Add Tonnage information
+      htmlBody += `<p><strong>Tonnage:</strong> ${unit.totalUnitTonnage || 10}T</p>`
+
+      htmlBody += `</div>` // End form-section
+      htmlBody += `</div>` // End section-wrapper
+
+      htmlBody += `<div class="equipment-section">`
+      htmlBody += `<h4 class="section-title">Support Asset Properties</h4>`
+      htmlBody += `<ul class="item-list">`
       if (Array.isArray(unit.details)) {
         unit.details.forEach(line => {
-          // Skip tonnage line if present (we'll render it below)
-          if (/Tonnage:/.test(line)) return;
-          // If this is the traits line, render Limited(N) with bubbles
+          // Skip tonnage line as we already rendered it above
+          if (/Tonnage:/.test(line)) return
+          // Skip Squadron Composition as we already rendered it above
+          if (/Squadron Composition:/.test(line)) return
+
+          // Format Limited trait with bubbles
           if (/Traits:/.test(line) && /Limited\(\d+\)/.test(line)) {
-            htmlBody += `<li><span>${renderLimitedTraitWithBubbles(line)}</span></li>`
-          } else {
-            htmlBody += `<li>${line}</li>`
+            htmlBody += `<li>
+              <div class="item-info-line">
+                <span>${renderLimitedTraitWithBubbles(line)}</span>
+              </div>
+            </li>`
+          }
+          // Format HE-V details in the Ultra-Light squadron
+          else if (/<u>.*<\/u>/.test(line)) {
+            // This is a HE-V name in Ultra-Light Squadron
+            htmlBody += `<li>
+              <div class="item-info-line">
+                <span class="item-name">${line}</span>
+              </div>
+            </li>`
+          }
+          // For Upgrade Pod information
+          else if (line.startsWith('<strong>Upgrade Pod:</strong>')) {
+            htmlBody += `<li>
+              <div class="item-info-line">
+                <span class="item-name">${line}</span>
+              </div>
+            </li>`
+          }
+          // For regular stats and properties
+          else {
+            htmlBody += `<li>
+              <div class="item-info-line">
+                <span>${line}</span>
+              </div>
+            </li>`
           }
         })
       }
-      htmlBody += `</ul>`
-      htmlBody += `<div class="support-asset-meta"><strong>Tonnage:</strong> ${unit.totalUnitTonnage || 10}T</div>`
-      htmlBody += `</div></div>`
+      htmlBody += `</ul></div>`
+
+      // If this is a limited use asset, add a reminder
+      const hasLimited = unit.details?.some(line => /Limited\(\d+\)/.test(line))
+      if (hasLimited) {
+        htmlBody += `<div class="equipment-section trait-definitions-section">
+          <p class="reminder-text">Each use expends one Limited bubble.</p>
+        </div>`
+      }
+
+      htmlBody += `</div>` // End unit-card
       return
     }
     if (!unit || !unit.selectedClass) return
