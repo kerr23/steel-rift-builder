@@ -43,13 +43,8 @@ const modificationOptions = ref([
 ])
 
 // --- Helper Functions ---
-const findDieObject = (dieString) => {
-  return allDice.value.find((d) => d.die === dieString)
-}
-const findDieByStep = (step) => {
-  if (step < 0) return null
-  return allDice.value.find((d) => d.step === step)
-}
+const findDieObject = (dieString) => allDice.value.find((d) => d.die === dieString)
+const findDieByStep = (step) => (step < 0 ? null : allDice.value.find((d) => d.step === step))
 const calculateNthWeaponCost = (weaponData, n, className) => {
   if (
     n <= 0 ||
@@ -57,44 +52,29 @@ const calculateNthWeaponCost = (weaponData, n, className) => {
     !className ||
     !weaponData.tonnage ||
     weaponData.tonnage[className] === undefined
-  ) {
-    return 0
-  }
+  ) return 0
   const baseCost = weaponData.tonnage[className]
   if (n === 1) return baseCost
   const penaltyAmount = Math.ceil(baseCost * 0.5)
-  const penaltyMultiplier = n - 1
-  const totalPenaltyForNth = penaltyMultiplier * penaltyAmount
-  return baseCost + totalPenaltyForNth
+  return baseCost + (n - 1) * penaltyAmount
 }
 
-// Helper to format traits for display in the selected list (handles bubbles and class-specific values)
+// DRY trait formatting for both weapons and upgrades
 const formatTraitDisplay = (trait) => {
-  // Assuming trait is always an object from gameData.weapons
   if (!trait || typeof trait !== 'object' || !trait.name) return 'Unknown Trait'
-
-  const currentClassNameForTrait = selectedClass.value?.name
-
-  if (trait.name === 'Limited' && trait.value !== undefined) {
-    let bubbles = ''
-    for (let i = 0; i < trait.value; i++) {
-      bubbles += `<span class="trait-bubble"></span>`
-    }
-    return `Limited(${bubbles})`
+  const currentClassName = selectedClass.value?.name
+  if (trait.name === 'Limited' && typeof trait.value === 'number') {
+    // Use unfilled bubbles for Limited
+    return `Limited(${Array(trait.value).fill('○').join('')})`
   }
   if (typeof trait.value === 'object' && trait.value !== null) {
-    if (currentClassNameForTrait && trait.value[currentClassNameForTrait] !== undefined) {
-      return `${trait.name} ${trait.value[currentClassNameForTrait]}`
+    if (currentClassName && trait.value[currentClassName] !== undefined) {
+      return `${trait.name} ${trait.value[currentClassName]}`
     } else {
-      const classValues = Object.entries(trait.value)
-        .map(([k, v]) => `${k[0]}:${v}`)
-        .join('/')
-      return `${trait.name} (${classValues})`
+      return `${trait.name} (${Object.entries(trait.value).map(([k, v]) => `${k[0]}:${v}`).join('/')})`
     }
   }
-  if (trait.value !== undefined) {
-    return `${trait.name} ${trait.value}`
-  }
+  if (trait.value !== undefined) return `${trait.name} ${trait.value}`
   return trait.name
 }
 // --- END Helper Functions ---
@@ -104,90 +84,57 @@ const baseTonnage = computed(() => selectedClass.value?.baseTonnage ?? 0)
 const baseSlots = computed(() => selectedClass.value?.baseSlots ?? 0)
 const motiveTonnageModifier = computed(() => selectedMotiveType.value?.tonnageModifier ?? 0)
 const motiveSlotModifier = computed(() => selectedMotiveType.value?.slotModifier ?? 0)
-const maxSlots = computed(() => (baseSlots.value || 0) + motiveSlotModifier.value)
+const maxSlots = computed(() => baseSlots.value + motiveSlotModifier.value)
 const baseArmorDieObject = computed(() => findDieObject(selectedClass.value?.defaultArmorDie))
-const baseStructureDieObject = computed(() =>
-  findDieObject(selectedClass.value?.defaultStructureDie),
-)
-const effectiveArmorStep = computed(() => {
-  if (!baseArmorDieObject.value) return -1
-  let targetStep = baseArmorDieObject.value.step
-  if (armorModification.value === 'stripped') {
-    targetStep = Math.max(0, baseArmorDieObject.value.step - 1)
-  } else if (armorModification.value === 'reinforced') {
-    targetStep = Math.min(maxDieStep.value, baseArmorDieObject.value.step + 1)
-  }
-  return targetStep
-})
-const effectiveArmorDie = computed(() => findDieByStep(effectiveArmorStep.value))
+const baseStructureDieObject = computed(() => findDieObject(selectedClass.value?.defaultStructureDie))
+
+function getModifiedDie(baseDieObj, mod, maxStep) {
+  if (!baseDieObj) return null
+  let step = baseDieObj.step
+  if (mod === 'stripped') step = Math.max(0, step - 1)
+  else if (mod === 'reinforced') step = Math.min(maxStep, step + 1)
+  return findDieByStep(step)
+}
+
+const effectiveArmorDie = computed(() => getModifiedDie(baseArmorDieObject.value, armorModification.value, maxDieStep.value))
+const effectiveStructureDie = computed(() => getModifiedDie(baseStructureDieObject.value, structureModification.value, maxDieStep.value))
+
 const armorCost = computed(() => effectiveArmorDie.value?.armorCost ?? 0)
 const armorSides = computed(() => effectiveArmorDie.value?.sides ?? 0)
-const canStripArmor = computed(() => baseArmorDieObject.value && baseArmorDieObject.value.step > 0)
-const canReinforceArmor = computed(
-  () => baseArmorDieObject.value && baseArmorDieObject.value.step < maxDieStep.value,
-)
-const effectiveStructureStep = computed(() => {
-  if (!baseStructureDieObject.value) return -1
-  let targetStep = baseStructureDieObject.value.step
-  if (structureModification.value === 'stripped') {
-    targetStep = Math.max(0, baseStructureDieObject.value.step - 1)
-  } else if (structureModification.value === 'reinforced') {
-    targetStep = Math.min(maxDieStep.value, baseStructureDieObject.value.step + 1)
-  }
-  return targetStep
-})
-const effectiveStructureDie = computed(() => findDieByStep(effectiveStructureStep.value))
-const structureCost = computed(
-  () => effectiveStructureDie.value?.structureCost ?? effectiveStructureDie.value?.armorCost ?? 0,
-)
+const structureCost = computed(() => effectiveStructureDie.value?.structureCost ?? effectiveStructureDie.value?.armorCost ?? 0)
 const structureSides = computed(() => effectiveStructureDie.value?.sides ?? 0)
-const canStripStructure = computed(
-  () => baseStructureDieObject.value && baseStructureDieObject.value.step > 0,
-)
-const canReinforceStructure = computed(
-  () => baseStructureDieObject.value && baseStructureDieObject.value.step < maxDieStep.value,
-)
-const structureMarker_25_Percent = computed(() => {
+
+const canStripArmor = computed(() => baseArmorDieObject.value && baseArmorDieObject.value.step > 0)
+const canReinforceArmor = computed(() => baseArmorDieObject.value && baseArmorDieObject.value.step < maxDieStep.value)
+const canStripStructure = computed(() => baseStructureDieObject.value && baseStructureDieObject.value.step > 0)
+const canReinforceStructure = computed(() => baseStructureDieObject.value && baseStructureDieObject.value.step < maxDieStep.value)
+
+function getStructureMarker(percent) {
   const s = structureSides.value
-  return s > 0 ? s - Math.floor(s * 0.75) + 1 : 0
-})
-const structureMarker_50_Percent = computed(() => {
-  const s = structureSides.value
-  return s > 0 ? s - Math.floor(s * 0.5) + 1 : 0
-})
-const structureMarker_75_Percent = computed(() => {
-  const s = structureSides.value
-  return s > 0 ? s - Math.floor(s * 0.25) + 1 : 0
-})
-const baseMovementSpeed = computed(() => {
-  return selectedClass.value?.baseMovement ?? 0
-})
-const hasJumpJets = computed(() => {
-  return selectedUpgrades.value.some((upg) => upg.id === 'u3' || upg.id === 'u6')
-})
+  return s > 0 ? s - Math.floor(s * percent) + 1 : 0
+}
+const structureMarker_25_Percent = computed(() => getStructureMarker(0.75))
+const structureMarker_50_Percent = computed(() => getStructureMarker(0.5))
+const structureMarker_75_Percent = computed(() => getStructureMarker(0.25))
+
+const baseMovementSpeed = computed(() => selectedClass.value?.baseMovement ?? 0)
+const hasJumpJets = computed(() => selectedUpgrades.value.some((upg) => upg.id === 'u3' || upg.id === 'u6'))
 const jumpMovementSpeed = computed(() => {
   if (!hasJumpJets.value) return 0
   const baseMove = baseMovementSpeed.value
-  if (baseMove === 12) return 10
-  if (baseMove === 10) return 8
-  if (baseMove === 8) return 6
-  if (baseMove === 6) return 4
-  return 0
+  return {12: 10, 10: 8, 8: 6, 6: 4}[baseMove] ?? 0
 })
+
 const weaponDetails = computed(() => {
-  const counts = {}
+  const counts = new Map()
   let totalTonnage = 0
   let totalSlots = 0
   const currentClassName = selectedClass.value?.name
-  if (!currentClassName) {
-    return { totalTonnage: 0, totalSlots: 0 }
-  }
+  if (!currentClassName) return { totalTonnage: 0, totalSlots: 0 }
   selectedWeapons.value.forEach((weapon) => {
-    if (weapon && weapon.id) {
-      counts[weapon.id] = (counts[weapon.id] || 0) + 1
-    }
+    if (weapon && weapon.id) counts.set(weapon.id, (counts.get(weapon.id) || 0) + 1)
   })
-  Object.entries(counts).forEach(([weaponId, quantity]) => {
+  for (const [weaponId, quantity] of counts.entries()) {
     const weaponData = props.gameRules.weapons.find((w) => w.id === weaponId)
     if (weaponData && weaponData.tonnage !== undefined) {
       let groupTonnage = 0
@@ -196,10 +143,8 @@ const weaponDetails = computed(() => {
       }
       totalTonnage += groupTonnage
       totalSlots += quantity
-    } else {
-      console.warn(`Weapon data incomplete or missing for ID: ${weaponId}`)
     }
-  })
+  }
   return { totalTonnage, totalSlots }
 })
 
@@ -210,126 +155,77 @@ const upgradeDetails = computed(() => {
     if (typeof up.tonnage === 'object' && up.tonnage !== null) {
       if (currentClassName && up.tonnage[currentClassName] !== undefined) {
         totalTonnage += up.tonnage[currentClassName]
-      } else {
-        console.warn(
-          `Upgrade "${up.name}" has object tonnage but no value for class "${currentClassName}". Using 0T for calculation.`,
-        )
       }
     } else if (typeof up.tonnage === 'number') {
       totalTonnage += up.tonnage
     }
   })
-  const totalSlots = selectedUpgrades.value.length
-  return { totalTonnage, totalSlots }
+  return { totalTonnage, totalSlots: selectedUpgrades.value.length }
 })
 
 const usedSlots = computed(() => weaponDetails.value.totalSlots + upgradeDetails.value.totalSlots)
-const totalUnitTonnageUsed = computed(
-  () =>
-    armorCost.value +
-    structureCost.value +
-    weaponDetails.value.totalTonnage +
-    upgradeDetails.value.totalTonnage +
-    motiveTonnageModifier.value,
+const totalUnitTonnageUsed = computed(() =>
+  armorCost.value + structureCost.value + weaponDetails.value.totalTonnage + upgradeDetails.value.totalTonnage + motiveTonnageModifier.value
 )
 const remainingUnitTonnage = computed(() => baseTonnage.value - totalUnitTonnageUsed.value)
-const isValidUnit = computed(() => {
-  return (
-    !!selectedClass.value &&
-    !!effectiveArmorDie.value &&
-    !!effectiveStructureDie.value &&
-    !!selectedMotiveType.value
-  )
-})
+const isValidUnit = computed(() =>
+  !!selectedClass.value && !!effectiveArmorDie.value && !!effectiveStructureDie.value && !!selectedMotiveType.value
+)
 const isOverTonnage = computed(() => remainingUnitTonnage.value < 0)
 const isOverSlots = computed(() => usedSlots.value > maxSlots.value)
-const availableMotiveTypes = computed(() => {
-  if (!selectedClass.value || !props.gameRules?.motiveTypes) return []
-  return props.gameRules.motiveTypes.filter((mt) =>
-    mt.classApplicability.includes(selectedClass.value.name),
-  )
-})
+const availableMotiveTypes = computed(() =>
+  !selectedClass.value || !props.gameRules?.motiveTypes
+    ? []
+    : props.gameRules.motiveTypes.filter((mt) => mt.classApplicability.includes(selectedClass.value.name))
+)
 const formattedClasses = computed(() =>
   props.gameRules.classes.map((cls) => ({
     title: `${cls.name} (Base: ${cls.baseTonnage}T / ${cls.baseSlots} Slots)`,
     value: cls,
-  })),
+  }))
 )
-
 const formattedMotiveTypes = computed(() =>
-  availableMotiveTypes.value.map((mt) => ({
-    title: `${mt.name}`,
-    value: mt,
-  })),
+  availableMotiveTypes.value.map((mt) => ({ title: `${mt.name}`, value: mt }))
 )
-
 const formattedWeapons = computed(() => {
   const currentClassName = selectedClass.value?.name
-  const currentCounts = {}
+  const currentCounts = new Map()
   selectedWeapons.value.forEach((w) => {
-    if (w && w.id) currentCounts[w.id] = (currentCounts[w.id] || 0) + 1
+    if (w && w.id) currentCounts.set(w.id, (currentCounts.get(w.id) || 0) + 1)
   })
-
   return props.gameRules.weapons.map((wpn) => {
-    const currentQuantity = currentCounts[wpn.id] || 0
+    const currentQuantity = currentCounts.get(wpn.id) || 0
     const nextQuantityIndex = currentQuantity + 1
     const costToAddNext = calculateNthWeaponCost(wpn, nextQuantityIndex, currentClassName)
-    const damageRating = currentClassName ? (wpn.damageRating?.[currentClassName] ?? '?') : '?'
-    const range = wpn.rangeCategory || 'N/A'
-
-    // SIMPLIFIED: Assuming all traits in gameData.weapons are objects
-    const traitsDisplay =
-      wpn.traits
-        ?.map((traitObj) => {
-          if (traitObj && traitObj.name) {
-            // Ensure traitObj and traitObj.name exist
-            if (typeof traitObj.value === 'object' && traitObj.value !== null) {
-              if (currentClassName && traitObj.value[currentClassName] !== undefined) {
-                return `${traitObj.name} ${traitObj.value[currentClassName]}`
-              } else {
-                const classValuesSummary = Object.keys(traitObj.value)
-                  .map((k) => k[0])
-                  .join('/')
-                return `${traitObj.name} (${classValuesSummary})`
-              }
-            } else if (traitObj.value !== undefined) {
-              return `${traitObj.name} ${traitObj.value}`
-            }
-            return traitObj.name
-          }
-          return '' // For malformed trait objects
-        })
-        .filter(Boolean)
-        .join(', ') || 'None'
-
     return {
-      title: `${wpn.name} (${costToAddNext}T)`,
+      title: `${wpn.name} (${costToAddNext}T)` +
+        (wpn.traits && wpn.traits.length
+          ? ` [${wpn.traits.map(formatTraitDisplay).join(', ')}]`
+          : ''),
       value: wpn.id,
     }
   })
 })
-
 const formattedUpgrades = computed(() => {
-  const selectedUpgradeIds = selectedUpgrades.value.map((upg) => upg.id)
+  const selectedUpgradeIds = new Set(selectedUpgrades.value.map((upg) => upg.id))
   const currentClassName = selectedClass.value?.name
-
   return props.gameRules.upgrades
-    .filter((upg) => !selectedUpgradeIds.includes(upg.id))
+    .filter((upg) => !selectedUpgradeIds.has(upg.id))
     .map((upg) => {
       let tonnageDisplay
       if (typeof upg.tonnage === 'object' && upg.tonnage !== null) {
         tonnageDisplay =
           currentClassName && upg.tonnage[currentClassName] !== undefined
             ? upg.tonnage[currentClassName]
-            : `(${Object.entries(upg.tonnage)
-                .map(([k, v]) => `${k[0]}:${v}`)
-                .join('/')})`
+            : `(${Object.entries(upg.tonnage).map(([k, v]) => `${k[0]}:${v}`).join('/')})`
       } else {
         tonnageDisplay = upg.tonnage
       }
-      // Assuming upgrade traits are simple strings
       return {
-        title: `${upg.name} (${tonnageDisplay}T)`,
+        title: `${upg.name} (${tonnageDisplay}T)` +
+          (upg.traits && upg.traits.length
+            ? ` [${upg.traits.map(formatTraitDisplay).join(', ')}]`
+            : ''),
         value: upg.id,
       }
     })
