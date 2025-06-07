@@ -10,6 +10,8 @@ export const gameData = {
       defaultArmorDie: 'd6',
       defaultStructureDie: 'd4',
       baseMovement: 12,
+      defenseRoll: '3+',
+      special: "Roll 1D6 for each point of Structure Damage it has lost during this Attack. On a 5+, the Target takes an additional point of Damage"
     },
     {
       name: 'Medium',
@@ -18,6 +20,7 @@ export const gameData = {
       defaultArmorDie: 'd8',
       defaultStructureDie: 'd6',
       baseMovement: 10,
+      defenseRoll: '4+',
     },
     {
       name: 'Heavy',
@@ -26,6 +29,7 @@ export const gameData = {
       defaultArmorDie: 'd10',
       defaultStructureDie: 'd8',
       baseMovement: 8,
+      defenseRoll: '5+',
     },
     {
       name: 'Ultra-Heavy',
@@ -34,6 +38,8 @@ export const gameData = {
       defaultArmorDie: 'd12',
       defaultStructureDie: 'd10',
       baseMovement: 6,
+      defenseRoll: '6+',
+      special: "Rolls 1D6 for each point of Structure Damage it has lost during this Attack. On a 5+, the Damage is ignored"
     },
   ],
   dice: [

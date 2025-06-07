@@ -180,8 +180,8 @@ const formatForPrint = () => {
             .defense-section { display: flex; flex-direction: column; }
             .print-defense-layout-container { display: flex; flex-direction: column; gap: 0.4rem; border: 1px solid var(--medium-grey); padding: 0.5rem; border-radius: var(--border-radius); flex-grow: 1; }
             .print-defense-row { display: flex; align-items: center; gap: 0.5rem; min-height: 20px; }
-            .print-defense-label { font-weight: bold; min-width: 65px; text-align: right; flex-shrink: 0; font-size: 0.85rem; }
-            .print-defense-row .bubble-display { display: flex; flex-wrap: nowrap; gap: 1.5px; align-items: center; flex-shrink: 0; min-width: 140px; overflow: hidden; }
+            .print-defense-label { font-weight: bold; min-width: 65px; text-align: left; flex-shrink: 0; font-size: 0.85rem; }
+            .print-defense-row .bubble-display { display: flex; flex-wrap: nowrap; gap: 1.5px; align-items: left; flex-shrink: 0; min-width: 140px; overflow: hidden; }
             .bubble { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--black-color); flex-shrink: 0; background-color: transparent; box-sizing: border-box; }
             .bubble.armor-bubble { border-color: var(--success-color); }
             .threshold-divider { display: inline-block; width: 1.5px; height: 10px; margin: 0 1px; vertical-align: middle; flex-shrink: 0; }
@@ -341,8 +341,7 @@ const formatForPrint = () => {
       if (unitHasJumpJets) {
         htmlBody += `<p><strong>Jump:</strong> ${unitJumpMovement}"</p>`
       }
-      htmlBody += `<p><strong>Unit Tonnage:</strong> ${getBaseTonnage(unit) || '?'}</p>
-                         <p><strong>Slots Used:</strong> ${unit.usedSlots === undefined ? '?' : unit.usedSlots} / ${unit.maxSlots === undefined ? '?' : unit.maxSlots}</p>`
+      htmlBody += `<p><strong>Unit Tonnage:</strong> ${getBaseTonnage(unit) || '?'}</p>`
 
       if (unit.selectedMotiveType && unit.selectedMotiveType.description) {
         htmlBody += `<div class="motive-description-section">
@@ -356,6 +355,10 @@ const formatForPrint = () => {
       htmlBody += `<div class="form-section defense-section">
                             <h4 class="section-title">Armor & Structure</h4>
                             <div class="print-defense-layout-container">
+                                <div class="print-defense-row defense-roll-row">
+                                    <span class="print-defense-label">Defense:</span>
+                                    <span>${unit.selectedClass?.defenseRoll || '?'}</span>
+                                </div>
                                 <div class="print-defense-row armor-row">
                                     <span class="print-defense-label">Armor:</span>
                                     ${generateBubbleHtml(unit.effectiveArmorDie?.sides ?? 0, false)}
@@ -384,6 +387,10 @@ const formatForPrint = () => {
             htmlBody += `<p class="threshold-desc-red"><strong>75% Dmg:</strong> Only 1 Order per activation</p>`
           htmlBody += `</div>`
         }
+      }
+      // Display special attribute if present
+      if (unit.selectedClass && unit.selectedClass.special) {
+        htmlBody += `<div class="print-special-attribute"><strong>Special:</strong> ${unit.selectedClass.special}</div>`
       }
       htmlBody += `</div></div>`
       htmlBody += `</div>`
