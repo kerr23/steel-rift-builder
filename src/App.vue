@@ -341,8 +341,7 @@ const formatForPrint = () => {
       if (unitHasJumpJets) {
         htmlBody += `<p><strong>Jump:</strong> ${unitJumpMovement}"</p>`
       }
-      htmlBody += `<p><strong>Unit Tonnage:</strong> ${getBaseTonnage(unit) || '?'}</p>
-                         <p><strong>Slots Used:</strong> ${unit.usedSlots === undefined ? '?' : unit.usedSlots} / ${unit.maxSlots === undefined ? '?' : unit.maxSlots}</p>`
+      htmlBody += `<p><strong>Unit Tonnage:</strong> ${getBaseTonnage(unit) || '?'}</p>`
 
       if (unit.selectedMotiveType && unit.selectedMotiveType.description) {
         htmlBody += `<div class="motive-description-section">
