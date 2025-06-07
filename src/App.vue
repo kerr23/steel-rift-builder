@@ -356,7 +356,7 @@ const formatForPrint = () => {
                             <h4 class="section-title">Armor & Structure</h4>
                             <div class="print-defense-layout-container">
                                 <div class="print-defense-row defense-roll-row">
-                                    <span class="print-defense-label">Defense Roll:</span>
+                                    <span class="print-defense-label">Defense:</span>
                                     <span>${unit.selectedClass?.defenseRoll || '?'}</span>
                                 </div>
                                 <div class="print-defense-row armor-row">
@@ -387,6 +387,10 @@ const formatForPrint = () => {
             htmlBody += `<p class="threshold-desc-red"><strong>75% Dmg:</strong> Only 1 Order per activation</p>`
           htmlBody += `</div>`
         }
+      }
+      // Display special attribute if present
+      if (unit.selectedClass && unit.selectedClass.special) {
+        htmlBody += `<div class="print-special-attribute"><strong>Special:</strong> ${unit.selectedClass.special}</div>`
       }
       htmlBody += `</div></div>`
       htmlBody += `</div>`

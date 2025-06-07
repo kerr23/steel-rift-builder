@@ -11,6 +11,7 @@ export const gameData = {
       defaultStructureDie: 'd4',
       baseMovement: 12,
       defenseRoll: '3+',
+      special: "Roll 1D6 for each point of Structure Damage it has lost during this Attack. On a 5+, the Target takes an additional point of Damage"
     },
     {
       name: 'Medium',
@@ -38,6 +39,7 @@ export const gameData = {
       defaultStructureDie: 'd10',
       baseMovement: 6,
       defenseRoll: '6+',
+      special: "Rolls 1D6 for each point of Structure Damage it has lost during this Attack. On a 5+, the Damage is ignored"
     },
   ],
   dice: [
