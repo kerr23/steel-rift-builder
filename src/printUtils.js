@@ -174,13 +174,7 @@ export function generatePrintHtml({
           <p><strong>Common Squadron Traits:</strong> Ultra-Light, Squadron, Close Support, All-Terrain</p>
         </div>`
 
-        // Add the common traits to the trait definitions set
-        const commonTraits = ['Ultra-Light', 'Squadron', 'Close Support', 'All-Terrain'];
-        if (supportAssetTraitNames && typeof supportAssetTraitNames.add === 'function') {
-          commonTraits.forEach(trait => {
-            supportAssetTraitNames.add(trait);
-          });
-        }
+        // We'll add traits based on what's actually used in the HE-V details
 
         // Create a nice table for the UL HE-V squadron
         htmlBody += `<div class="squadron-container">`
@@ -191,6 +185,30 @@ export function generatePrintHtml({
         const hevs = []
 
         if (Array.isArray(unit.details)) {
+          // Extract traits from all HE-V details
+          unit.details.forEach(detail => {
+            if (/Traits:/.test(detail)) {
+              const traitsText = detail.replace(/<strong>Traits:<\/strong>\s*/, '');
+              traitsText.split(/,\s*/).forEach(trait => {
+                // Extract base trait name
+                let baseTraitName = trait.trim();
+                // Handle traits with parameters
+                if (baseTraitName.includes('(')) {
+                  baseTraitName = baseTraitName.split('(')[0].trim();
+                }
+                // Handle traits with spaces
+                if (baseTraitName.includes(' ')) {
+                  baseTraitName = baseTraitName.split(' ')[0].trim();
+                }
+                // Only add actual traits (skip empty strings)
+                if (baseTraitName) {
+                  supportAssetTraitNames.add(baseTraitName);
+                }
+              });
+            }
+          });
+
+          // Now process details to build the HE-V cards
           unit.details.forEach(line => {
             if (/Tonnage:/.test(line) || /Squadron Composition:/.test(line)) {
               return // Skip tonnage and squadron composition lines

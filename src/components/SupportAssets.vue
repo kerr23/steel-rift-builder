@@ -38,8 +38,11 @@
             <button
               type="button"
               class="ml-auto px-3 py-1 rounded bg-primary text-white font-semibold text-xs"
-              :class="selectedUltraLightTypes.filter(v => v === type.value).length > 0 ? '' : 'opacity-80'"
-              :disabled="selectedUltraLightTypes.length === 3"
+              :class="{
+                'opacity-80': selectedUltraLightTypes.filter(v => v === type.value).length === 0,
+                'opacity-50': selectedUltraLightTypes.length === 3 || selectedUltraLightTypes.filter(v => v === type.value).length >= 3
+              }"
+              :disabled="selectedUltraLightTypes.length === 3 || selectedUltraLightTypes.filter(v => v === type.value).length >= 3"
               @click="() => addUltraLightType(type.value)"
             >
               Add
@@ -99,7 +102,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { UL_HEV_UPGRADE_PODS } from '../gameData.js'
+import { UL_HEV_UPGRADE_PODS, UL_HEV_TYPES } from '../gameData.js'
 
 const emit = defineEmits(['add-support-asset'])
 
@@ -152,48 +155,7 @@ const offTableTypes = [
 ]
 const selectedOffTableType = ref('')
 
-const ultraLightTypes = [
-  {
-    value: 'brawler',
-    label: 'Brawler',
-    details: [
-      '<strong>Speed:</strong> 7"',
-      '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> UL Melee Weapons, Submunitions',
-      '<strong>Traits:</strong> Magnetic Grapnels'
-    ]
-  },
-  {
-    value: 'pyro',
-    label: 'Pyro',
-    details: [
-      '<strong>Speed:</strong> 6"',
-      '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> UL Incinerators, Submunitions',
-      '<strong>Traits:</strong> Inferno Gear'
-    ]
-  },
-  {
-    value: 'commando',
-    label: 'Commando',
-    details: [
-      '<strong>Speed:</strong> 7"',
-      '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> Submunitions',
-      '<strong>Traits:</strong> Scramblers, Target Designator'
-    ]
-  },
-  {
-    value: 'rifleman',
-    label: 'Rifleman',
-    details: [
-      '<strong>Speed:</strong> 6"',
-      '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> UL Autocannon, UL Grenades',
-      '<strong>Traits:</strong> Suppressive Fire'
-    ]
-  }
-]
+const ultraLightTypes = UL_HEV_TYPES
 const selectedUltraLightTypes = ref([])
 const selectedUpgradePodId = ref('')
 
@@ -213,7 +175,8 @@ function getOffTableAsset(typeValue) {
 }
 
 function addUltraLightType(typeValue) {
-  if (selectedUltraLightTypes.value.length < 3) {
+  const currentTypeCount = selectedUltraLightTypes.value.filter(v => v === typeValue).length
+  if (selectedUltraLightTypes.value.length < 3 && currentTypeCount < 3) {
     selectedUltraLightTypes.value.push(typeValue)
   }
 }

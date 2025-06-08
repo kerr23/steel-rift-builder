@@ -293,6 +293,50 @@ export const UL_HEV_WEAPONS = [
   }
 ]
 
+// Ultra-Light HE-V types
+export const UL_HEV_TYPES = [
+  {
+    value: 'brawler',
+    label: 'Brawler',
+    details: [
+      '<strong>Speed:</strong> 7"',
+      '<strong>Armor:</strong> 3',
+      '<strong>Weapon Systems:</strong> UL Melee Weapons, Submunitions',
+      '<strong>Traits:</strong> Magnetic Grapnels'
+    ]
+  },
+  {
+    value: 'pyro',
+    label: 'Pyro',
+    details: [
+      '<strong>Speed:</strong> 6"',
+      '<strong>Armor:</strong> 3',
+      '<strong>Weapon Systems:</strong> UL Incinerators, Submunitions',
+      '<strong>Traits:</strong> Inferno Gear'
+    ]
+  },
+  {
+    value: 'commando',
+    label: 'Commando',
+    details: [
+      '<strong>Speed:</strong> 7"',
+      '<strong>Armor:</strong> 3',
+      '<strong>Weapon Systems:</strong> Submunitions',
+      '<strong>Traits:</strong> Scramblers, Target Designator'
+    ]
+  },
+  {
+    value: 'rifleman',
+    label: 'Rifleman',
+    details: [
+      '<strong>Speed:</strong> 6"',
+      '<strong>Armor:</strong> 3',
+      '<strong>Weapon Systems:</strong> UL Autocannon, UL Grenades',
+      '<strong>Traits:</strong> Suppressive Fire'
+    ]
+  }
+]
+
 // Ultra-Light HE-V Upgrade Pods
 export const UL_HEV_UPGRADE_PODS = [
   {
