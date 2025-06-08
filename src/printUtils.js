@@ -171,11 +171,11 @@ export function generatePrintHtml({
 
         // Add common Ultra-Light HE-V squadron traits
         htmlBody += `<div class="squadron-common-traits">
-          <p><strong>Common Squadron Traits:</strong> Ultra Light, Squadron, Close Support, All-Terrain</p>
+          <p><strong>Common Squadron Traits:</strong> Ultra-Light, Squadron, Close Support, All-Terrain</p>
         </div>`
 
         // Add the common traits to the trait definitions set
-        const commonTraits = ['Ultra Light', 'Squadron', 'Close Support', 'All-Terrain'];
+        const commonTraits = ['Ultra-Light', 'Squadron', 'Close Support', 'All-Terrain'];
         if (supportAssetTraitNames && typeof supportAssetTraitNames.add === 'function') {
           commonTraits.forEach(trait => {
             supportAssetTraitNames.add(trait);
