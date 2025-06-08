@@ -1,5 +1,6 @@
 // Utility for generating print HTML for Steel Rift Force Builder
 // Extracted from App.vue for maintainability
+import { UL_HEV_WEAPONS } from './gameData.js'
 
 export function generatePrintHtml({
   roster,
@@ -10,16 +11,13 @@ export function generatePrintHtml({
   formatPrintTrait,
   gameRulesData
 }) {
-  // Ensure we have UL_HEV_UPGRADE_PODS in gameRulesData
+  // Check if UL_HEV_WEAPONS is available in gameRulesData
+  if (!gameRulesData.UL_HEV_WEAPONS) {
+    console.warn('UL_HEV_WEAPONS not found in gameRulesData')
+  }
+  // Check if UL_HEV_UPGRADE_PODS is available in gameRulesData
   if (!gameRulesData.UL_HEV_UPGRADE_PODS) {
-    // Import directly from gameData.js if not available in gameRulesData
-    try {
-      console.log('Importing UL_HEV_UPGRADE_PODS directly from gameData.js')
-      const { UL_HEV_UPGRADE_PODS } = require('./gameData.js')
-      gameRulesData.UL_HEV_UPGRADE_PODS = UL_HEV_UPGRADE_PODS
-    } catch (e) {
-      console.warn('UL_HEV_UPGRADE_PODS not found in gameRulesData and could not be imported:', e)
-    }
+    console.warn('UL_HEV_UPGRADE_PODS not found in gameRulesData')
   }
   const cssLink = '<link rel="stylesheet" href="print.css">'
   let htmlBody = `
@@ -171,6 +169,19 @@ export function generatePrintHtml({
         htmlBody += `<div class="equipment-section">`
         htmlBody += `<h4 class="section-title">Squadron Composition</h4>`
 
+        // Add common Ultra-Light HE-V squadron traits
+        htmlBody += `<div class="squadron-common-traits">
+          <p><strong>Common Squadron Traits:</strong> Ultra Light, Squadron, Close Support, All-Terrain</p>
+        </div>`
+
+        // Add the common traits to the trait definitions set
+        const commonTraits = ['Ultra Light', 'Squadron', 'Close Support', 'All-Terrain'];
+        if (supportAssetTraitNames && typeof supportAssetTraitNames.add === 'function') {
+          commonTraits.forEach(trait => {
+            supportAssetTraitNames.add(trait);
+          });
+        }
+
         // Create a nice table for the UL HE-V squadron
         htmlBody += `<div class="squadron-container">`
 
@@ -240,6 +251,14 @@ export function generatePrintHtml({
         // Display each HE-V with its details and armor bubbles
         htmlBody += `<div class="ultra-light-grid">`
         hevs.forEach(hev => {
+          // Extract weapon systems information
+          const weaponSystemsDetail = hev.details.find(detail => /Weapon Systems:/.test(detail))
+          let weaponNames = []
+          if (weaponSystemsDetail) {
+            const weaponText = weaponSystemsDetail.replace(/<strong>Weapon Systems:<\/strong>\s*/, '')
+            weaponNames = weaponText.split(/,\s*/).map(name => name.trim())
+          }
+
           htmlBody += `<div class="ultra-light-card">
             <div class="ultra-light-name">${hev.name}</div>
             <div class="ultra-light-armor">
@@ -251,12 +270,85 @@ export function generatePrintHtml({
             <ul class="ultra-light-details">`
           hev.details.forEach(detail => {
             // Skip armor line in details since we're showing it with bubbles above
-            if (!detail.match(/<strong>Armor:<\/strong>/i)) {
+            // Skip weapon systems line since we'll display it in a table below
+            if (!detail.match(/<strong>Armor:<\/strong>/i) && !detail.match(/<strong>Weapon Systems:<\/strong>/i)) {
               htmlBody += `<li>${detail}</li>`
             }
           })
-          htmlBody += `</ul>
-          </div>`
+          htmlBody += `</ul>`
+
+          // Add weapon systems table if weapons exist
+          if (weaponNames.length > 0 && gameRulesData.UL_HEV_WEAPONS) {
+            htmlBody += `<div class="ultra-light-weapons">
+              <h5 class="weapons-heading">Weapon Systems</h5>
+              <table class="print-weapon-table print-ul-weapon-table">
+                <thead>
+                  <tr>
+                    <th>Weapon</th>
+                    <th>Range</th>
+                    <th>Damage</th>
+                    <th>Traits</th>
+                  </tr>
+                </thead>
+                <tbody>`
+
+            weaponNames.forEach(weaponName => {
+              // Find the weapon data from the UL_HEV_WEAPONS array
+              const weaponData = gameRulesData.UL_HEV_WEAPONS.find(w =>
+                w.name.toLowerCase() === weaponName.toLowerCase() ||
+                weaponName.toLowerCase().includes(w.id.toLowerCase().replace('ul-', ''))
+              )
+
+              if (weaponData) {
+                // Add weapon traits to the supportAssetTraitNames set for displaying definitions
+                if (weaponData.traits && weaponData.traits.length > 0) {
+                  weaponData.traits.forEach(trait => {
+                    // Parse trait name to extract the base name
+                    if (typeof trait !== 'string') return
+
+                    // Split the trait by spaces and extract the base trait names
+                    // Handle complex traits like "AP1 x (X)" and "Melee (X)"
+                    const parts = trait.split(' ')
+                    let baseTraitName = parts[0].trim()
+
+                    // Add the base trait name
+                    supportAssetTraitNames.add(baseTraitName)
+
+                    // For traits like "AP1 x (X)", also add AP1
+                    if (trait.includes('AP')) {
+                      const apMatch = trait.match(/AP(\d+)/i)
+                      if (apMatch) {
+                        supportAssetTraitNames.add('AP' + apMatch[1])
+                      }
+                    }
+                  })
+                }
+
+                const traitsHtml = weaponData.traits && weaponData.traits.length > 0
+                  ? weaponData.traits.join(', ')
+                  : 'None'
+
+                htmlBody += `<tr>
+                  <td>${weaponData.name}</td>
+                  <td>${weaponData.range}</td>
+                  <td>${weaponData.damage}</td>
+                  <td>${traitsHtml}</td>
+                </tr>`
+              } else {
+                htmlBody += `<tr>
+                  <td>${weaponName}</td>
+                  <td class="text-center">-</td>
+                  <td class="text-center">-</td>
+                  <td><span class="text-muted">Unknown weapon system</span></td>
+                </tr>`
+              }
+            })
+
+            htmlBody += `</tbody></table>
+            </div>`
+          }
+
+          htmlBody += `</div>`
         })
         htmlBody += `</div>`
 

@@ -159,7 +159,7 @@ const ultraLightTypes = [
     details: [
       '<strong>Speed:</strong> 7"',
       '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> UL Melee Weapon, Submunitions',
+      '<strong>Weapon Systems:</strong> UL Melee Weapons, Submunitions',
       '<strong>Traits:</strong> Magnetic Grapnels'
     ]
   },
@@ -169,7 +169,7 @@ const ultraLightTypes = [
     details: [
       '<strong>Speed:</strong> 6"',
       '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> UL Incenerators, Submunitions',
+      '<strong>Weapon Systems:</strong> UL Incinerators, Submunitions',
       '<strong>Traits:</strong> Inferno Gear'
     ]
   },

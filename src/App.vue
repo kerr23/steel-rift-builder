@@ -2,7 +2,7 @@
 import { ref, computed, watchEffect } from 'vue'
 import HevCustomizer from './components/hevCustomizer.vue'
 import SupportAssets from './components/SupportAssets.vue'
-import { gameData as importedGameData, UL_HEV_UPGRADE_PODS } from './gameData.js'
+import { gameData as importedGameData, UL_HEV_UPGRADE_PODS, UL_HEV_WEAPONS } from './gameData.js'
 import { generatePrintHtml } from './printUtils.js'
 import { useToast } from 'vue-toastification'
 
@@ -10,9 +10,10 @@ import { useToast } from 'vue-toastification'
 const rosterName = ref('')
 const roster = ref([])
 const hevCustomizerRef = ref(null)
-// Add UL_HEV_UPGRADE_PODS to gameRulesData for print display
+// Add UL_HEV_WEAPONS and UL_HEV_UPGRADE_PODS to gameRulesData for print display
 const gameRulesData = {
   ...importedGameData,
+  UL_HEV_WEAPONS,
   UL_HEV_UPGRADE_PODS
 }
 const fileInputRef = ref(null)
