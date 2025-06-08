@@ -92,6 +92,55 @@ body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; backgrou
     width: 100%;
 }
 
+/* Ultra-Light HE-V Squadron Styles */
+.ultra-light-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 0.8rem;
+}
+.ultra-light-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  background-color: var(--light-grey);
+}
+.ultra-light-name {
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+  color: var(--dark-grey);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.2rem;
+}
+.ultra-light-armor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px dashed var(--border-color);
+}
+.ultra-light-armor .print-defense-label {
+  min-width: 45px;
+  font-size: 0.8rem;
+}
+.ultra-light-armor .bubble-display {
+  display: flex;
+  gap: 1px;
+  align-items: center;
+}
+.ultra-light-details {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.75rem;
+}
+.ultra-light-details li {
+  margin-bottom: 0.2rem;
+  line-height: 1.3;
+}
+
 /* Trait Definitions Section Styles */
 .trait-definitions-section { margin-top: 1rem; }
 .trait-definitions-section .section-title { margin-bottom: 0.3rem; }

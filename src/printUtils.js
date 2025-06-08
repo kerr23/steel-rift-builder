@@ -188,7 +188,20 @@ export function generatePrintHtml({
             if (/<u>.*<\/u>/.test(line)) {
               // New HE-V found
               if (currentHEV) {
-                hevs.push({ name: currentHEV, details: [...hevDetails] })
+                // Find the armor value in the details
+                let armorValue = 3; // Default armor value
+                const armorDetail = hevDetails.find(detail => /Armor:/.test(detail));
+                if (armorDetail) {
+                  const armorMatch = armorDetail.match(/<strong>Armor:<\/strong>\s*(\d+)/i);
+                  if (armorMatch && armorMatch[1]) {
+                    armorValue = parseInt(armorMatch[1], 10);
+                  }
+                }
+                hevs.push({
+                  name: currentHEV,
+                  details: [...hevDetails],
+                  armor: armorValue // Store the armor value with each HE-V
+                })
                 hevDetails = []
               }
               currentHEV = line.replace(/<\/?u>/g, '')
@@ -199,18 +212,48 @@ export function generatePrintHtml({
 
           // Don't forget the last HE-V
           if (currentHEV && hevDetails.length > 0) {
-            hevs.push({ name: currentHEV, details: [...hevDetails] })
+            // Find the armor value in the details
+            let armorValue = 3; // Default armor value
+            const armorDetail = hevDetails.find(detail => /Armor:/.test(detail));
+            if (armorDetail) {
+              const armorMatch = armorDetail.match(/<strong>Armor:<\/strong>\s*(\d+)/i);
+              if (armorMatch && armorMatch[1]) {
+                armorValue = parseInt(armorMatch[1], 10);
+              }
+            }
+            hevs.push({
+              name: currentHEV,
+              details: [...hevDetails],
+              armor: armorValue // Store the armor value with each HE-V
+            })
           }
         }
 
-        // Display each HE-V with its details
+        // Add Defense section for the squadron
+        htmlBody += `<div class="print-defense-layout-container">
+          <div class="print-defense-row defense-roll-row">
+            <span class="print-defense-label">Defense:</span>
+            <span>4+</span>
+          </div>
+        </div>`
+
+        // Display each HE-V with its details and armor bubbles
         htmlBody += `<div class="ultra-light-grid">`
         hevs.forEach(hev => {
           htmlBody += `<div class="ultra-light-card">
             <div class="ultra-light-name">${hev.name}</div>
+            <div class="ultra-light-armor">
+              <span class="print-defense-label">Armor:</span>
+              <span class="bubble-display">
+                ${generateBubbleHtml(hev.armor || 3, false)}
+              </span>
+            </div>
             <ul class="ultra-light-details">`
           hev.details.forEach(detail => {
-            htmlBody += `<li>${detail}</li>`
+            // Skip armor line in details since we're showing it with bubbles above
+            if (!detail.match(/<strong>Armor:<\/strong>/i)) {
+              htmlBody += `<li>${detail}</li>`
+            }
           })
           htmlBody += `</ul>
           </div>`
