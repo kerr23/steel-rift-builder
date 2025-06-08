@@ -48,7 +48,34 @@ export function generatePrintHtml({
 
       // Determine if this is a weapon system or support asset
       const isWeaponSystem = unit.details?.some(line => (/Damage:/.test(line) || /Range:/.test(line))) || false
-      const isUltraLightSquad = unit.type?.includes('Squadron') || false
+      const isUltraLightSquad = unit.type?.includes('Squadron') || false      // Extract unique trait names for support assets
+      const supportAssetTraitNames = new Set()
+      if (Array.isArray(unit.details)) {
+        unit.details.forEach(line => {
+          if (/Traits:/.test(line)) {
+            // Extract traits from the traits line
+            const traitsText = line.replace(/<strong>Traits:<\/strong>\s*/, '')
+            const traitsList = traitsText.split(/,\s*/)
+
+            traitsList.forEach(trait => {
+              // Parse complex traits to extract just the base trait name
+              let baseTraitName = trait.trim()
+
+              // Handle traits with numbers in parentheses like Limited(3)
+              if (/\(\d+.*\)/.test(baseTraitName)) {
+                baseTraitName = baseTraitName.split('(')[0].trim()
+              }
+
+              // Handle traits with other parameters like Blast(3")
+              else if (/\(.*\)/.test(baseTraitName)) {
+                baseTraitName = baseTraitName.split('(')[0].trim()
+              }
+
+              supportAssetTraitNames.add(baseTraitName)
+            })
+          }
+        })
+      }
 
       if (isWeaponSystem) {
         // Display weapon-like support assets in a table format like HEVs
@@ -124,6 +151,21 @@ export function generatePrintHtml({
         }
 
         htmlBody += `</div>`
+
+        // Add trait definitions section for weapon systems if there are any traits
+        if (supportAssetTraitNames.size > 0) {
+          htmlBody += `<div class="equipment-section trait-definitions-section">
+            <h4 class="section-title">Trait Definitions</h4>
+            <ul class="trait-list">`
+          const sortedTraitNames = Array.from(supportAssetTraitNames).sort()
+          sortedTraitNames.forEach((traitName) => {
+            // Only include traits that have definitions
+            if (gameRulesData.traitDefinitions?.[traitName]) {
+              htmlBody += `<li><strong>${traitName}:</strong> ${gameRulesData.traitDefinitions[traitName]}</li>`
+            }
+          })
+          htmlBody += `</ul></div>`
+        }
       } else if (isUltraLightSquad) {
         // Enhanced display for Ultra-Light squadrons
         htmlBody += `<div class="equipment-section">`
@@ -190,6 +232,31 @@ export function generatePrintHtml({
           const upgradePod = gameRulesData.UL_HEV_UPGRADE_PODS.find(pod => pod.id === upgradePodId)
 
           if (upgradePod) {
+            // Add upgrade pod traits to the supportAssetTraitNames set
+            if (upgradePod.traits && upgradePod.traits.length > 0) {
+              upgradePod.traits.forEach(trait => {
+                // Parse trait names more robustly
+                let baseTraitName = trait
+
+                // Handle traits with numbers in parentheses like Limited(3)
+                if (/\(\d+.*\)/.test(baseTraitName)) {
+                  baseTraitName = baseTraitName.split('(')[0].trim()
+                }
+
+                // Handle traits with other parameters like Blast(3")
+                else if (/\(.*\)/.test(baseTraitName)) {
+                  baseTraitName = baseTraitName.split('(')[0].trim()
+                }
+
+                // Handle traits with spaces (like "Sustained Fire")
+                else if (baseTraitName.includes(' ')) {
+                  baseTraitName = baseTraitName.split(' ')[0].trim()
+                }
+
+                supportAssetTraitNames.add(baseTraitName)
+              })
+            }
+
             htmlBody += `<div class="upgrade-pod-info">
               <h5>${upgradePod.name}</h5>
               <div class="upgrade-pod-details">`
@@ -219,8 +286,7 @@ export function generatePrintHtml({
             }
 
             htmlBody += `</div>
-            </div>`
-          } else {
+            </div>`          } else {
             // Fallback to the old method if the pod is not found in gameRulesData
             const upgradePodLine = unit.details?.find(line => line.startsWith('<strong>Upgrade Pod:</strong>'))
             const upgradePodName = upgradePodLine ? upgradePodLine.replace('<strong>Upgrade Pod:</strong>', '').trim() : ''
@@ -229,6 +295,35 @@ export function generatePrintHtml({
               htmlBody += `<div class="upgrade-pod-info">
                 <h5>${upgradePodName}</h5>
                 <div class="upgrade-pod-details">`
+
+              // Look for traits in related attributes to add to the supportAssetTraitNames set
+              const traitsLine = unit.details?.find(line => line.includes('<strong>Traits:</strong>'))
+              if (traitsLine) {
+                const traitsText = traitsLine.replace(/<strong>Traits:<\/strong>\s*/, '')
+                const traitsList = traitsText.split(/,\s*/)
+
+                traitsList.forEach(trait => {
+                  // Parse trait names more robustly
+                  let baseTraitName = trait.trim()
+
+                  // Handle traits with numbers in parentheses like Limited(3)
+                  if (/\(\d+.*\)/.test(baseTraitName)) {
+                    baseTraitName = baseTraitName.split('(')[0].trim()
+                  }
+
+                  // Handle traits with other parameters like Blast(3")
+                  else if (/\(.*\)/.test(baseTraitName)) {
+                    baseTraitName = baseTraitName.split('(')[0].trim()
+                  }
+
+                  // Handle traits with spaces (like "Sustained Fire")
+                  else if (baseTraitName.includes(' ')) {
+                    baseTraitName = baseTraitName.split(' ')[0].trim()
+                  }
+
+                  supportAssetTraitNames.add(baseTraitName)
+                })
+              }
 
               // Look for related attributes in unit.details
               if (Array.isArray(unit.details)) {
@@ -275,6 +370,21 @@ export function generatePrintHtml({
         }
 
         htmlBody += `</div>` // End equipment-section for Upgrade Pod
+
+        // Add trait definitions section for Ultra-Light Squadron if there are any traits
+        if (supportAssetTraitNames.size > 0) {
+          htmlBody += `<div class="equipment-section trait-definitions-section">
+            <h4 class="section-title">Trait Definitions</h4>
+            <ul class="trait-list">`
+          const sortedTraitNames = Array.from(supportAssetTraitNames).sort()
+          sortedTraitNames.forEach((traitName) => {
+            // Only include traits that have definitions
+            if (gameRulesData.traitDefinitions?.[traitName]) {
+              htmlBody += `<li><strong>${traitName}:</strong> ${gameRulesData.traitDefinitions[traitName]}</li>`
+            }
+          })
+          htmlBody += `</ul></div>`
+        }
       } else {
         // Default display for other support assets
         htmlBody += `<div class="equipment-section">`
@@ -323,6 +433,21 @@ export function generatePrintHtml({
           })
         }
         htmlBody += `</ul></div>`
+
+        // Add trait definitions section for general support assets if there are any traits
+        if (supportAssetTraitNames.size > 0) {
+          htmlBody += `<div class="equipment-section trait-definitions-section">
+            <h4 class="section-title">Trait Definitions</h4>
+            <ul class="trait-list">`
+          const sortedTraitNames = Array.from(supportAssetTraitNames).sort()
+          sortedTraitNames.forEach((traitName) => {
+            // Only include traits that have definitions
+            if (gameRulesData.traitDefinitions?.[traitName]) {
+              htmlBody += `<li><strong>${traitName}:</strong> ${gameRulesData.traitDefinitions[traitName]}</li>`
+            }
+          })
+          htmlBody += `</ul></div>`
+        }
       }
 
       // Removed Limited bubble reminder as requested
@@ -514,12 +639,14 @@ export function generatePrintHtml({
     htmlBody += `</div>`
     if (uniqueUnitTraitNames.size > 0) {
       htmlBody += `<div class="equipment-section trait-definitions-section">
-        <h4 class="section-title">Trait Key</h4>
+        <h4 class="section-title">Trait Definitions</h4>
         <ul class="trait-list">`
       const sortedTraitNames = Array.from(uniqueUnitTraitNames).sort()
       sortedTraitNames.forEach((traitName) => {
-        const definition = gameRulesData.traitDefinitions?.[traitName] || 'Definition not found.'
-        htmlBody += `<li><strong>${traitName}:</strong> ${definition}</li>`
+        // Only include traits that have definitions
+        if (gameRulesData.traitDefinitions?.[traitName]) {
+          htmlBody += `<li><strong>${traitName}:</strong> ${gameRulesData.traitDefinitions[traitName]}</li>`
+        }
       })
       htmlBody += `</ul></div>`
     }

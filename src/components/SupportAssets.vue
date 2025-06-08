@@ -75,19 +75,9 @@
           <span v-if="selectedUpgradePod.description">{{ selectedUpgradePod.description }}</span>
         </div>
       </div>
-      <div v-if="getUltraLightSquadron().length" class="support-asset-card border border-border-color rounded-lg p-4 mb-4 bg-light-grey">
-        <h3 class="text-lg font-semibold mb-2">Ultra-Light HE-V Squadron</h3>
-        <ul class="text-sm mb-2">
-          <li><strong>Squadron Composition:</strong> {{ getUltraLightSquadron().map(u => u.label).join(', ') }}</li>
-          <template v-for="ulhev in getUltraLightSquadron()" :key="ulhev.value">
-            <li class="mt-2"><u>{{ ulhev.label }}</u></li>
-            <li v-for="line in ulhev.details" :key="ulhev.label + line"><span v-html="line"></span></li>
-          </template>
-          <li class="mt-2"><strong>Upgrade Pod:</strong> <span v-if="selectedUpgradePod">{{ selectedUpgradePod.name }}</span></li>
-          <li class="mt-2"><strong>Tonnage:</strong> 10T</li>
-        </ul>
+      <div class="mt-4">
         <button
-          class="btn btn-success mt-2 px-4 py-2 rounded bg-success text-white font-semibold"
+          class="btn btn-success px-4 py-2 rounded bg-success text-white font-semibold"
           :disabled="getUltraLightSquadron().length !== 3 || !selectedUpgradePodId"
           @click="addUltraLightSquadron"
         >
