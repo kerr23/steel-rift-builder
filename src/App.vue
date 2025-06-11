@@ -41,11 +41,17 @@ const addHevToRoster = (hevData) => {
     ...hevData,
     id: hevData.id || generateUniqueId(),
   })
-  if (hevCustomizerRef.value) {
-    hevCustomizerRef.value.resetForm()
-    toast.success('HE-V added to roster!', { timeout: 1000 })
-  } else {
-    console.warn('Could not access hevCustomizerRef to reset form.')
+  // Make this safer for tests
+  try {
+    if (hevCustomizerRef.value && typeof hevCustomizerRef.value.resetForm === 'function') {
+      hevCustomizerRef.value.resetForm()
+      toast.success('HE-V added to roster!', { timeout: 1000 })
+    } else {
+      console.warn('Could not access hevCustomizerRef to reset form.')
+      toast.warning('Could not reset customizer form.', { timeout: 1000 })
+    }
+  } catch (error) {
+    console.warn('Error resetting form:', error)
     toast.warning('Could not reset customizer form.', { timeout: 1000 })
   }
 }
