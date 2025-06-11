@@ -296,44 +296,36 @@ export const UL_HEV_WEAPONS = [
 // Ultra-Light HE-V types
 export const UL_HEV_TYPES = [
   {
-    value: 'brawler',
-    label: 'Brawler',
-    details: [
-      '<strong>Speed:</strong> 7"',
-      '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> UL Melee Weapons, Submunitions',
-      '<strong>Traits:</strong> Magnetic Grapnels'
-    ]
+    id: 'ul_brawler',
+    type: 'Brawler',
+    speed: '7"',
+    armor: 3,
+    weapons: ['UL Melee Weapons', 'Submunitions'],
+    traits: ['Magnetic Grapnels']
   },
   {
-    value: 'pyro',
-    label: 'Pyro',
-    details: [
-      '<strong>Speed:</strong> 6"',
-      '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> UL Incinerators, Submunitions',
-      '<strong>Traits:</strong> Inferno Gear'
-    ]
+    id: 'ul_pyro',
+    type: 'Pyro',
+    speed: '6"',
+    armor: 3,
+    weapons: ['UL Incinerators', 'Submunitions'],
+    traits: ['Inferno Gear']
   },
   {
-    value: 'commando',
-    label: 'Commando',
-    details: [
-      '<strong>Speed:</strong> 7"',
-      '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> Submunitions',
-      '<strong>Traits:</strong> Scramblers, Target Designator'
-    ]
+    id: 'ul_commando',
+    type: 'Commando',
+    speed: '7"',
+    armor: 3,
+    weapons: ['Submunitions'],
+    traits: ['Scramblers', 'Target Designator']
   },
   {
-    value: 'rifleman',
-    label: 'Rifleman',
-    details: [
-      '<strong>Speed:</strong> 6"',
-      '<strong>Armor:</strong> 3',
-      '<strong>Weapon Systems:</strong> UL Autocannon, UL Grenades',
-      '<strong>Traits:</strong> Suppressive Fire'
-    ]
+    id: 'ul_rifleman',
+    type: 'Rifleman',
+    speed: '6"',
+    armor: 3,
+    weapons: ['UL Autocannon', 'UL Grenades'],
+    traits: ['Suppressive Fire']
   }
 ]
 
