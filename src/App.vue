@@ -2,7 +2,7 @@
 import { ref, computed, watchEffect } from 'vue'
 import HevCustomizer from './components/hevCustomizer.vue'
 import SupportAssets from './components/SupportAssets.vue'
-import { gameData as importedGameData } from './gameData.js'
+import { gameData as importedGameData, UL_HEV_UPGRADE_PODS, UL_HEV_WEAPONS } from './gameData.js'
 import { generatePrintHtml } from './printUtils.js'
 import { useToast } from 'vue-toastification'
 
@@ -10,7 +10,12 @@ import { useToast } from 'vue-toastification'
 const rosterName = ref('')
 const roster = ref([])
 const hevCustomizerRef = ref(null)
-const gameRulesData = importedGameData
+// Add UL_HEV_WEAPONS and UL_HEV_UPGRADE_PODS to gameRulesData for print display
+const gameRulesData = {
+  ...importedGameData,
+  UL_HEV_WEAPONS,
+  UL_HEV_UPGRADE_PODS
+}
 const fileInputRef = ref(null)
 const versionTag = import.meta.env.VITE_GIT_COMMIT_SHA || 'dev'
 const isDarkMode = ref(false)
@@ -36,11 +41,17 @@ const addHevToRoster = (hevData) => {
     ...hevData,
     id: hevData.id || generateUniqueId(),
   })
-  if (hevCustomizerRef.value) {
-    hevCustomizerRef.value.resetForm()
-    toast.success('HE-V added to roster!', { timeout: 1000 })
-  } else {
-    console.warn('Could not access hevCustomizerRef to reset form.')
+  // Make this safer for tests
+  try {
+    if (hevCustomizerRef.value && typeof hevCustomizerRef.value.resetForm === 'function') {
+      hevCustomizerRef.value.resetForm()
+      toast.success('HE-V added to roster!', { timeout: 1000 })
+    } else {
+      console.warn('Could not access hevCustomizerRef to reset form.')
+      toast.warning('Could not reset customizer form.', { timeout: 1000 })
+    }
+  } catch (error) {
+    console.warn('Error resetting form:', error)
     toast.warning('Could not reset customizer form.', { timeout: 1000 })
   }
 }

@@ -1,0 +1,168 @@
+import { mount } from '@vue/test-utils'
+import App from '../App.vue'
+import { gameData } from '../gameData.js'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+describe('App.vue Enhanced Tests', () => {
+  let wrapper;
+
+  beforeEach(() => {
+    // Mock toast
+    vi.mock('vue-toastification', () => ({
+      useToast: () => ({
+        success: vi.fn(),
+        error: vi.fn(),
+        warning: vi.fn()
+      })
+    }))
+
+    // Mock localStorage
+    const localStorageMock = {
+      storage: {},
+      setItem(key, value) {
+        this.storage[key] = value;
+      },
+      getItem(key) {
+        return this.storage[key] || null;
+      },
+      removeItem(key) {
+        delete this.storage[key];
+      }
+    };
+
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock
+    });
+
+    wrapper = mount(App)
+  })
+
+  it('renders the app title', () => {
+    expect(wrapper.text()).toMatch(/Steel Rift Force Builder/)
+  })
+
+  it('saves and loads roster data correctly', async () => {
+    // Add a HE-V to roster
+    await wrapper.vm.addHevToRoster({
+      unitName: 'Saved HE-V',
+      selectedClass: gameData.classes[0],
+      effectiveArmor: 6,
+      effectiveStructure: 4,
+      selectedWeapons: [],
+      selectedUpgrades: [],
+      totalUnitTonnage: 20,
+      id: 'save-test',
+    })
+
+    // Set roster name
+    wrapper.vm.rosterName = 'Save Test Roster'
+
+    // Save roster
+    await wrapper.vm.saveRoster()
+
+    // Clear the roster to simulate loading into an empty state
+    wrapper.vm.roster = []
+    wrapper.vm.rosterName = ''
+    expect(wrapper.vm.roster.length).toBe(0)
+
+    // Load the roster
+    await wrapper.vm.loadSavedRoster('Save Test Roster')
+
+    // Check data was loaded correctly
+    expect(wrapper.vm.rosterName).toBe('Save Test Roster')
+    expect(wrapper.vm.roster.length).toBe(1)
+    expect(wrapper.vm.roster[0].unitName).toBe('Saved HE-V')
+  })
+
+  it('creates a deep copy of a HE-V when duplicating', async () => {
+    const hev = {
+      unitName: 'Original HE-V',
+      selectedClass: gameData.classes[0],
+      effectiveArmor: 6,
+      effectiveStructure: 4,
+      selectedWeapons: [{ id: 'w_autocannon', name: 'Auto-Cannon', tonnage: 2 }],
+      selectedUpgrades: [],
+      totalUnitTonnage: 22,
+      id: 'original',
+    }
+
+    // Add to roster
+    await wrapper.vm.addHevToRoster(hev)
+
+    // Duplicate
+    await wrapper.vm.duplicateHev('original')
+
+    // Check roster has two entries with unique IDs but same data
+    expect(wrapper.vm.roster.length).toBe(2)
+    expect(wrapper.vm.roster[1].unitName).toContain('Original HE-V')
+    expect(wrapper.vm.roster[1].unitName).toContain('Copy')
+    expect(wrapper.vm.roster[1].id).not.toBe('original')
+    expect(wrapper.vm.roster[1].selectedWeapons[0].id).toBe('w_autocannon')
+
+    // Modify the copy without affecting original
+    const originalName = wrapper.vm.roster[0].unitName
+    wrapper.vm.roster[1].unitName = 'Modified Copy'
+    expect(wrapper.vm.roster[0].unitName).toBe(originalName)
+  })
+
+  it('adds and manages support assets correctly', async () => {
+    const supportAsset = {
+      isSupportAsset: true,
+      type: 'Artillery Barrage',
+      details: [
+        '<strong>Damage:</strong> 4',
+        '<strong>Traits:</strong> Blast(3)',
+      ],
+      totalUnitTonnage: 10,
+      id: 'support-1',
+    }
+
+    // Add support asset to roster
+    await wrapper.vm.addSupportAsset(supportAsset)
+
+    // Check it was added
+    expect(wrapper.vm.roster.length).toBe(1)
+    expect(wrapper.vm.roster[0].isSupportAsset).toBe(true)
+    expect(wrapper.vm.roster[0].type).toBe('Artillery Barrage')
+
+    // Calculate total tonnage including support assets
+    expect(wrapper.vm.totalRosterBaseTonnage).toBe(10)
+
+    // Remove the support asset
+    await wrapper.vm.removeHevFromRoster('support-1')
+    expect(wrapper.vm.roster.length).toBe(0)
+  })
+
+  it('calculates total roster tonnage correctly with mixed units', async () => {
+    // Add a HE-V
+    await wrapper.vm.addHevToRoster({
+      unitName: 'Heavy Tank',
+      selectedClass: gameData.classes[2], // Heavy
+      effectiveArmor: 10,
+      effectiveStructure: 8,
+      selectedWeapons: [{ id: 'w_autocannon', name: 'Auto-Cannon', tonnage: 2 }],
+      selectedUpgrades: [],
+      totalUnitTonnage: 42,
+      id: 'heavy-1',
+    })
+
+    // Add a support asset
+    await wrapper.vm.addHevToRoster({
+      isSupportAsset: true,
+      type: 'Artillery Barrage',
+      totalUnitTonnage: 10,
+      id: 'support-1',
+    })
+
+    // Should sum both units' tonnage
+    expect(wrapper.vm.totalRosterBaseTonnage).toBe(50) // 40 (Heavy class base) + 10 (support)
+  })
+
+  it('toggles dark mode correctly', async () => {
+    expect(wrapper.vm.isDarkMode).toBe(false)
+    await wrapper.vm.toggleDarkMode()
+    expect(wrapper.vm.isDarkMode).toBe(true)
+    await wrapper.vm.toggleDarkMode()
+    expect(wrapper.vm.isDarkMode).toBe(false)
+  })
+})

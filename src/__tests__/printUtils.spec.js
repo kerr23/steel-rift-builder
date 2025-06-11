@@ -85,5 +85,180 @@ describe('generatePrintHtml', () => {
       gameRulesData: mockGameRules,
     });
     expect(html).toContain('N/A');
+  });  it('renders correct armor bubbles for Ultra-Light HE-V squadrons', () => {
+    const squadronUnit = {
+      isSupportAsset: true,
+      type: 'Test Squadron',
+      upgradePodId: 'pod1',
+      details: [
+        '<u>Brawler</u>',
+        '<strong>Speed:</strong> 7"',
+        '<strong>Armor:</strong> 3',
+        '<strong>Weapon Systems:</strong> UL Melee Weapons, Submunitions',
+        '<strong>Traits:</strong> Magnetic Grapnels',
+        '<u>Pyro</u>',
+        '<strong>Speed:</strong> 6"',
+        '<strong>Armor:</strong> 4', // Different armor value for testing
+        '<strong>Weapon Systems:</strong> UL Incenerators, Submunitions',
+        '<strong>Traits:</strong> Inferno Gear',
+        '<u>Commando</u>',
+        '<strong>Speed:</strong> 7"',
+        '<strong>Armor:</strong> 2', // Different armor value for testing
+        '<strong>Weapon Systems:</strong> Submunitions',
+        '<strong>Traits:</strong> Scramblers, Target Designator',
+        '<strong>Tonnage:</strong> 10T'
+      ]
+    };
+
+    const mockRules = {
+      ...mockGameRules,
+      UL_HEV_UPGRADE_PODS: [
+        {
+          id: 'pod1',
+          name: 'Test Pod',
+          damage: '3',
+          range: '12"',
+          traits: ['Limited(2)', 'Blast(3")'],
+          description: 'Test pod description'
+        }
+      ]
+    };
+
+    const html = generatePrintHtml({
+      roster: [squadronUnit],
+      rosterName: 'Test Roster',
+      totalRosterBaseTonnage: 20,
+      getBaseTonnage: () => 20,
+      generateBubbleHtml,
+      generateStructureBubbleHtml,
+      formatPrintTrait: () => '',
+      gameRulesData: mockRules,
+    });
+
+    // Let's just check that the html contains the correct number of bubbles in total
+    const allBubbles = html.match(/<span class="bubble"><\/span>/g) || [];
+
+    // We should have 9 bubbles in total (3 + 4 + 2 from the three HE-Vs)
+    expect(allBubbles.length).toBe(9);
+
+    // Check that we have the right HE-V names
+    expect(html).toContain('Brawler');
+    expect(html).toContain('Pyro');
+    expect(html).toContain('Commando');
+
+    // Check for the correct HE-V cards with armor bubbles
+    // Brawler should have 3 bubbles
+    const brawlerPattern = /<div class="ultra-light-name">Brawler<\/div>[\s\S]*?<span class="bubble"><\/span><span class="bubble"><\/span><span class="bubble"><\/span>/;
+    expect(brawlerPattern.test(html)).toBe(true);
+
+    // Pyro should have 4 bubbles
+    const pyroPattern = /<div class="ultra-light-name">Pyro<\/div>[\s\S]*?<span class="bubble"><\/span><span class="bubble"><\/span><span class="bubble"><\/span><span class="bubble"><\/span>/;
+    expect(pyroPattern.test(html)).toBe(true);
+
+    // Commando should have 2 bubbles
+    const commandoPattern = /<div class="ultra-light-name">Commando<\/div>[\s\S]*?<span class="bubble"><\/span><span class="bubble"><\/span>/;
+    expect(commandoPattern.test(html)).toBe(true);
+
+    // Verify there's no structure row
+    const structMatch = html.match(/<div[^>]*class=["'][^"']*structure-row[^"']*["'][^>]*>/gi);
+    expect(structMatch).toBeNull();
+  });
+
+  it('renders weapon information for Ultra-Light HE-V squadrons', () => {
+    const squadronUnit = {
+      isSupportAsset: true,
+      type: 'Ultra-Light HE-V Squadron',
+      upgradePodId: 'pod1',
+      details: [
+        '<u>Brawler</u>',
+        '<strong>Speed:</strong> 7"',
+        '<strong>Armor:</strong> 3',
+        '<strong>Weapon Systems:</strong> UL Melee Weapons, Submunitions',
+        '<strong>Traits:</strong> Magnetic Grapnels',
+        '<u>Pyro</u>',
+        '<strong>Speed:</strong> 6"',
+        '<strong>Armor:</strong> 4',
+        '<strong>Weapon Systems:</strong> UL Incinerators, Submunitions',
+        '<strong>Traits:</strong> Inferno Gear',
+        '<u>Unknown</u>',
+        '<strong>Speed:</strong> 8"',
+        '<strong>Armor:</strong> 3',
+        '<strong>Weapon Systems:</strong> Unknown Weapon',
+        '<strong>Traits:</strong> Stealth',
+        '<strong>Tonnage:</strong> 10T'
+      ]
+    };
+
+    const mockRules = {
+      ...mockGameRules,
+      UL_HEV_WEAPONS: [
+        {
+          id: 'ul-melee',
+          name: 'UL Melee Weapons',
+          damage: 'N/A',
+          range: 'N/A',
+          traits: ['Melee (X)', 'AP1 x (X)']
+        },
+        {
+          id: 'submunitions',
+          name: 'Submunitions',
+          damage: '1 x (X)',
+          range: '6"',
+          traits: ['Flak']
+        },
+        {
+          id: 'ul-incinerators',
+          name: 'UL Incinerators',
+          damage: '4 x (X)',
+          range: '4',
+          traits: ['Disruptive', 'Light']
+        }
+      ],
+      UL_HEV_UPGRADE_PODS: [
+        {
+          id: 'pod1',
+          name: 'Test Pod',
+          damage: '3',
+          range: '12"',
+          traits: ['Limited(2)', 'Blast(3")'],
+          description: 'Test pod description'
+        }
+      ],
+      traitDefinitions: {
+        'Melee': 'Combat at close range',
+        'AP1': 'Armor Piercing 1',
+        'Flak': 'Anti-air capability',
+        'Disruptive': 'Disrupts electronics',
+        'Light': 'Reduced weight'
+      }
+    };
+
+    const html = generatePrintHtml({
+      roster: [squadronUnit],
+      rosterName: 'Test Roster',
+      totalRosterBaseTonnage: 20,
+      getBaseTonnage: () => 20,
+      generateBubbleHtml,
+      generateStructureBubbleHtml,
+      formatPrintTrait: (trait) => typeof trait === 'string' ? trait : trait.name,
+      gameRulesData: mockRules,
+    });
+
+    // Check that weapon tables exist for each HE-V
+    expect(html).toContain('UL Melee Weapons');
+    expect(html).toContain('Submunitions');
+    expect(html).toContain('UL Incinerators');
+
+    // Check that weapon traits are displayed
+    expect(html).toContain('Melee (X), AP1 x (X)');
+    expect(html).toContain('Flak');
+    expect(html).toContain('Disruptive, Light');
+
+    // Check that weapon traits are included in the trait definitions
+    expect(html).toContain('<strong>Melee:</strong>');
+    expect(html).toContain('<strong>AP1:</strong>');
+    expect(html).toContain('<strong>Flak:</strong>');
+    expect(html).toContain('<strong>Disruptive:</strong>');
+    expect(html).toContain('<strong>Light:</strong>');
   });
 });

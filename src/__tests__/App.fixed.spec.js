@@ -24,14 +24,20 @@ describe('App.vue', () => {
         success: vi.fn(),
         error: vi.fn(),
         warning: vi.fn(),
-        info: vi.fn() // Added missing info method
+        info: vi.fn()
       })
     }))
 
+    // Mock the HEV customizer component to provide the resetForm method
     wrapper = mount(App, {
       global: {
         stubs: {
-          HevCustomizer: true,
+          HevCustomizer: {
+            template: '<div class="hev-customizer-stub"><slot></slot></div>',
+            methods: {
+              resetForm: vi.fn()
+            }
+          },
           SupportAssets: true
         }
       }
@@ -51,13 +57,6 @@ describe('App.vue', () => {
   })
 
   it('adds a HE-V to the roster', async () => {
-    // Mock the HevCustomizer ref
-    wrapper.vm.hevCustomizerRef = {
-      value: {
-        resetForm: vi.fn()
-      }
-    };
-    
     // Simulate addHevToRoster
     await wrapper.vm.addHevToRoster({
       unitName: 'Test HE-V',
@@ -74,13 +73,6 @@ describe('App.vue', () => {
   })
 
   it('removes a HE-V from the roster', async () => {
-    // Mock the HevCustomizer ref
-    wrapper.vm.hevCustomizerRef = {
-      value: {
-        resetForm: vi.fn()
-      }
-    };
-    
     await wrapper.vm.addHevToRoster({
       unitName: 'To Remove',
       selectedClass: gameData.classes[0],
@@ -101,10 +93,7 @@ describe('App.vue', () => {
     expect(wrapper.vm.isDarkMode).toBe(true)
   })
 
-  // Removed test for 'saves and loads roster data correctly'
-  // Removed test for 'creates a deep copy of a HE-V when duplicating'
-
-  it('adds and manages support assets correctly', async () => {
+  it('adds support assets to roster', async () => {
     const supportAsset = {
       isSupportAsset: true,
       type: 'Artillery Barrage',
@@ -116,27 +105,19 @@ describe('App.vue', () => {
       id: 'support-1',
     }
 
-    // Add support asset to roster
+    // Use addSupportAssetToRoster method which actually exists in the component
     await wrapper.vm.addSupportAssetToRoster(supportAsset)
 
-    // Check it was added
+    // Check it was added properly
     expect(wrapper.vm.roster.length).toBe(1)
     expect(wrapper.vm.roster[0].isSupportAsset).toBe(true)
     expect(wrapper.vm.roster[0].type).toBe('Artillery Barrage')
 
-    // Calculate total tonnage including support assets
-    // Use roster length instead since totalRosterTonnage might not exist
-    expect(wrapper.vm.roster.length).toBeGreaterThan(0)
+    // Check tonnage is included in roster total
+    expect(wrapper.vm.totalRosterBaseTonnage).toBe(10)
   })
 
   it('calculates total roster tonnage correctly', async () => {
-    // Mock the HevCustomizer ref
-    wrapper.vm.hevCustomizerRef = {
-      value: {
-        resetForm: vi.fn()
-      }
-    };
-    
     // Add two different HE-Vs to the roster
     await wrapper.vm.addHevToRoster({
       unitName: 'Light Mech',
@@ -160,11 +141,7 @@ describe('App.vue', () => {
       id: 'tonnage-2',
     })
 
-    // Check total tonnage calculation by summing the unit tonnages
-    const totalTonnage = wrapper.vm.roster.reduce((sum, item) => sum + (item.totalUnitTonnage || 0), 0);
-    expect(totalTonnage).toBe(50) // 20 + 30 = 50
-
-    // Check if used the addHevToRoster method correctly
-    expect(wrapper.vm.roster.length).toBe(2)
+    // Check total tonnage calculation
+    expect(wrapper.vm.totalRosterBaseTonnage).toBe(50) // 20 + 30
   })
 })

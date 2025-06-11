@@ -1,6 +1,6 @@
 /* Print and print-preview styles for Steel Rift Force Builder */
 
-body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; padding: 0; color: #212529; background-color: #fff; font-size: 14px; }
+body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; background-color: #fff; font-size: 14px; color: #212529; }
 * { box-sizing: border-box; }
 :root { --primary-color: #0d6efd; --secondary-color: #6c757d; --success-color: #198754; --danger-color: #dc3545; --warning-color: #ffc107; --black-color: #000000; --light-grey: #f8f9fa; --medium-grey: #e9ecef; --dark-grey: #343a40; --border-color: #dee2e6; --border-radius: 0.25rem; --text-muted: #6c757d; }
 
@@ -92,6 +92,55 @@ body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; padding:
     width: 100%;
 }
 
+/* Ultra-Light HE-V Squadron Styles */
+.ultra-light-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 0.8rem;
+}
+.ultra-light-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  background-color: var(--light-grey);
+}
+.ultra-light-name {
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+  color: var(--dark-grey);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.2rem;
+}
+.ultra-light-armor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px dashed var(--border-color);
+}
+.ultra-light-armor .print-defense-label {
+  min-width: 45px;
+  font-size: 0.8rem;
+}
+.ultra-light-armor .bubble-display {
+  display: flex;
+  gap: 1px;
+  align-items: center;
+}
+.ultra-light-details {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.75rem;
+}
+.ultra-light-details li {
+  margin-bottom: 0.2rem;
+  line-height: 1.3;
+}
+
 /* Trait Definitions Section Styles */
 .trait-definitions-section { margin-top: 1rem; }
 .trait-definitions-section .section-title { margin-bottom: 0.3rem; }
@@ -100,11 +149,233 @@ body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; padding:
 .trait-list li:last-child { margin-bottom: 0; }
 .trait-list li strong { font-weight: bold; color: var(--dark-grey); margin-right: 0.4em; }
 
+/* Enhanced Trait Definitions Section Styles */
+.trait-definitions-section {
+  margin-top: 1.2rem;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 0.8rem;
+}
+
+.trait-definitions-section .section-title {
+  color: var(--primary-color);
+  font-size: 0.95rem;
+  border-bottom-style: dashed;
+}
+
+.trait-definitions-section .trait-list {
+  background-color: var(--light-grey);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--medium-grey);
+  padding: 0.7rem;
+  font-size: 0.8rem;
+  color: var(--dark-grey);
+}
+
+.trait-definitions-section .trait-list li {
+  margin-bottom: 0.35rem;
+  line-height: 1.3;
+}
+
+.trait-definitions-section .trait-list li strong {
+  color: var(--primary-color);
+  font-weight: 600;
+  margin-right: 0.3rem;
+}
+
+/* Support Asset Card Styles */
+.support-asset-wrapper { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.8rem; align-items: stretch; }
+.support-section { flex: 1; min-width: 230px; display: flex; flex-direction: column; }
+.reminder-text { font-size: 0.75rem; font-style: italic; color: var(--text-muted); text-align: center; padding: 0.4rem; margin: 0; background-color: var(--light-grey); border: 1px solid var(--medium-grey); border-radius: var(--border-radius); }
+.targeting-restriction { font-size: 0.85rem; font-style: italic; color: var(--secondary-color); padding: 0.5rem; margin-top: 0.5rem; background-color: var(--light-grey); border-radius: var(--border-radius); }
+.targeting-restriction strong { color: var(--dark-grey); }
+.support-asset-notes { margin-top: 0.5rem; }
+.notes-list { list-style: none; padding: 0.5rem; margin: 0; font-size: 0.8rem; font-style: italic; color: var(--text-muted); background-color: var(--light-grey); border-radius: var(--border-radius); }
+.notes-list li { margin-bottom: 0.25rem; }
+.notes-list li:last-child { margin-bottom: 0; }
+
+/* Ultra-Light Squadron Styles */
+.squadron-container { margin-top: 0.5rem; }
+.ultra-light-grid {
+  display: flex;
+  flex-direction: column; /* Changed to column to stack vertically */
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.ultra-light-card {
+  width: 100%; /* Full width */
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  background-color: var(--light-grey);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 1.25rem; /* Added spacing between cards */
+  page-break-inside: avoid; /* Prevent breaking across pages */
+}
+.ultra-light-name {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--medium-grey);
+  color: var(--primary-color);
+}
+.ultra-light-armor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0;
+}
+.ultra-light-details {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.ultra-light-details li {
+  margin-bottom: 0.25rem;
+  padding: 0.15rem 0.25rem;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.ultra-light-details li { margin-bottom: 0.25rem; }
+.upgrade-pod-info {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: var(--light-grey);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.upgrade-pod-info::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--primary-color);
+}
+
+.upgrade-pod-info h5 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--secondary-color);
+  padding-bottom: 0.25rem;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.upgrade-pod-details {
+  font-size: 0.8rem;
+}
+
+.upgrade-pod-details p {
+  margin: 0.25rem 0;
+}
+
+.upgrade-pod-details strong {
+  color: var(--dark-grey);
+  font-weight: 600;
+}
+
+.upgrade-pod-description {
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: 0.5rem !important;
+  padding-top: 0.5rem;
+  border-top: 1px dotted var(--border-color);
+}
+
+/* Ultra-Light HE-V Weapon Tables */
+.ultra-light-weapons {
+  margin-top: 0.5rem;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 0.5rem;
+}
+
+.print-ul-weapon-table {
+  font-size: 0.8rem;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.print-ul-weapon-table th,
+.print-ul-weapon-table td {
+  padding: 0.25rem 0.4rem;
+  vertical-align: middle;
+}
+
+.print-ul-weapon-table th:nth-child(1),
+.print-ul-weapon-table td:nth-child(1) {
+  width: 25%;
+}
+
+.print-ul-weapon-table th:nth-child(2),
+.print-ul-weapon-table td:nth-child(2) {
+  text-align: center;
+  width: 15%;
+  white-space: nowrap;
+}
+
+.print-ul-weapon-table th:nth-child(3),
+.print-ul-weapon-table td:nth-child(3) {
+  text-align: center;
+  width: 15%;
+  white-space: nowrap;
+}
+
+.print-ul-weapon-table th:nth-child(4),
+.print-ul-weapon-table td:nth-child(4) {
+  width: 45%;
+}
+
+.print-ul-weapon-table td:nth-child(4) {
+  font-size: 0.8rem;
+  color: var(--dark-grey);
+  font-style: normal;
+  line-height: 1.4;
+}
+
 /* Print specific overrides */
 @media print {
     body { margin: 0; padding: 0; background-color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10pt; }
     .print-container { max-width: 100%; margin: 8mm; padding: 0; box-shadow: none; border: none; }
     .no-print { display: none !important; }
     .unit-card { border: 1px solid #ccc; margin-bottom: 8mm; }
+    .support-asset-card::before { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 .no-print { position: fixed; top: 10px; right: 10px; padding: 5px 10px; background-color: #ddd; border: 1px solid #aaa; border-radius: 4px; cursor: pointer; z-index: 1000;}
+.weapons-heading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--secondary-color);
+  margin-bottom: 0.3rem;
+}
+
+/* Common Traits Section for Ultra-Light HE-V Squadrons */
+.squadron-common-traits {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--light-grey);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.85rem;
+  color: var(--dark-grey);
+}
+
+.squadron-common-traits p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.squadron-common-traits strong {
+  color: var(--secondary-color);
+  font-weight: 600;
+}
