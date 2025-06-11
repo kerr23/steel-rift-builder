@@ -57,7 +57,7 @@ describe('App.vue', () => {
         resetForm: vi.fn()
       }
     };
-    
+
     // Simulate addHevToRoster
     await wrapper.vm.addHevToRoster({
       unitName: 'Test HE-V',
@@ -80,7 +80,7 @@ describe('App.vue', () => {
         resetForm: vi.fn()
       }
     };
-    
+
     await wrapper.vm.addHevToRoster({
       unitName: 'To Remove',
       selectedClass: gameData.classes[0],
@@ -136,7 +136,7 @@ describe('App.vue', () => {
         resetForm: vi.fn()
       }
     };
-    
+
     // Add two different HE-Vs to the roster
     await wrapper.vm.addHevToRoster({
       unitName: 'Light Mech',

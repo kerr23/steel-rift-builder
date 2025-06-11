@@ -53,7 +53,7 @@ describe('App.vue Enhanced Tests', () => {
         resetForm: vi.fn()
       }
     };
-    
+
     // Add a HE-V to roster
     await wrapper.vm.addHevToRoster({
       unitName: 'Saved HE-V',
@@ -77,13 +77,13 @@ describe('App.vue Enhanced Tests', () => {
       document.createElement = vi.fn().mockReturnValue(mockLink);
       document.body.appendChild = vi.fn();
       document.body.removeChild = vi.fn();
-      
+
       await wrapper.vm.exportRosterJson();
-      
+
       // Verify export was called
       expect(mockLink.download).toBeTruthy();
     }
-    
+
     // Verify roster has the item
     expect(wrapper.vm.roster.length).toBe(1);
   });
@@ -95,7 +95,7 @@ describe('App.vue Enhanced Tests', () => {
         resetForm: vi.fn()
       }
     };
-    
+
     const hev = {
       unitName: 'Original HE-V',
       selectedClass: gameData.classes[0],
@@ -109,7 +109,7 @@ describe('App.vue Enhanced Tests', () => {
 
     // Add to roster
     await wrapper.vm.addHevToRoster(hev);
-    
+
     // Verify HE-V was added
     expect(wrapper.vm.roster.length).toBe(1);
     expect(wrapper.vm.roster[0].id).toBe('original');
@@ -146,7 +146,7 @@ describe('App.vue Enhanced Tests', () => {
         resetForm: vi.fn()
       }
     };
-    
+
     // Add a HE-V
     await wrapper.vm.addHevToRoster({
       unitName: 'Heavy Tank',
