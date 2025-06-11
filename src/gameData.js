@@ -301,7 +301,13 @@ export const UL_HEV_TYPES = [
     speed: '7"',
     armor: 3,
     weapons: ['UL Melee Weapons', 'Submunitions'],
-    traits: ['Magnetic Grapnels']
+    traits: [
+      'Ultra-Light',
+      'Squadron',
+      'Close Support',
+      'All-Terrain',
+      'Magnetic Grapnels'
+    ]
   },
   {
     id: 'ul_pyro',
@@ -309,7 +315,13 @@ export const UL_HEV_TYPES = [
     speed: '6"',
     armor: 3,
     weapons: ['UL Incinerators', 'Submunitions'],
-    traits: ['Inferno Gear']
+    traits: [
+      'Ultra-Light',
+      'Squadron',
+      'Close Support',
+      'All-Terrain',
+      'Inferno Gear'
+    ]
   },
   {
     id: 'ul_commando',
@@ -317,7 +329,14 @@ export const UL_HEV_TYPES = [
     speed: '7"',
     armor: 3,
     weapons: ['Submunitions'],
-    traits: ['Scramblers', 'Target Designator']
+    traits: [
+      'Ultra-Light',
+      'Squadron',
+      'Close Support',
+      'All-Terrain',
+      'Scramblers',
+      'Target Designator'
+    ]
   },
   {
     id: 'ul_rifleman',
@@ -325,7 +344,13 @@ export const UL_HEV_TYPES = [
     speed: '6"',
     armor: 3,
     weapons: ['UL Autocannon', 'UL Grenades'],
-    traits: ['Suppressive Fire']
+    traits: [
+      'Ultra-Light',
+      'Squadron',
+      'Close Support',
+      'All-Terrain',
+      'Suppressive Fire'
+    ]
   }
 ]
 

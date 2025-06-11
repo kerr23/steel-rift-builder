@@ -1,6 +1,5 @@
 // Utility for generating print HTML for Steel Rift Force Builder
 // Extracted from App.vue for maintainability
-import { UL_HEV_WEAPONS } from './gameData.js'
 
 export function generatePrintHtml({
   roster,
@@ -167,12 +166,12 @@ export function generatePrintHtml({
       } else if (isUltraLightSquad) {
         // Enhanced display for Ultra-Light squadrons
         htmlBody += `<div class="equipment-section">`
-        htmlBody += `<h4 class="section-title">Squadron Composition</h4>`
+        // htmlBody += `<h4 class="section-title">Squadron Composition</h4>`
 
-        // Add common Ultra-Light HE-V squadron traits
-        htmlBody += `<div class="squadron-common-traits">
-          <p><strong>Common Squadron Traits:</strong> Ultra-Light, Squadron, Close Support, All-Terrain</p>
-        </div>`
+        // // Add common Ultra-Light HE-V squadron traits
+        // htmlBody += `<div class="squadron-common-traits">
+        //   <p><strong>Common Squadron Traits:</strong> Ultra-Light, Squadron, Close Support, All-Terrain</p>
+        // </div>`
 
         // We'll add traits based on what's actually used in the HE-V details
 
