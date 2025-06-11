@@ -44,15 +44,15 @@ html.dark-theme {
   --black-color: #dee2e6; /* Light grey for "black" elements */
 
   /* Dark Theme Specific Colors */
-  --bg-color: #1a1a1a; /* Very dark background */
-  --card-bg-color: #2c2c2c; /* Darker card background */
+  --bg-color: #121212; /* Very dark background */
+  --card-bg-color: #212121; /* Darker card background */
   --text-color: #e9ecef; /* Light text */
   --text-muted-color: #adb5bd; /* Lighter muted text */
   --border-color: #495057; /* Darker border */
-  --input-bg-color: #343a40; /* Dark input background */
+  --input-bg-color: #2c2c2c; /* Dark input background */
   --input-border-color: #495057; /* Darker input border */
   --medium-grey: #495057;
-  --light-grey: #343a40; /* Darker shade for light grey */
+  --light-grey: #2c2c2c; /* Darker shade for light grey */
   --dark-grey: #ced4da; /* Lighter shade for dark grey */
 }
 
@@ -92,7 +92,7 @@ body {
     border-color 0.3s ease; /* Smooth transition */
 }
 html.dark-theme .card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); /* Darker shadow for dark mode */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Form group styling */
@@ -328,3 +328,92 @@ html.dark-theme .btn-warning {
   border: 0;
   border-top: 1px solid var(--border-color);
 } /* Use variable */
+
+/* Fix input backgrounds and text colors in dark mode */
+html.dark-theme input,
+html.dark-theme select,
+html.dark-theme textarea {
+  background-color: var(--input-bg-color) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Make card backgrounds consistent in dark mode */
+html.dark-theme .bg-white,
+html.dark-theme .bg-gray-100,
+html.dark-theme .bg-light-grey {
+  background-color: var(--card-bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Fix table backgrounds in dark mode */
+html.dark-theme table,
+html.dark-theme th,
+html.dark-theme td {
+  background-color: var(--card-bg-color) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Improve contrast for descriptions in dark mode */
+html.dark-theme .text-muted {
+  color: var(--text-muted-color) !important;
+  opacity: 0.9;
+}
+
+/* Ensure support pod descriptions are readable */
+html.dark-theme .support-pod-details strong,
+html.dark-theme .support-asset-card strong {
+  color: var(--info-color) !important;
+}
+
+/* Fix select dropdown options in dark mode */
+html.dark-theme select option {
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+}
+
+/* Fix placeholder text to be more visible in dark mode */
+html.dark-theme ::placeholder {
+  color: var(--text-muted-color);
+  opacity: 0.7;
+}
+
+/* Fix text-muted to be readable in dark mode without requiring !important */
+.text-muted {
+  color: var(--text-muted-color);
+}
+
+/* Fix for any text-text-muted classes - these appear to be wrongly named */
+.text-text-muted {
+  color: var(--text-muted-color);
+}
+
+/* Additional fixes for placeholder text */
+.placeholder-text,
+.placeholder-text-inline {
+  color: var(--text-muted-color);
+}
+
+/* Improve strong and em elements in dark mode */
+html.dark-theme strong,
+html.dark-theme b {
+  color: var(--info-color);
+  font-weight: bold;
+}
+
+html.dark-theme em,
+html.dark-theme i {
+  color: var(--warning-color);
+  opacity: 0.9;
+}
+
+/* Improve links in dark mode */
+html.dark-theme a {
+  color: var(--primary-color);
+}
+
+/* Improve drop shadows on buttons in dark mode */
+html.dark-theme .btn {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
