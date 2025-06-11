@@ -30,7 +30,7 @@
         <div
           v-for="type in ultraLightTypes"
           :key="type.id"
-          class="ulhev-card border rounded-lg p-4 w-64 bg-input-bg flex flex-col items-start relative"
+          class="ulhev-card border rounded-lg p-4 w-64 flex flex-col items-start relative"
           :class="selectedUltraLightTypes.includes(type.id) ? 'border-primary ring-2 ring-primary' : 'border-input-border'"
         >
           <div class="flex items-center w-full mb-2">
@@ -73,7 +73,7 @@
             {{ pod.name }}
           </option>
         </select>
-        <div v-if="selectedUpgradePod" class="mt-2 text-sm bg-gray-100 p-2 rounded">
+        <div v-if="selectedUpgradePod" class="mt-2 text-sm p-2 rounded support-pod-details">
           <strong>{{ selectedUpgradePod.name }}</strong><br>
           <span v-if="selectedUpgradePod.damage !== 'N/A'"><strong>Damage:</strong> {{ selectedUpgradePod.damage }}<br></span>
           <span v-if="selectedUpgradePod.range !== 'N/A'"><strong>Range:</strong> {{ selectedUpgradePod.range }}<br></span>
@@ -92,7 +92,7 @@
       </div>
     </div>
     <div class="support-asset-list">
-      <div v-if="selectedClass === 'off-table' && selectedOffTableType" class="support-asset-card border border-border-color rounded-lg p-4 mb-4 bg-light-grey">
+      <div v-if="selectedClass === 'off-table' && selectedOffTableType" class="support-asset-card border border-border-color rounded-lg p-4 mb-4">
         <h3 class="text-lg font-semibold mb-2">{{ getOffTableAsset(selectedOffTableType).label }}</h3>
         <ul class="text-sm mb-2">
           <li v-for="line in getOffTableAsset(selectedOffTableType).details" :key="line"><span v-html="line"></span></li>
@@ -240,5 +240,22 @@ function addUltraLightSquadron() {
 </script>
 
 <style scoped>
-/* Remove all custom CSS and migrate to Tailwind utility classes. */
+/* Dark mode specific styles */
+.support-pod-details {
+  background: var(--light-grey);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.ulhev-card {
+  background-color: var(--card-bg-color) !important;
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+.support-asset-card {
+  background-color: var(--card-bg-color) !important;
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
 </style>

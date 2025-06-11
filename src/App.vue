@@ -18,7 +18,8 @@ const gameRulesData = {
 }
 const fileInputRef = ref(null)
 const versionTag = import.meta.env.VITE_GIT_COMMIT_SHA || 'dev'
-const isDarkMode = ref(false)
+// Load dark mode preference from localStorage, default to false if not set
+const isDarkMode = ref(localStorage.getItem('isDarkMode') === 'true')
 const toast = useToast()
 const activeTab = ref('hev')
 
@@ -284,6 +285,32 @@ const importRosterJson = (event) => {
 }
 // --- END Export/Import Functionality ---
 
+// Initialize dark mode based on system preference if no saved preference exists
+const initializeDarkMode = () => {
+  // If localStorage already has a saved preference, we'll use that (handled in the ref initialization)
+  // If no saved preference, check for system preference
+  if (localStorage.getItem('isDarkMode') === null) {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    isDarkMode.value = prefersDark
+    localStorage.setItem('isDarkMode', prefersDark)
+  }
+
+  // Add listener for system theme changes
+  if (window.matchMedia) {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    mediaQuery.addEventListener('change', (e) => {
+      // Only update if user hasn't explicitly set a preference
+      if (localStorage.getItem('isDarkMode') === null) {
+        isDarkMode.value = e.matches
+        localStorage.setItem('isDarkMode', e.matches)
+      }
+    })
+  }
+}
+
+// Call on component mount
+initializeDarkMode()
+
 watchEffect(() => {
   const html = document.documentElement
   if (isDarkMode.value) {
@@ -295,6 +322,8 @@ watchEffect(() => {
 
 const toggleDarkMode = () => {
   isDarkMode.value = !isDarkMode.value
+  // Save preference to localStorage
+  localStorage.setItem('isDarkMode', isDarkMode.value)
 }
 
 // --- Helper Functions ---
@@ -425,11 +454,17 @@ function showError(message, log = true) {
         <button
           :class="['tab-btn', activeTab === 'hev' ? 'tab-btn-active' : '']"
           @click="activeTab = 'hev'"
-        >HE-V Configuration</button>
+        >
+          <span class="tab-indicator" v-if="activeTab === 'hev'">•</span>
+          HE-V Configuration
+        </button>
         <button
           :class="['tab-btn', activeTab === 'support' ? 'tab-btn-active' : '']"
           @click="activeTab = 'support'"
-        >Support Assets</button>
+        >
+          <span class="tab-indicator" v-if="activeTab === 'support'">•</span>
+          Support Assets
+        </button>
       </div>
       <div class="tab-content">
         <HevCustomizer
@@ -441,6 +476,11 @@ function showError(message, log = true) {
         <SupportAssets v-if="activeTab === 'support'" @add-support-asset="addSupportAssetToRoster" />
       </div>
     </div>
+
+    <!-- Cookie/localStorage disclaimer -->
+    <footer class="disclaimer-footer mt-8 pt-4 border-t border-border-color text-sm text-muted text-center">
+      <p>This site uses browser localStorage to save your dark mode preference and roster data.</p>
+    </footer>
   </div>
 </template>
 
@@ -454,22 +494,44 @@ function showError(message, log = true) {
 .tab-btn {
   padding: 0.5rem 1.5rem;
   border: 1px solid var(--border-color, #ccc);
-  background: var(--card-bg, #f9f9f9);
-  color: var(--primary, #333);
+  background: var(--light-grey);
+  color: var(--text-muted-color);
   border-radius: 0.5rem 0.5rem 0 0;
   cursor: pointer;
   font-weight: 500;
-  transition: background 0.2s, color 0.2s;
+  transition: all 0.2s ease;
+  position: relative;
+  border-bottom-width: 3px;
+}
+.tab-btn:hover:not(.tab-btn-active) {
+  background: var(--medium-grey);
+  color: var(--text-color);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 }
 .tab-btn-active {
-  background: var(--primary, #333);
+  background: var(--info-color);
   color: #fff;
-  border-bottom: 2px solid var(--primary, #333);
+  font-weight: 600;
+  border-bottom: 3px solid var(--primary-color);
+  box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.15);
 }
 .tab-content {
-  background: var(--card-bg, #fff);
+  background: var(--card-bg-color);
   border: 1px solid var(--border-color, #ccc);
   border-radius: 0 0 0.5rem 0.5rem;
   padding: 2rem 1rem 1rem 1rem;
+}
+
+.tab-indicator {
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 1.2em;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 </style>

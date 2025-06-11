@@ -759,7 +759,7 @@ const formatTraitDisplay = (trait) => {
       </div>
     </div>
 
-    <div class="summary card summary-compact mt-6 p-4 border border-border rounded bg-light-grey" v-if="selectedClass">
+    <div class="summary card summary-compact mt-6 p-4 border border-border rounded" v-if="selectedClass">
       <h4 class="mb-0 mb-3 pb-2 text-lg text-center border-b border-medium-grey">Unit Summary</h4>
       <div class="summary-grid grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-y-1 gap-x-4 text-[0.85rem]">
         <div class="summary-item flex justify-between">
@@ -826,5 +826,56 @@ const formatTraitDisplay = (trait) => {
 <style scoped>
 .bubble-display {
   min-height: 1.2em;
+}
+
+/* Dark mode friendly styles */
+:deep(.bg-gray-100) {
+  background-color: var(--light-grey) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.bg-gray-200) {
+  background-color: var(--medium-grey) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.bg-white) {
+  background-color: var(--card-bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.border-gray-200), :deep(.border-gray-300) {
+  border-color: var(--border-color) !important;
+}
+
+/* Enhance stat display for dark mode */
+.stat-section {
+  border-color: var(--border-color);
+}
+
+.stat-row {
+  color: var(--text-color);
+}
+
+.bubble-display .bubble {
+  border-color: var(--text-color);
+}
+
+/* Make sure item descriptions are readable */
+.item-traits {
+  color: var(--text-muted-color);
+}
+
+/* Make sure color indicators remain visible */
+.threshold-divider.divider-green {
+  background-color: var(--success-color);
+}
+
+.threshold-divider.divider-yellow {
+  background-color: var(--warning-color);
+}
+
+.threshold-divider.divider-red {
+  background-color: var(--danger-color);
 }
 </style>
