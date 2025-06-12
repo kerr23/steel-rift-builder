@@ -20,8 +20,8 @@
         label="Off Table Support Type:"
         v-model="selectedOffTableType"
       >
-        <option v-for="type in offTableTypes" :key="type.value" :value="type.value">
-          {{ type.label }}
+        <option v-for="type in OFF_TABLE_TYPES" :key="type.id" :value="type.id">
+          {{ type.name }}
         </option>
       </FormSelect>
 
@@ -117,7 +117,7 @@
     <!-- Support Asset Preview -->
     <div class="support-asset-list">
       <div v-if="selectedClass === 'off-table' && selectedOffTableType" class="support-asset-card border border-border rounded-lg p-4 mb-4">
-        <h3 class="text-lg font-semibold mb-2">{{ getOffTableAsset(selectedOffTableType).label }}</h3>
+        <h3 class="text-lg font-semibold mb-2">{{ getOffTableAsset(selectedOffTableType).name }}</h3>
         <ul class="text-sm mb-2">
           <li v-for="line in getOffTableAsset(selectedOffTableType).details" :key="line"><span v-html="line"></span></li>
         </ul>
@@ -129,7 +129,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { UL_HEV_UPGRADE_PODS, UL_HEV_TYPES } from '../gameData.js'
+import { UL_HEV_UPGRADE_PODS, UL_HEV_TYPES, OFF_TABLE_TYPES } from '../gameData.js'
 import FormSelect from './ui/FormSelect.vue'
 import Button from './ui/Button.vue'
 
@@ -145,45 +145,7 @@ const supportAssetClasses = [
 const selectedClass = ref(supportAssetClasses[0].value)
 
 // --- Off Table Support Types ---
-const offTableTypes = [
-  {
-    value: 'artillery-barrage',
-    label: 'Artillery Barrage',
-    details: [
-      '<strong>Damage:</strong> 4',
-      '<strong>Traits:</strong> Blast(6), Limited(3)',
-      '<strong>Targeting Restriction:</strong> Must be within LoS of a unit with <em>Target Designator</em>'
-    ]
-  },
-  {
-    value: 'mass-driver',
-    label: 'Mass Driver',
-    details: [
-      '<strong>Damage:</strong> 6',
-      '<strong>Traits:</strong> Kinetic, Limited(3)',
-      '<strong>Targeting Restriction:</strong> Must be within LoS of a unit with <em>Target Designator</em>',
-      '<strong>Note:</strong> Treat this as Ultra-Heavy for Kinetic effects.'
-    ]
-  },
-  {
-    value: 'mine-drone-barrage',
-    label: 'Mine-Drone Barrage',
-    details: [
-      '<strong>Damage:</strong> 3',
-      '<strong>Traits:</strong> Blast(6), Limited(2), Smart',
-      '<strong>Targeting Restriction:</strong> Must be within LoS of a unit with <em>Target Designator</em>'
-    ]
-  },
-  {
-    value: 'orbital-laser',
-    label: 'Orbital Laser',
-    details: [
-      '<strong>Damage:</strong> 6',
-      '<strong>Traits:</strong> Limited(1), AP(4)',
-      '<strong>Targeting Restriction:</strong> Must be within LoS of a unit with <em>Target Designator</em>'
-    ]
-  }
-]
+// Using imported OFF_TABLE_TYPES from gameData.js
 const selectedOffTableType = ref('')
 
 // --- Ultra-Light HE-V Types ---
@@ -214,26 +176,39 @@ function removeUltraLightType(typeId) {
 }
 
 // --- Off Table Support Functions ---
-function getOffTableAsset(typeValue) {
-  const asset = offTableTypes.find(t => t.value === typeValue)
-  if (!asset) return { label: '', details: [] }
+function getOffTableAsset(typeId) {
+  const asset = OFF_TABLE_TYPES.find(t => t.id === typeId)
+  if (!asset) return { name: '', details: [] }
+
+  // Format details from the structured data
+  const details = [
+    `<strong>Damage:</strong> ${asset.damage}`,
+    `<strong>Traits:</strong> ${asset.traits.join(', ')}`,
+    `<strong>Targeting Restriction:</strong> ${asset.targetRestriction}`
+  ]
+
+  // Add note if available
+  if (asset.note) {
+    details.push(`<strong>Note:</strong> ${asset.note}`)
+  }
+
   // Always add tonnage as 10T
+  details.push('<strong>Tonnage:</strong> 10T')
+
   return {
-    ...asset,
-    details: [
-      ...asset.details,
-      '<strong>Tonnage:</strong> 10T'
-    ]
+    id: asset.id,
+    name: asset.name,
+    details
   }
 }
 
 function addSupportAsset() {
   const asset = getOffTableAsset(selectedOffTableType.value)
-  if (!asset.value && !asset.label) return
+  if (!asset.id && !asset.name) return
   // Emit to parent (App.vue) to add to roster
   emit('add-support-asset', {
     class: 'Off Table Support',
-    type: asset.label,
+    type: asset.name,
     details: asset.details
   })
   // Reset selection

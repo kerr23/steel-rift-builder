@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import SupportAssets from '../components/SupportAssets.vue'
-import { UL_HEV_TYPES, UL_HEV_UPGRADE_PODS } from '../gameData.js'
+import { UL_HEV_TYPES, UL_HEV_UPGRADE_PODS, OFF_TABLE_TYPES } from '../gameData.js'
 
 // Mock child components
 vi.mock('../components/ui/FormSelect.vue', () => ({
@@ -87,6 +87,7 @@ describe('SupportAssets', () => {
     expect(emitted[0][0]).toHaveProperty('class', 'Off Table Support')
     expect(emitted[0][0]).toHaveProperty('type', 'Artillery Barrage')
     expect(emitted[0][0].details).toContain('<strong>Damage:</strong> 4')
+    expect(emitted[0][0].details).toContain('<strong>Traits:</strong> Blast(6), Limited(3)')
     expect(emitted[0][0].details).toContain('<strong>Tonnage:</strong> 10T')
   })
 

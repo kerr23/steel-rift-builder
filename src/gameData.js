@@ -380,6 +380,44 @@ export const UL_HEV_UPGRADE_PODS = [
   }
 ]
 
+// Off Table Support Asset Types
+export const OFF_TABLE_TYPES = [
+  {
+    id: 'artillery-barrage',
+    name: 'Artillery Barrage',
+    damage: '4',
+    range: 'N/A',
+    traits: ['Blast(6)', 'Limited(3)'],
+    targetRestriction: 'Must be within LoS of a unit with Target Designator'
+  },
+  {
+    id: 'mass-driver',
+    name: 'Mass Driver',
+    damage: '6',
+    range: 'N/A',
+    traits: ['Kinetic', 'Limited(3)'],
+    targetRestriction: 'Must be within LoS of a unit with Target Designator',
+    note: 'Treat this as Ultra-Heavy for Kinetic effects.'
+  },
+  {
+    id: 'mine-drone-barrage',
+    name: 'Mine-Drone Barrage',
+    damage: '4',
+    range: 'N/A',
+    traits: ['AP(1)','Blast(6)','Limited(3)' ],
+    targetRestriction: 'Unit must be within 4" of the mine token (No LoS)',
+    note: 'Before Setting up foces place your 3 mine drones not within 12" of enemy line, not within 6" of another mine token.'
+  },
+  {
+    id: 'orbital-laser',
+    name: 'Orbital Laser',
+    damage: '3',
+    range: 'N/A',
+    traits: ['Limited(3)', 'AP(3)'],
+    targetRestriction: 'Must be within LoS of a unit with Target Designator'
+  }
+]
+
 // Cache for lookup functions
 const classByNameCache = new Map();
 const weaponByIdCache = new Map();
