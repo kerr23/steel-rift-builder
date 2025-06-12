@@ -246,7 +246,7 @@ const toggleDarkMode = () => {
 // Call on component mount
 initializeDarkMode()
 
-// Watch for dark mode changes and apply the appropriate class
+// Watch for dark mode changes, apply the appropriate class, and save to localStorage
 watchEffect(() => {
   const html = document.documentElement
   if (isDarkMode.value) {
@@ -254,6 +254,9 @@ watchEffect(() => {
   } else {
     html.classList.remove('dark-theme')
   }
+
+  // Save the current state to localStorage whenever it changes
+  localStorage.setItem('isDarkMode', isDarkMode.value)
 })
 
 // --- Helper Functions ---
