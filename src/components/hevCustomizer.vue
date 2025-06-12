@@ -5,6 +5,7 @@ import { useToast } from 'vue-toastification'
 import BubbleDisplay from './ui/BubbleDisplay.vue'
 import FormSelect from './ui/FormSelect.vue'
 import Button from './ui/Button.vue'
+import MemoizedTraitFormatter from './ui/MemoizedTraitFormatter.vue'
 import { MODIFICATION_OPTIONS } from '../constants.js'
 
 // --- Initialize Toast ---
@@ -483,8 +484,22 @@ watch(structureModification, (newValue, oldValue) => {
 defineExpose({ resetForm, loadHevForEditing })
 // --- END Expose Methods ---
 
+// Initialize trait formatter ref
+const traitFormatterRef = ref(null);
+
 // Helper for weapon cost calculation
+/**
+ * Memoized calculation of nth weapon cost
+ * Calculates the cost of adding the nth copy of a weapon, applying a progressive penalty
+ * @param {Object} weaponData - Weapon data object
+ * @param {number} n - Which copy of the weapon (1st, 2nd, etc.)
+ * @param {string} className - HE-V class name
+ * @returns {number} - Tonnage cost
+ */
+const weaponCostCache = new Map(); // Cache for memoization
+
 const calculateNthWeaponCost = (weaponData, n, className) => {
+  // Early return for invalid inputs
   if (
     n <= 0 ||
     !weaponData ||
@@ -492,33 +507,70 @@ const calculateNthWeaponCost = (weaponData, n, className) => {
     !weaponData.tonnage ||
     weaponData.tonnage[className] === undefined
   ) return 0
+
+  // Create a cache key
+  const cacheKey = `${weaponData.id}-${n}-${className}`;
+
+  // Check if we have this calculation cached
+  if (weaponCostCache.has(cacheKey)) {
+    return weaponCostCache.get(cacheKey);
+  }
+
+  // Perform the calculation
   const baseCost = weaponData.tonnage[className]
-  if (n === 1) return baseCost
-  const penaltyAmount = Math.ceil(baseCost * 0.5)
-  return baseCost + (n - 1) * penaltyAmount
+  let result;
+
+  if (n === 1) {
+    result = baseCost;
+  } else {
+    const penaltyAmount = Math.ceil(baseCost * 0.5)
+    result = baseCost + (n - 1) * penaltyAmount;
+  }
+
+  // Cache the result
+  weaponCostCache.set(cacheKey, result);
+
+  return result;
 }
 
-// Helper for trait display
+// Helper for trait display - uses MemoizedTraitFormatter for performance
+/**
+ * Format trait for display using memoized trait formatter
+ * @param {Object} trait - The trait to format
+ * @returns {string} - Formatted trait display string
+ */
 const formatTraitDisplay = (trait) => {
-  if (!trait || typeof trait !== 'object' || !trait.name) return 'Unknown Trait'
-  const currentClassName = selectedClass.value?.name
+  const currentClassName = selectedClass.value?.name;
+  // If the trait formatter ref is available, use it
+  if (traitFormatterRef.value) {
+    return traitFormatterRef.value.formatTraitDisplay(trait);
+  }
+
+  // Fallback implementation if the formatter is not available
+  if (!trait || typeof trait !== 'object' || !trait.name) return 'Unknown Trait';
+
   if (trait.name === 'Limited' && typeof trait.value === 'number') {
-    return `Limited(${Array(trait.value).fill('○').join('')})`
+    return `Limited(${Array(trait.value).fill('○').join('')})`;
   }
   if (typeof trait.value === 'object' && trait.value !== null) {
     if (currentClassName && trait.value[currentClassName] !== undefined) {
-      return `${trait.name} ${trait.value[currentClassName]}`
+      return `${trait.name} ${trait.value[currentClassName]}`;
     } else {
-      return `${trait.name} (${Object.entries(trait.value).map(([k, v]) => `${k[0]}:${v}`).join('/')})`
+      return `${trait.name} (${Object.entries(trait.value).map(([k, v]) => `${k[0]}:${v}`).join('/')})`;
     }
   }
-  if (trait.value !== undefined) return `${trait.name} ${trait.value}`
-  return trait.name
+  if (trait.value !== undefined) return `${trait.name} ${trait.value}`;
+  return trait.name;
 }
 </script>
 
 <template>
   <section class="hev-customizer card p-5">
+    <!-- Hidden trait formatter component - doesn't render anything visible -->
+    <MemoizedTraitFormatter
+      ref="traitFormatterRef"
+      :className="selectedClass?.name"
+    />
     <h2 class="component-title text-center text-secondary mb-5 font-medium text-2xl">HE-V Configuration</h2>
 
     <div class="form-inline class-defense-wrapper flex flex-wrap gap-6 mb-4 items-stretch">

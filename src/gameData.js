@@ -380,6 +380,73 @@ export const UL_HEV_UPGRADE_PODS = [
   }
 ]
 
-export const findClassByName = (name) => gameData.classes.find(c => c.name === name) || null
-export const findWeaponById = (id) => gameData.weapons.find(w => w.id === id) || null
-export const findUpgradeById = (id) => gameData.upgrades.find(u => u.id === id) || null
+// Cache for lookup functions
+const classByNameCache = new Map();
+const weaponByIdCache = new Map();
+const upgradeByIdCache = new Map();
+
+/**
+ * Find a class by name (memoized)
+ * @param {string} name - Class name to find
+ * @returns {Object|null} - Class object or null if not found
+ */
+export const findClassByName = (name) => {
+  if (!name) return null;
+
+  // Check cache first
+  if (classByNameCache.has(name)) {
+    return classByNameCache.get(name);
+  }
+
+  // Not in cache, perform lookup
+  const result = gameData.classes.find(c => c.name === name) || null;
+
+  // Cache result
+  classByNameCache.set(name, result);
+
+  return result;
+};
+
+/**
+ * Find a weapon by ID (memoized)
+ * @param {string} id - Weapon ID to find
+ * @returns {Object|null} - Weapon object or null if not found
+ */
+export const findWeaponById = (id) => {
+  if (!id) return null;
+
+  // Check cache first
+  if (weaponByIdCache.has(id)) {
+    return weaponByIdCache.get(id);
+  }
+
+  // Not in cache, perform lookup
+  const result = gameData.weapons.find(w => w.id === id) || null;
+
+  // Cache result
+  weaponByIdCache.set(id, result);
+
+  return result;
+};
+
+/**
+ * Find an upgrade by ID (memoized)
+ * @param {string} id - Upgrade ID to find
+ * @returns {Object|null} - Upgrade object or null if not found
+ */
+export const findUpgradeById = (id) => {
+  if (!id) return null;
+
+  // Check cache first
+  if (upgradeByIdCache.has(id)) {
+    return upgradeByIdCache.get(id);
+  }
+
+  // Not in cache, perform lookup
+  const result = gameData.upgrades.find(u => u.id === id) || null;
+
+  // Cache result
+  upgradeByIdCache.set(id, result);
+
+  return result;
+};
