@@ -1,31 +1,44 @@
 <template>
   <section class="support-assets card p-5">
     <h2 class="component-title text-center text-secondary mb-5 font-medium text-2xl">Support Assets</h2>
-    <div class="form-group mb-6">
-      <label for="supportAssetClass" class="block mb-2 font-medium text-text">Support Asset Class:</label>
-      <select id="supportAssetClass" v-model="selectedClass" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary">
-        <option v-for="cls in supportAssetClasses" :key="cls.value" :value="cls.value">
-          {{ cls.label }}
-        </option>
-      </select>
-    </div>
-    <div v-if="selectedClass === 'off-table'" class="form-group mb-6">
-      <label for="offTableType" class="block mb-2 font-medium text-text">Off Table Support Type:</label>
-      <select id="offTableType" v-model="selectedOffTableType" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary">
+
+    <!-- Support Asset Class Selection -->
+    <FormSelect
+      id="supportAssetClass"
+      label="Support Asset Class:"
+      v-model="selectedClass"
+    >
+      <option v-for="cls in supportAssetClasses" :key="cls.value" :value="cls.value">
+        {{ cls.label }}
+      </option>
+    </FormSelect>
+
+    <!-- Off Table Support Options -->
+    <div v-if="selectedClass === 'off-table'" class="mb-6">
+      <FormSelect
+        id="offTableType"
+        label="Off Table Support Type:"
+        v-model="selectedOffTableType"
+      >
         <option v-for="type in offTableTypes" :key="type.value" :value="type.value">
           {{ type.label }}
         </option>
-      </select>
-      <button
-        class="btn btn-success mt-4 px-4 py-2 rounded bg-success text-white font-semibold"
+      </FormSelect>
+
+      <Button
+        variant="success"
+        class="mt-4"
         :disabled="!selectedOffTableType"
         @click="addSupportAsset"
       >
         Add to Roster
-      </button>
+      </Button>
     </div>
-    <div v-if="selectedClass === 'ultra-light'" class="form-group mb-6">
+
+    <!-- Ultra Light HE-V Squadron Options -->
+    <div v-if="selectedClass === 'ultra-light'" class="mb-6">
       <label class="block mb-2 font-medium text-text">Select 3 Ultra-Light HE-Vs for Squadron:</label>
+
       <div class="flex flex-wrap gap-4 mb-4">
         <div
           v-for="type in ultraLightTypes"
@@ -35,9 +48,10 @@
         >
           <div class="flex items-center w-full mb-2">
             <span class="font-semibold text-base">{{ type.type }}</span>
-            <button
-              type="button"
-              class="ml-auto px-3 py-1 rounded bg-primary text-white font-semibold text-xs"
+            <Button
+              variant="primary"
+              size="sm"
+              class="ml-auto"
               :class="{
                 'opacity-80': selectedUltraLightTypes.filter(v => v === type.id).length === 0,
                 'opacity-50': selectedUltraLightTypes.length === 3 || selectedUltraLightTypes.filter(v => v === type.id).length >= 3
@@ -46,7 +60,7 @@
               @click="() => addUltraLightType(type.id)"
             >
               Add
-            </button>
+            </Button>
           </div>
           <ul class="text-sm space-y-1">
             <li><span><strong>Speed:</strong> {{ type.speed }}</span></li>
@@ -56,23 +70,30 @@
           </ul>
           <div v-if="selectedUltraLightTypes.filter(v => v === type.id).length > 0" class="mt-2 flex flex-wrap gap-1">
             <span v-for="(n, idx) in selectedUltraLightTypes.filter(v => v === type.id).length" :key="idx" class="inline-block px-2 py-0.5 bg-primary text-white text-xs rounded">Selected</span>
-            <button
-              v-if="selectedUltraLightTypes.filter(v => v === type.id).length > 0"
-              class="ml-2 px-2 py-0.5 rounded bg-red-500 text-white text-xs"
+            <Button
+              variant="danger"
+              size="sm"
+              class="ml-2"
               @click="() => removeUltraLightType(type.id)"
-              type="button"
-            >Remove</button>
+            >
+              Remove
+            </Button>
           </div>
         </div>
       </div>
+
       <div class="mb-4">
-        <label class="block mb-2 font-medium text-text">Select Upgrade Pod (required):</label>
-        <select v-model="selectedUpgradePodId" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary">
+        <FormSelect
+          id="upgradePod"
+          label="Select Upgrade Pod (required):"
+          v-model="selectedUpgradePodId"
+        >
           <option value="" disabled>Select an upgrade pod</option>
           <option v-for="pod in UL_HEV_UPGRADE_PODS" :key="pod.id" :value="pod.id">
             {{ pod.name }}
           </option>
-        </select>
+        </FormSelect>
+
         <div v-if="selectedUpgradePod" class="mt-2 text-sm p-2 rounded support-pod-details">
           <strong>{{ selectedUpgradePod.name }}</strong><br>
           <span v-if="selectedUpgradePod.damage !== 'N/A'"><strong>Damage:</strong> {{ selectedUpgradePod.damage }}<br></span>
@@ -81,18 +102,21 @@
           <span v-if="selectedUpgradePod.description">{{ selectedUpgradePod.description }}</span>
         </div>
       </div>
+
       <div class="mt-4">
-        <button
-          class="btn btn-success px-4 py-2 rounded bg-success text-white font-semibold"
+        <Button
+          variant="success"
           :disabled="getUltraLightSquadron().length !== 3 || !selectedUpgradePodId"
           @click="addUltraLightSquadron"
         >
           Add Squadron to Roster
-        </button>
+        </Button>
       </div>
     </div>
+
+    <!-- Support Asset Preview -->
     <div class="support-asset-list">
-      <div v-if="selectedClass === 'off-table' && selectedOffTableType" class="support-asset-card border border-border-color rounded-lg p-4 mb-4">
+      <div v-if="selectedClass === 'off-table' && selectedOffTableType" class="support-asset-card border border-border rounded-lg p-4 mb-4">
         <h3 class="text-lg font-semibold mb-2">{{ getOffTableAsset(selectedOffTableType).label }}</h3>
         <ul class="text-sm mb-2">
           <li v-for="line in getOffTableAsset(selectedOffTableType).details" :key="line"><span v-html="line"></span></li>
@@ -106,9 +130,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { UL_HEV_UPGRADE_PODS, UL_HEV_TYPES } from '../gameData.js'
+import FormSelect from './ui/FormSelect.vue'
+import Button from './ui/Button.vue'
 
 const emit = defineEmits(['add-support-asset'])
 
+// --- Support Asset Classes ---
 const supportAssetClasses = [
   { value: 'off-table', label: 'Off Table Support' },
   { value: 'ultra-light', label: 'Ultra-Light HE-V' },
@@ -117,6 +144,7 @@ const supportAssetClasses = [
 ]
 const selectedClass = ref(supportAssetClasses[0].value)
 
+// --- Off Table Support Types ---
 const offTableTypes = [
   {
     value: 'artillery-barrage',
@@ -158,14 +186,15 @@ const offTableTypes = [
 ]
 const selectedOffTableType = ref('')
 
+// --- Ultra-Light HE-V Types ---
 const ultraLightTypes = UL_HEV_TYPES
 const selectedUltraLightTypes = ref([])
 const selectedUpgradePodId = ref('')
 
 const selectedUpgradePod = computed(() => UL_HEV_UPGRADE_PODS.find(p => p.id === selectedUpgradePodId.value) || null)
 
+// --- Ultra-Light Squadron Functions ---
 function getUltraLightSquadron() {
-  // Use id instead of value
   const squadron = selectedUltraLightTypes.value.map(val => ultraLightTypes.find(t => t.id === val)).filter(Boolean)
   return squadron
 }
@@ -176,6 +205,7 @@ function addUltraLightType(typeId) {
     selectedUltraLightTypes.value.push(typeId)
   }
 }
+
 function removeUltraLightType(typeId) {
   const idx = selectedUltraLightTypes.value.lastIndexOf(typeId)
   if (idx !== -1) {
@@ -183,6 +213,7 @@ function removeUltraLightType(typeId) {
   }
 }
 
+// --- Off Table Support Functions ---
 function getOffTableAsset(typeValue) {
   const asset = offTableTypes.find(t => t.value === typeValue)
   if (!asset) return { label: '', details: [] }
@@ -205,19 +236,21 @@ function addSupportAsset() {
     type: asset.label,
     details: asset.details
   })
-  // Optionally reset selection
+  // Reset selection
   selectedOffTableType.value = ''
 }
 
 function addUltraLightSquadron() {
   const squadron = getUltraLightSquadron()
   if (squadron.length !== 3 || !selectedUpgradePodId.value) return
+
   // Generate a random fun name for the squadron
   const funNames = [
     'Ghostrider', 'Thunderbolt', 'Vanguard', 'Ironclad', 'Firefly', 'Spectre', 'Blitz', 'Nova', 'Warden', 'Phantom',
     'Sentinel', 'Tempest', 'Falcon', 'Titan', 'Shadow', 'Peregrine', 'Basilisk', 'Gryphon', 'Manticore', 'Hydra'
   ]
   const funName = funNames[Math.floor(Math.random() * funNames.length)] + ' Squadron'
+
   // Use new structure for details
   emit('add-support-asset', {
     class: 'Ultra-Light HE-V Squadron',
@@ -234,12 +267,16 @@ function addUltraLightSquadron() {
     ],
     upgradePodId: selectedUpgradePodId.value
   })
+
+  // Reset selections
   selectedUltraLightTypes.value = []
   selectedUpgradePodId.value = ''
 }
 </script>
 
 <style scoped>
+/* Use Tailwind classes instead of custom CSS when possible */
+
 /* Dark mode specific styles */
 .support-pod-details {
   background: var(--light-grey);

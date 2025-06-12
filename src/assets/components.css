@@ -1,0 +1,88 @@
+/* src/assets/components.css */
+/* Reusable Tailwind component classes */
+
+@tailwind base;
+@tailwind components;
+
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply px-4 py-2 rounded transition;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:brightness-90;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-white hover:brightness-90;
+  }
+
+  .btn-success {
+    @apply bg-success text-white hover:brightness-90;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-white hover:bg-black;
+  }
+
+  .btn-warning {
+    @apply bg-warning text-black hover:brightness-90;
+  }
+
+  .btn-info {
+    @apply bg-info text-black hover:brightness-90;
+  }
+
+  .btn-outline-secondary {
+    @apply border border-secondary text-secondary hover:bg-secondary hover:text-white;
+  }
+
+  .btn-sm {
+    @apply px-2 py-1 text-sm;
+  }
+
+  /* Cards */
+  .card {
+    @apply p-4 border border-border rounded bg-card-bg shadow;
+  }
+
+  /* Form controls */
+  .form-control {
+    @apply block w-full px-3 py-2 text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary;
+  }
+
+  .form-label {
+    @apply block mb-2 font-medium text-text;
+  }
+
+  .form-group {
+    @apply mb-4;
+  }
+
+  /* Section titles */
+  .section-title {
+    @apply text-secondary border-b border-border pb-1 mb-3 font-medium;
+  }
+
+  /* Item lists */
+  .item-list {
+    @apply list-none p-0 m-0 border border-medium-grey rounded bg-white;
+  }
+
+  .selected-item {
+    @apply flex justify-between items-center gap-2 border-b border-medium-grey px-3 py-2 text-sm;
+  }
+
+  /* Summary sections */
+  .summary-item {
+    @apply flex justify-between;
+  }
+
+  /* Defense display */
+  .defense-row {
+    @apply flex items-center gap-2 min-h-[20px];
+  }
+}
+
+@tailwind utilities;

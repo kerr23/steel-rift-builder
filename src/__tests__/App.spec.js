@@ -31,7 +31,14 @@ describe('App.vue', () => {
     wrapper = mount(App, {
       global: {
         stubs: {
-          HevCustomizer: true,
+          HevCustomizer: {
+            template: '<div>HevCustomizer</div>',
+            methods: {
+              resetForm: vi.fn(),
+              loadHevForEditing: vi.fn()
+            },
+            expose: ['resetForm', 'loadHevForEditing']
+          },
           SupportAssets: true
         }
       }
@@ -51,12 +58,7 @@ describe('App.vue', () => {
   })
 
   it('adds a HE-V to the roster', async () => {
-    // Mock the HevCustomizer ref
-    wrapper.vm.hevCustomizerRef = {
-      value: {
-        resetForm: vi.fn()
-      }
-    };
+    // HevCustomizer is already mocked in the beforeEach setup
 
     // Simulate addHevToRoster
     await wrapper.vm.addHevToRoster({
@@ -74,12 +76,7 @@ describe('App.vue', () => {
   })
 
   it('removes a HE-V from the roster', async () => {
-    // Mock the HevCustomizer ref
-    wrapper.vm.hevCustomizerRef = {
-      value: {
-        resetForm: vi.fn()
-      }
-    };
+    // HevCustomizer is already mocked in the beforeEach setup
 
     await wrapper.vm.addHevToRoster({
       unitName: 'To Remove',
@@ -130,12 +127,7 @@ describe('App.vue', () => {
   })
 
   it('calculates total roster tonnage correctly', async () => {
-    // Mock the HevCustomizer ref
-    wrapper.vm.hevCustomizerRef = {
-      value: {
-        resetForm: vi.fn()
-      }
-    };
+    // HevCustomizer is already mocked in the beforeEach setup
 
     // Add two different HE-Vs to the roster
     await wrapper.vm.addHevToRoster({

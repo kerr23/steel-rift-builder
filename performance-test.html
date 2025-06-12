@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Steel Rift Builder - Performance Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    h1 {
+      color: #333;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+    .results {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      border-left: 4px solid #0066cc;
+    }
+    .test-btn {
+      padding: 10px 15px;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    .test-btn:hover {
+      background-color: #0052a3;
+    }
+    #results-container {
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Steel Rift Builder Performance Tests</h1>
+  <p>This page runs performance tests to measure the impact of memoization in the Steel Rift Builder app.</p>
+  
+  <button id="run-tests" class="test-btn">Run Performance Tests</button>
+  
+  <div class="results">
+    <h3>Results:</h3>
+    <div id="results-container">Click "Run Performance Tests" to start...</div>
+  </div>
+
+  <script type="module">
+    import { findClassByName, findWeaponById, findUpgradeById } from './src/gameData.js';
+    import { gameData } from './src/gameData.js';
+    import App from './src/App.vue';
+    
+    const resultsContainer = document.getElementById('results-container');
+    const runTestsButton = document.getElementById('run-tests');
+    
+    function log(message) {
+      resultsContainer.textContent += message + '\n';
+    }
+    
+    async function runTests() {
+      resultsContainer.textContent = '';
+      log('Starting performance tests...\n');
+      
+      // Test findClassByName
+      testFindClassByName();
+      
+      // Test findWeaponById
+      testFindWeaponById();
+      
+      // Test generateBubbleHtml
+      if (typeof App.methods?.generateBubbleHtml === 'function') {
+        testGenerateBubbleHtml(App.methods.generateBubbleHtml);
+      } else {
+        log('Cannot access generateBubbleHtml method for testing');
+      }
+      
+      log('\nAll tests completed!');
+    }
+    
+    function testFindClassByName() {
+      log('Testing findClassByName performance with memoization...');
+      
+      const classNames = ['Light', 'Medium', 'Heavy', 'Assault', 'Light', 'Medium', 'Heavy', 'Assault'];
+      const iterations = 10000;
+      
+      const start = performance.now();
+      for (let i = 0; i < iterations; i++) {
+        for (const name of classNames) {
+          findClassByName(name);
+        }
+      }
+      const end = performance.now();
+      
+      log(`findClassByName: ${iterations * classNames.length} lookups in ${(end - start).toFixed(2)}ms`);
+      log(`Average time per lookup: ${((end - start) / (iterations * classNames.length)).toFixed(5)}ms`);
+      log('First few lookups will be slower due to cache misses, subsequent lookups use the cache.\n');
+    }
+    
+    function testFindWeaponById() {
+      log('Testing findWeaponById performance with memoization...');
+      
+      const weaponIds = ['w1', 'w2', 'w3', 'w4', 'w5', 'w1', 'w2', 'w3', 'w4', 'w5'];
+      const iterations = 10000;
+      
+      const start = performance.now();
+      for (let i = 0; i < iterations; i++) {
+        for (const id of weaponIds) {
+          findWeaponById(id);
+        }
+      }
+      const end = performance.now();
+      
+      log(`findWeaponById: ${iterations * weaponIds.length} lookups in ${(end - start).toFixed(2)}ms`);
+      log(`Average time per lookup: ${((end - start) / (iterations * weaponIds.length)).toFixed(5)}ms\n`);
+    }
+    
+    function testGenerateBubbleHtml(generateBubbleHtml) {
+      log('Testing generateBubbleHtml performance with memoization...');
+      
+      const testCases = [
+        { sides: 6, isStructureTrack: false },
+        { sides: 8, isStructureTrack: false },
+        { sides: 4, isStructureTrack: true },
+        { sides: 6, isStructureTrack: true },
+        { sides: 6, isStructureTrack: false }, // Repeated to test cache hit
+        { sides: 4, isStructureTrack: true }   // Repeated to test cache hit
+      ];
+      const iterations = 1000;
+      
+      const start = performance.now();
+      for (let i = 0; i < iterations; i++) {
+        for (const testCase of testCases) {
+          generateBubbleHtml(testCase.sides, testCase.isStructureTrack);
+        }
+      }
+      const end = performance.now();
+      
+      log(`generateBubbleHtml: ${iterations * testCases.length} generations in ${(end - start).toFixed(2)}ms`);
+      log(`Average time per generation: ${((end - start) / (iterations * testCases.length)).toFixed(5)}ms\n`);
+    }
+    
+    runTestsButton.addEventListener('click', runTests);
+  </script>
+</body>
+</html>

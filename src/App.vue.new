@@ -162,47 +162,6 @@ const handleExportRoster = (exportData) => {
 }
 
 /**
- * Format roster for printing
- */
-const formatForPrint = () => {
-  if (roster.value.length === 0) {
-    toast.info('No units to print. Add units to your roster first.', { timeout: 2000 });
-    return;
-  }
-
-  try {
-    // Import generatePrintHtml function from printUtils
-    import('./printUtils.js').then(({ generatePrintHtml }) => {
-      const fullHtml = generatePrintHtml({
-        roster: roster.value,
-        rosterName: rosterName.value,
-        totalRosterBaseTonnage: totalRosterBaseTonnage.value,
-        getBaseTonnage,
-        generateBubbleHtml,
-        formatPrintTrait,
-        gameRulesData
-      });
-
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.open();
-        printWindow.document.write(fullHtml);
-        printWindow.document.close();
-        toast.success('Print view opened in new tab.', { timeout: 2000 });
-      } else {
-        toast.error("Could not open print window. Please check your browser's popup blocker settings.", { timeout: 2000 });
-      }
-    }).catch(error => {
-      console.error('Error loading print utilities:', error);
-      toast.error('Failed to load print formatting module.', { timeout: 2000 });
-    });
-  } catch (error) {
-    console.error('Error preparing print view:', error);
-    toast.error('Failed to format roster for printing.', { timeout: 2000 });
-  }
-}
-
-/**
  * Initialize dark mode based on system preference if no saved preference exists
  */
 const initializeDarkMode = () => {
@@ -227,15 +186,6 @@ const initializeDarkMode = () => {
   }
 }
 
-/**
- * Toggle dark mode state
- */
-const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value
-  // Save preference to localStorage
-  localStorage.setItem('isDarkMode', isDarkMode.value)
-}
-
 // Call on component mount
 initializeDarkMode()
 
@@ -255,137 +205,8 @@ watchEffect(() => {
  * @param {string} name - The name of the class to find
  * @returns {Object|null} - The class object or null if not found
  */
-
-// Expose for testing
-defineExpose({
-  toggleDarkMode,
-  formatForPrint,
-  isDarkMode
-});
 function findClassByName(name) {
   return gameRulesData?.classes?.find((c) => c.name === name) || null
-}
-
-/**
- * Generate bubble HTML for displaying armor/structure tracks with memoization
- * @param {number} sides - Number of bubbles to generate
- * @param {boolean} isStructureTrack - Whether this is a structure track (for color coding)
- * @returns {string} - HTML string for bubble display
- */
-// Cache for memoized bubble HTML generation
-const bubbleHtmlCache = new Map();
-
-const generateBubbleHtml = (sides, isStructureTrack = false) => {
-  // Create a cache key based on parameters
-  const cacheKey = `${sides}-${isStructureTrack}`;
-
-  // Check if we've already generated this exact bubble display
-  if (bubbleHtmlCache.has(cacheKey)) {
-    return bubbleHtmlCache.get(cacheKey);
-  }
-
-  // Not in cache, generate the HTML
-  if (sides <= 0) return `<span class="placeholder-text-inline">N/A</span>`
-  let bubblesHtml = ''
-  const thresholds = isStructureTrack
-    ? {
-        markerYellow: sides > 0 ? sides - Math.floor(sides * 0.75) + 1 : 0,
-        markerOrange: sides > 0 ? sides - Math.floor(sides * 0.5) + 1 : 0,
-        markerRed: sides > 0 ? sides - Math.floor(sides * 0.25) + 1 : 0,
-      }
-    : null
-
-  for (let n = 1; n <= sides; n++) {
-    let bubbleClass = 'bubble'
-    if (isStructureTrack && thresholds) {
-      if (n === thresholds.markerYellow && thresholds.markerYellow <= sides)
-        bubblesHtml += `<span class="threshold-divider divider-green"></span>`
-      else if (n === thresholds.markerOrange && thresholds.markerOrange <= sides)
-        bubblesHtml += `<span class="threshold-divider divider-yellow"></span>`
-      else if (n === thresholds.markerRed && thresholds.markerRed <= sides)
-        bubblesHtml += `<span class="threshold-divider divider-red"></span>`
-    }
-    if (!isStructureTrack) {
-      bubbleClass += ' armor-bubble'
-    }
-    bubblesHtml += `<span class="${bubbleClass}"></span>`
-  }
-
-  const result = `<div class="bubble-display">${bubblesHtml}</div>`;
-
-  // Store the result in cache for future use
-  bubbleHtmlCache.set(cacheKey, result);
-
-  return result;
-}
-
-/**
- * Generate HTML for limited trait bubbles
- * @param {number} count - Number of bubbles
- * @returns {string} - HTML string
- */
-const generateLimitedTraitBubbleHtml = (count) => {
-  if (count <= 0) return ''
-  let bubbles = ''
-  for (let i = 0; i < count; i++) {
-    bubbles += `<span class="print-trait-bubble"></span>`
-  }
-  return `(${bubbles})`
-}
-
-/**
- * Format trait for print display with memoization
- * @param {Object|string} traitObj - Trait object or string
- * @param {string} forClassName - Class name for context-specific traits
- * @returns {string} - Formatted trait string
- */
-// Cache for trait formatting
-const traitFormatCache = new Map();
-
-const formatPrintTrait = (traitObj, forClassName) => {
-  // For string type traits, just return immediately
-  if (typeof traitObj === 'string') return traitObj
-  if (!traitObj || !traitObj.name) return 'Unknown Trait'
-
-  // Create a cache key
-  const cacheKey = `${JSON.stringify(traitObj)}-${forClassName || ''}`;
-
-  // Check if we've already formatted this trait
-  if (traitFormatCache.has(cacheKey)) {
-    return traitFormatCache.get(cacheKey);
-  }
-
-  // Not in cache, format the trait
-  let result;
-
-  if (traitObj.name === 'Limited' && traitObj.value !== undefined) {
-    result = `Limited${generateLimitedTraitBubbleHtml(traitObj.value)}`;
-  }
-  else if (typeof traitObj.value === 'object' && traitObj.value !== null) {
-    if (forClassName && traitObj.value[forClassName] !== undefined) {
-      result = `${traitObj.name} ${traitObj.value[forClassName]}`;
-    } else {
-      const classValues = Object.entries(traitObj.value)
-        .map(([k, v]) => `${k[0]}:${v}`)
-        .join('/');
-      result = `${traitObj.name} (${classValues})`;
-    }
-  }
-  else if (traitObj.value === true) {
-    // Boolean true value should just show the trait name
-    result = traitObj.name;
-  }
-  else if (traitObj.value !== undefined) {
-    result = `${traitObj.name} ${traitObj.value}`;
-  }
-  else {
-    result = traitObj.name;
-  }
-
-  // Store the formatted result in cache
-  traitFormatCache.set(cacheKey, result);
-
-  return result;
 }
 
 /**
@@ -415,7 +236,7 @@ function showError(message, log = true) {
     <div class="absolute top-4 right-4 flex flex-col items-end gap-2 z-50">
       <DarkModeToggle v-model="isDarkMode" />
     </div>
-
+    
     <h1 class="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
       Steel Rift Force Builder
       <span class="text-xs text-muted font-mono">(v{{ versionTag }})</span>
@@ -430,7 +251,6 @@ function showError(message, log = true) {
       @remove-unit="removeHevFromRoster"
       @import-roster="handleImportRoster"
       @export-roster="handleExportRoster"
-      @format-print="formatForPrint"
     />
 
     <hr class="divider my-8 border-t border-border-color" />
@@ -445,9 +265,9 @@ function showError(message, log = true) {
         :game-rules="gameRulesData"
         @add-hev="addHevToRoster"
       />
-      <SupportAssets
-        v-if="activeTab === 'support'"
-        @add-support-asset="addSupportAssetToRoster"
+      <SupportAssets 
+        v-if="activeTab === 'support'" 
+        @add-support-asset="addSupportAssetToRoster" 
       />
     </TabNavigation>
 
