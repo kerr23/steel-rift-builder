@@ -21,9 +21,6 @@ export function generatePrintHtml({
   const cssLink = '<link rel="stylesheet" href="print.css">'
   let htmlBody = `
     <button class="no-print" onclick="window.print()">Print this page</button>
-    <div class="print-header">
-      <h1>${rosterName || 'Unnamed Roster'}</h1>
-    </div>
   `
   roster.forEach((unit) => {
     if (unit.isSupportAsset) {

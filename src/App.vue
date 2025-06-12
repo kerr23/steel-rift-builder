@@ -1,6 +1,6 @@
 // filepath: /var/home/dmk/projects/steel-rift-builder/src/App.vue
 <script setup>
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed, watchEffect, nextTick } from 'vue'
 import HevCustomizer from './components/hevCustomizer.vue'
 import SupportAssets from './components/SupportAssets.vue'
 import RosterManager from './components/roster/RosterManager.vue'
@@ -123,20 +123,27 @@ const removeHevFromRoster = (unitId, showToast = true) => {
  * @param {Object} unitToEdit - The unit to edit
  */
 const editHev = (unitToEdit) => {
-  if (!hevCustomizerRef.value) {
-    console.error('Cannot edit: HevCustomizer ref not found.')
-    toast.error('Error: Cannot access customizer.', { timeout: 1000 })
-    return
-  }
   if (!unitToEdit || unitToEdit.id === undefined) {
     console.error('Cannot edit: Invalid unit data.', unitToEdit)
     toast.error('Error: Invalid unit data.', { timeout: 1000 })
     return
   }
-  activeTab.value = 'hev' // Switch to HE-V tab
-  hevCustomizerRef.value.loadHevForEditing(JSON.parse(JSON.stringify(unitToEdit)))
-  removeHevFromRoster(unitToEdit.id, false) // Don't show toast when editing
-  toast.info('HE-V loaded for editing.', { timeout: 1000 })
+
+  // First switch to HE-V tab
+  activeTab.value = 'hev'
+
+  // Use nextTick to ensure the component is rendered before accessing it
+  nextTick(() => {
+    if (!hevCustomizerRef.value) {
+      console.error('Cannot edit: HevCustomizer ref not found.')
+      toast.error('Error: Cannot access customizer.', { timeout: 1000 })
+      return
+    }
+
+    hevCustomizerRef.value.loadHevForEditing(JSON.parse(JSON.stringify(unitToEdit)))
+    removeHevFromRoster(unitToEdit.id, false) // Don't show toast when editing
+    toast.info('HE-V loaded for editing.', { timeout: 1000 })
+  })
 }
 
 /**
