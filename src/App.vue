@@ -418,6 +418,32 @@ function showError(message, log = true) {
   if (log) console.error(message)
   toast.error(message, { timeout: 1000 })
 }
+
+/**
+ * Reorder items in the roster
+ * @param {Object} reorderData - Object containing fromIndex and toIndex
+ */
+const reorderRoster = ({ fromIndex, toIndex }) => {
+  if (
+    fromIndex === undefined ||
+    toIndex === undefined ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= roster.value.length ||
+    toIndex >= roster.value.length ||
+    fromIndex === toIndex
+  ) {
+    return;
+  }
+
+  // Remove the item from the original position
+  const [movedItem] = roster.value.splice(fromIndex, 1);
+
+  // Insert the item at the new position
+  roster.value.splice(toIndex, 0, movedItem);
+
+  toast.info('Unit reordered successfully', { timeout: 1000 });
+}
 </script>
 
 <template>
@@ -441,6 +467,7 @@ function showError(message, log = true) {
       @import-roster="handleImportRoster"
       @export-roster="handleExportRoster"
       @format-print="formatForPrint"
+      @reorder-roster="reorderRoster"
     />
 
     <hr class="divider my-8 border-t border-border-color" />
