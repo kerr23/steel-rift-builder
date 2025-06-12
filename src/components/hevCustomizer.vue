@@ -2,6 +2,10 @@
 // Import necessary functions from Vue and data/helpers from gameData.js
 import { ref, computed, watch, defineProps, defineEmits, defineExpose, nextTick } from 'vue'
 import { useToast } from 'vue-toastification'
+import BubbleDisplay from './ui/BubbleDisplay.vue'
+import FormSelect from './ui/FormSelect.vue'
+import Button from './ui/Button.vue'
+import { MODIFICATION_OPTIONS } from '../constants.js'
 
 // --- Initialize Toast ---
 const toast = useToast()
@@ -40,11 +44,7 @@ const maxSlots = computed(() => baseSlots.value + motiveSlotModifier.value)
 
 // --- Remove dice/die/step/side logic and functions ---
 // --- Modification Options ---
-const modificationOptions = ref([
-  { value: 'stripped', label: 'Stripped' },
-  { value: 'standard', label: 'Standard' },
-  { value: 'reinforced', label: 'Reinforced' },
-])
+const modificationOptions = ref(MODIFICATION_OPTIONS)
 
 // --- Armor/Structure Model (new) ---
 const baseArmor = computed(() => selectedClass.value?.baseArmor ?? 0)
@@ -330,10 +330,18 @@ const loadHevForEditing = (unitData) => {
 
     nextTick(() => {
       if (selectedClass.value) {
-        selectedMotiveType.value =
-          availableMotiveTypes.value.find((mt) => mt.id === unitData.selectedMotiveType?.id) ||
-          availableMotiveTypes.value[0] ||
-          null
+        // First try to find the exact motive type from the data
+        const exactMotiveType = availableMotiveTypes.value.find((mt) => mt.id === unitData.selectedMotiveType?.id)
+
+        // If not found, prefer biped
+        const bipedMotiveType = availableMotiveTypes.value.find(mt => mt.name === 'Biped')
+
+        // Set motive type with priority: exact match > biped > first available > null
+        selectedMotiveType.value = exactMotiveType ||
+                                  bipedMotiveType ||
+                                  availableMotiveTypes.value[0] ||
+                                  null
+
         const baseArmor = selectedClass.value?.baseArmor
         const baseStruct = selectedClass.value?.baseStructure
 
@@ -422,10 +430,17 @@ watch(selectedClass, (newClass, oldClass) => {
     structureModification.value = 'standard'
   }
   if (newClass) {
+    // Default to biped motive type or use the currently selected one if valid
+    const bipedMotiveType = availableMotiveTypes.value.find(mt => mt.name === 'Biped')
     const currentMotiveIsValid = availableMotiveTypes.value.some(
       (mt) => mt.id === selectedMotiveType.value?.id,
     )
-    if (!selectedMotiveType.value || !currentMotiveIsValid) {
+
+    // Always prioritize 'Biped' if available and no valid selection exists
+    if (bipedMotiveType && (!selectedMotiveType.value || !currentMotiveIsValid)) {
+      selectedMotiveType.value = bipedMotiveType
+    } else if (!currentMotiveIsValid) {
+      // Fall back to first available motive type if biped not available
       selectedMotiveType.value = availableMotiveTypes.value[0] || null
     }
   } else {
@@ -507,67 +522,64 @@ const formatTraitDisplay = (trait) => {
     <h2 class="component-title text-center text-secondary mb-5 font-medium text-2xl">HE-V Configuration</h2>
 
     <div class="form-inline class-defense-wrapper flex flex-wrap gap-6 mb-4 items-stretch">
-      <div class="form-section class-section flex-1 min-w-[280px] flex flex-col">
-        <h3 class="section-title text-[1.05rem] text-secondary border-b border-border pb-1 mb-3 font-medium">Classification & Movement</h3>
+      <div class="form-section class-section flex-1 min-w-72 flex flex-col">
+        <h3 class="section-title text-lg text-secondary border-b border-border pb-1 mb-3 font-medium">Classification & Movement</h3>
         <div class="form-group mb-3">
-          <input type="text" id="hevName" v-model="unitName" placeholder="HE-V Name" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary" />
+          <label for="hevName" class="block mb-2 font-medium text-text">HE-V Name:</label>
+          <input type="text" id="hevName" v-model="unitName" placeholder="Enter name for this HE-V" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary" />
         </div>
-        <div class="form-group mb-3">
-          <label for="hevClass" class="block mb-2 font-medium text-text">HE-V Class:</label>
-          <select id="hevClass" v-model="selectedClass" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary">
-            <option :value="null" disabled>-- Select Class --</option>
-            <option
-              v-for="clsOption in formattedClasses"
-              :key="clsOption.value.name"
-              :value="clsOption.value"
-            >
-              {{ clsOption.title }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group mb-3" v-if="selectedClass">
-          <label for="motiveType" class="block mb-2 font-medium text-text">Motive Type:</label>
-          <select id="motiveType" v-model="selectedMotiveType" required class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary">
-            <option :value="null" disabled>-- Select Motive Type --</option>
-            <option
-              v-for="mtOption in formattedMotiveTypes"
-              :key="mtOption.value.id"
-              :value="mtOption.value"
-            >
-              {{ mtOption.title }}
-            </option>
-            <option v-if="availableMotiveTypes.length === 0" :value="null" disabled>
-              -- No types available for this class --
-            </option>
-          </select>
-          <p v-if="!selectedMotiveType && availableMotiveTypes.length > 0" class="warning-text text-[#b38600] text-sm italic mt-1 block">
-            Please select a motive type.
-          </p>
-        </div>
+        <FormSelect
+          id="hevClass"
+          label="HE-V Class:"
+          v-model="selectedClass"
+        >
+          <option :value="null" disabled>-- Select Class --</option>
+          <option
+            v-for="clsOption in formattedClasses"
+            :key="clsOption.value.name"
+            :value="JSON.stringify(clsOption.value)"
+          >
+            {{ clsOption.title }}
+          </option>
+        </FormSelect>
+
+        <FormSelect
+          v-if="selectedClass"
+          id="motiveType"
+          label="Motive Type:"
+          v-model="selectedMotiveType"
+          :required="true"
+        >
+          <option :value="null" disabled>-- Select Motive Type --</option>
+          <option
+            v-for="mtOption in formattedMotiveTypes"
+            :key="mtOption.value.id"
+            :value="JSON.stringify(mtOption.value)"
+          >
+            {{ mtOption.title }}
+          </option>
+          <option v-if="availableMotiveTypes.length === 0" :value="null" disabled>
+            -- No types available for this class --
+          </option>
+          <template v-slot:error>
+            <p v-if="!selectedMotiveType && availableMotiveTypes.length > 0" class="warning-text text-[#b38600] text-sm italic mt-1 block">
+              Please select a motive type.
+            </p>
+          </template>
+        </FormSelect>
+
         <div class="movement-info mt-3 pt-2 border-t border-dashed border-border" v-if="selectedClass">
-          <p class="my-[0.15rem] text-[0.9rem]"><strong class="inline-block min-w-[80px] font-semibold">Movement:</strong> {{ baseMovementSpeed }}"</p>
-          <p v-if="hasJumpJets" class="my-[0.15rem] text-[0.9rem]"><strong class="inline-block min-w-[80px] font-semibold">Jump:</strong> {{ jumpMovementSpeed }}"</p>
+          <p class="my-0.5 text-sm"><strong class="inline-block min-w-20 font-semibold">Movement:</strong> {{ baseMovementSpeed }}"</p>
+          <p v-if="hasJumpJets" class="my-0.5 text-sm"><strong class="inline-block min-w-20 font-semibold">Jump:</strong> {{ jumpMovementSpeed }}"</p>
         </div>
       </div>
-      <div v-if="selectedClass" class="form-section defense-section flex-1 min-w-[280px] flex flex-col">
-        <h3 class="section-title text-[0.9rem] text-secondary border-b border-border pb-[0.2rem] mb-[0.5rem] font-medium">Armor & Structure</h3>
+      <div v-if="selectedClass" class="form-section defense-section flex-1 min-w-72 flex flex-col">
+        <h3 class="section-title text-sm text-secondary border-b border-border pb-px mb-2 font-medium">Armor & Structure</h3>
         <div class="flex flex-col gap-[0.4rem] border border-medium-grey p-2 rounded">
-          <div class="flex flex-row items-center justify-between min-h-[20px]">
-            <div class="flex items-center gap-1 min-w-0">
-              <span class="font-bold text-left flex-shrink-0 text-[0.85rem]">Armor:</span>
-              <div class="flex flex-nowrap gap-[1.5px] items-center flex-shrink-0 min-w-[140px] overflow-hidden">
-                <template v-if="armorBaseValue > 0">
-                  <span
-                    v-for="n in armorBaseValue"
-                    :key="`armor-bubble-${n}`"
-                    class="inline-block w-[9px] h-[9px] rounded-full border border-black bg-transparent box-border"
-                  ></span>
-                </template>
-                <span v-else class="placeholder-text-inline italic text-text-muted text-xs pl-1">N/A</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 min-w-[120px] justify-end">
-              <select class="modification-select px-2 py-1 text-xs w-[90px] min-w-[70px] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="armorModification">
+          <div class="flex flex-row items-center justify-between min-h-5">
+            <BubbleDisplay label="Armor" :value="armorBaseValue" />
+            <div class="flex items-center gap-2 min-w-32 justify-end">
+              <select class="modification-select px-2 py-1 text-xs w-24 min-w-[4.5rem] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="armorModification">
                 <option v-for="opt in modificationOptions" :key="`armor-mod-${opt.value}`" :value="opt.value" :disabled="(opt.value === 'stripped' && !canStripArmor) || (opt.value === 'reinforced' && !canReinforceArmor)">
                   {{ opt.label }}
                 </option>
@@ -575,37 +587,10 @@ const formatTraitDisplay = (trait) => {
               <span class="modification-text text-xs text-text-muted whitespace-nowrap">({{ armorCost }}T)</span>
             </div>
           </div>
-          <div class="flex flex-row items-center justify-between min-h-[20px]">
-            <div class="flex items-center gap-1 min-w-0">
-              <span class="font-bold text-left flex-shrink-0 text-[0.85rem]">Structure:</span>
-              <div class="flex flex-nowrap gap-[1.5px] items-center flex-shrink-0 min-w-[140px] overflow-hidden">
-                <template v-if="structureBaseValue > 0">
-                  <template v-for="n in structureBaseValue" :key="`struct-bubble-group-${n}`">
-                    <span
-                      v-if="n === structureBaseValue - Math.floor(structureBaseValue * 0.25) && structureBaseValue >= 4"
-                      class="threshold-divider divider-green"
-                      style="display:inline-block;width:1.5px;height:10px;margin:0 1px;vertical-align:middle;background-color:var(--success-color);"
-                    ></span>
-                    <span
-                      v-if="n === structureBaseValue - Math.floor(structureBaseValue * 0.5) && structureBaseValue >= 2"
-                      class="threshold-divider divider-yellow"
-                      style="display:inline-block;width:1.5px;height:10px;margin:0 1px;vertical-align:middle;background-color:#b38600;"
-                    ></span>
-                    <span
-                      v-if="n === structureBaseValue - Math.floor(structureBaseValue * 0.75) && structureBaseValue >= 1"
-                      class="threshold-divider divider-red"
-                      style="display:inline-block;width:1.5px;height:10px;margin:0 1px;vertical-align:middle;background-color:var(--danger-color);"
-                    ></span>
-                    <span
-                      class="inline-block w-[9px] h-[9px] rounded-full border border-black bg-transparent box-border"
-                    ></span>
-                  </template>
-                </template>
-                <span v-else class="placeholder-text-inline italic text-text-muted text-xs pl-1">N/A</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 min-w-[120px] justify-end">
-              <select class="modification-select px-2 py-1 text-xs w-[90px] min-w-[70px] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="structureModification">
+          <div class="flex flex-row items-center justify-between min-h-5">
+            <BubbleDisplay label="Structure" :value="structureBaseValue" :isStructure="true" />
+            <div class="flex items-center gap-2 min-w-32 justify-end">
+              <select class="modification-select px-2 py-1 text-xs w-24 min-w-[4.5rem] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="structureModification">
                 <option v-for="opt in modificationOptions" :key="`struct-mod-${opt.value}`" :value="opt.value" :disabled="(opt.value === 'stripped' && !canStripStructure) || (opt.value === 'reinforced' && !canReinforceStructure)">
                   {{ opt.label }}
                 </option>
@@ -613,15 +598,15 @@ const formatTraitDisplay = (trait) => {
               <span class="modification-text text-xs text-text-muted whitespace-nowrap">({{ structureCost }}T)</span>
             </div>
           </div>
-          <div class="threshold-descriptions mt-1 pt-2 border-t border-dashed border-border text-[0.7rem] leading-tight w-full">
-            <p v-if="structureMarker_25_Percent > 1" class="threshold-desc-green my-0 p-0 flex items-start"><strong class="min-w-[50px] text-right flex-shrink-0 inline-block font-bold mr-1 text-success">25% Dmg:</strong> All Move/Jump Orders -1</p>
-            <p v-if="structureMarker_50_Percent > 1" class="threshold-desc-yellow my-0 p-0 flex items-start"><strong class="min-w-[50px] text-right flex-shrink-0 inline-block font-bold mr-1 text-[#b38600]">50% Dmg:</strong> Weapon Damage -1 (min 1)</p>
-            <p v-if="structureMarker_75_Percent > 1" class="threshold-desc-red my-0 p-0 flex items-start"><strong class="min-w-[50px] text-right flex-shrink-0 inline-block font-bold mr-1 text-danger">75% Dmg:</strong> Only 1 Order per activation</p>
+          <div class="threshold-descriptions mt-1 pt-2 border-t border-dashed border-border text-xs leading-tight w-full">
+            <p v-if="structureMarker_25_Percent > 1" class="threshold-desc-green my-0 p-0 flex items-start"><strong class="min-w-14 text-right flex-shrink-0 inline-block font-bold mr-1 text-success">25% Dmg:</strong> All Move/Jump Orders -1</p>
+            <p v-if="structureMarker_50_Percent > 1" class="threshold-desc-yellow my-0 p-0 flex items-start"><strong class="min-w-14 text-right flex-shrink-0 inline-block font-bold mr-1 text-amber-600">50% Dmg:</strong> Weapon Damage -1 (min 1)</p>
+            <p v-if="structureMarker_75_Percent > 1" class="threshold-desc-red my-0 p-0 flex items-start"><strong class="min-w-14 text-right flex-shrink-0 inline-block font-bold mr-1 text-danger">75% Dmg:</strong> Only 1 Order per activation</p>
           </div>
         </div>
       </div>
-      <div v-else class="form-section defense-section placeholder-section flex-1 min-w-[280px]">
-        <h3 class="section-title text-[1.05rem] text-secondary border-b border-border pb-1 mb-3 font-medium">Armor & Structure</h3>
+      <div v-else class="form-section defense-section placeholder-section flex-1 min-w-72">
+        <h3 class="section-title text-lg text-secondary border-b border-border pb-1 mb-3 font-medium">Armor & Structure</h3>
         <p class="text-text-muted text-center mt-4">Select Class to configure Defense</p>
       </div>
     </div>
@@ -629,7 +614,7 @@ const formatTraitDisplay = (trait) => {
     <div class="form-group equipment-section" v-if="selectedClass">
       <h3 class="section-title">Weapon Systems</h3>
       <div class="selection-layout flex flex-wrap gap-4 items-start">
-        <div class="selection-control flex-1 min-w-[230px] flex flex-col">
+        <div class="selection-control flex-1 min-w-60 flex flex-col">
           <select
             @change="handleWeaponAdd"
             :disabled="!selectedClass || usedSlots >= maxSlots"
@@ -659,19 +644,19 @@ const formatTraitDisplay = (trait) => {
             Maximum slots used ({{ usedSlots }}/{{ maxSlots }}).
           </p>
         </div>
-        <div class="selection-list-container flex-2 min-w-[280px]">
-          <ul class="item-list list-none p-0 m-0 max-h-[150px] overflow-y-auto border border-medium-grey rounded bg-white min-h-[35px]">
+        <div class="selection-list-container flex-2 min-w-72">
+          <ul class="item-list list-none p-0 m-0 max-h-40 overflow-y-auto border border-medium-grey rounded bg-white min-h-9">
             <li
               v-for="(weapon, index) in selectedWeapons"
               :key="'selWpn-' + index + '-' + weapon.id"
-              class="selected-item single-line-item flex justify-between items-center gap-2 border-b border-medium-grey px-3 py-2 text-[0.85rem]"
+              class="selected-item single-line-item flex justify-between items-center gap-2 border-b border-medium-grey px-3 py-2 text-sm"
             >
               <div class="item-info-line flex flex-wrap items-baseline gap-2 flex-grow overflow-hidden">
                 <span class="item-name font-medium text-dark-grey whitespace-nowrap mr-1">{{ weapon.name }}</span>
-                <span class="item-stats text-[0.85em] text-secondary whitespace-nowrap mr-1">(Damage: {{ weapon.damageRating?.[selectedClass?.name ?? ''] ?? '?' }}, Range: {{ weapon.rangeCategory || 'N/A' }})</span>
-                <span class="item-traits text-[0.8em] text-text-muted whitespace-normal" v-html="`Traits: [${weapon.traits?.map(formatTraitDisplay).join(', ') || 'None'}]`"></span>
+                <span class="item-stats text-xs text-secondary whitespace-nowrap mr-1">(Damage: {{ weapon.damageRating?.[selectedClass?.name ?? ''] ?? '?' }}, Range: {{ weapon.rangeCategory || 'N/A' }})</span>
+                <span class="item-traits text-xs text-text-muted whitespace-normal" v-html="`Traits: [${weapon.traits?.map(formatTraitDisplay).join(', ') || 'None'}]`"></span>
               </div>
-              <button @click="removeWeapon(index)" class="btn btn-remove bg-danger text-white rounded-full w-5 h-5 leading-[18px] text-center font-bold cursor-pointer p-0 ml-2 flex-shrink-0 hover:bg-[#a71d2a]" title="Remove Weapon">
+              <button @click="removeWeapon(index)" class="btn btn-remove bg-danger text-white rounded-full w-5 h-5 leading-5 text-center font-bold cursor-pointer p-0 ml-2 flex-shrink-0 hover:bg-[#a71d2a]" title="Remove Weapon">
                 X
               </button>
             </li>
@@ -682,9 +667,9 @@ const formatTraitDisplay = (trait) => {
     </div>
 
     <div class="form-group equipment-section mt-6 mb-4 w-full" v-if="selectedClass">
-      <h3 class="section-title text-[1.05rem] text-secondary border-b border-border pb-1 mb-3 font-medium">Upgrades</h3>
+      <h3 class="section-title text-lg text-secondary border-b border-border pb-1 mb-3 font-medium">Upgrades</h3>
       <div class="selection-layout flex flex-wrap gap-4 items-start">
-        <div class="selection-control flex-1 min-w-[230px] flex flex-col">
+        <div class="selection-control flex-1 min-w-60 flex flex-col">
           <select
             @change="handleUpgradeAdd"
             :disabled="!selectedClass || usedSlots >= maxSlots || formattedUpgrades.length === 0"
@@ -726,16 +711,16 @@ const formatTraitDisplay = (trait) => {
             All available upgrades added.
           </p>
         </div>
-        <div class="selection-list-container flex-2 min-w-[280px]">
-          <ul class="item-list list-none p-0 m-0 max-h-[150px] overflow-y-auto border border-medium-grey rounded bg-white min-h-[35px]">
+        <div class="selection-list-container flex-2 min-w-72">
+          <ul class="item-list list-none p-0 m-0 max-h-40 overflow-y-auto border border-medium-grey rounded bg-white min-h-9">
             <li
               v-for="(upgrade, index) in selectedUpgrades"
               :key="'selUpg-' + index + '-' + upgrade.id"
-              class="selected-item single-line-item flex justify-between items-center gap-2 border-b border-medium-grey px-3 py-2 text-[0.85rem]"
+              class="selected-item single-line-item flex justify-between items-center gap-2 border-b border-medium-grey px-3 py-2 text-sm"
             >
               <div class="item-info-line flex flex-wrap items-baseline gap-2 flex-grow overflow-hidden">
                 <span class="item-name font-medium text-dark-grey whitespace-nowrap mr-1">{{ upgrade.name }}</span>
-                <span class="item-stats text-[0.85em] text-secondary whitespace-nowrap mr-1">
+                <span class="item-stats text-xs text-secondary whitespace-nowrap mr-1">
                   (Cost:
                   {{
                     typeof upgrade.tonnage === 'object' &&
@@ -749,7 +734,7 @@ const formatTraitDisplay = (trait) => {
                   }}T)
                 </span>
               </div>
-              <button @click="removeUpgrade(index)" class="btn btn-remove bg-danger text-white rounded-full w-5 h-5 leading-[18px] text-center font-bold cursor-pointer p-0 ml-2 flex-shrink-0 hover:bg-[#a71d2a]" title="Remove Upgrade">
+              <button @click="removeUpgrade(index)" class="btn btn-remove bg-danger text-white rounded-full w-5 h-5 leading-5 text-center font-bold cursor-pointer p-0 ml-2 flex-shrink-0 hover:bg-[#a71d2a]" title="Remove Upgrade">
                 X
               </button>
             </li>
@@ -761,7 +746,7 @@ const formatTraitDisplay = (trait) => {
 
     <div class="summary card summary-compact mt-6 p-4 border border-border rounded" v-if="selectedClass">
       <h4 class="mb-0 mb-3 pb-2 text-lg text-center border-b border-medium-grey">Unit Summary</h4>
-      <div class="summary-grid grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-y-1 gap-x-4 text-[0.85rem]">
+      <div class="summary-grid grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-y-1 gap-x-4 text-sm">
         <div class="summary-item flex justify-between">
           <span class="summary-label pr-2 text-secondary">Base Tonnage:</span>
           <strong class="summary-value font-semibold text-right">{{ baseTonnage }}</strong>
@@ -803,10 +788,11 @@ const formatTraitDisplay = (trait) => {
     </div>
 
     <div class="action-buttons mt-4 text-center" v-if="selectedClass">
-      <button
+      <Button
         @click="submitHev"
         :disabled="!isValidUnit || isOverTonnage || isOverSlots"
-        class="btn btn-success btn-add-hev px-6 py-2 text-lg font-semibold rounded bg-success text-white disabled:opacity-60 disabled:cursor-not-allowed"
+        variant="success"
+        size="lg"
         :title="
           !isValidUnit
             ? 'Complete required selections (Class, Motive)'
@@ -818,7 +804,7 @@ const formatTraitDisplay = (trait) => {
         "
       >
         Add HE-V to Roster
-      </button>
+      </Button>
     </div>
   </section>
 </template>

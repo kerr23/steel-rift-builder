@@ -37,23 +37,33 @@ const totalRosterBaseTonnage = computed(() => {
 
 // --- Methods ---
 const addHevToRoster = (hevData) => {
+  if (!hevData) {
+    console.error('Cannot add HEV: Invalid data provided')
+    return
+  }
+
   console.log('Adding HEV to roster:', hevData)
   roster.value.push({
     ...hevData,
     id: hevData.id || generateUniqueId(),
   })
+
+  // Always show success toast
+  toast.success('HE-V added to roster!', { timeout: 1000 })
+
   // Make this safer for tests
   try {
     if (hevCustomizerRef.value && typeof hevCustomizerRef.value.resetForm === 'function') {
       hevCustomizerRef.value.resetForm()
-      toast.success('HE-V added to roster!', { timeout: 1000 })
-    } else {
+    } else if (import.meta.env.MODE !== 'test') {
+      // Only log warning in non-test environments
       console.warn('Could not access hevCustomizerRef to reset form.')
-      toast.warning('Could not reset customizer form.', { timeout: 1000 })
     }
   } catch (error) {
-    console.warn('Error resetting form:', error)
-    toast.warning('Could not reset customizer form.', { timeout: 1000 })
+    if (import.meta.env.MODE !== 'test') {
+      // Only log warning in non-test environments
+      console.warn('Error resetting form:', error)
+    }
   }
 }
 
