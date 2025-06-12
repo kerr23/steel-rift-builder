@@ -1,6 +1,21 @@
 <template>
-  <li class="roster-item flex flex-col md:flex-row md:items-center justify-between bg-light-grey border border-border-color rounded p-3" role="listitem">
+  <li
+    class="roster-item flex flex-col md:flex-row md:items-center justify-between bg-light-grey border border-border-color rounded p-3 cursor-move"
+    role="listitem"
+    draggable="true"
+    :class="{ 'opacity-50': dragging, 'border-dashed border-primary': dragging }"
+    @dragstart="$emit('dragstart', $event)"
+    @dragover.prevent="$emit('dragover', $event)"
+    @dragenter.prevent
+    @drop="$emit('drop')"
+    @dragend="$emit('dragend')"
+  >
     <div class="roster-item-info flex flex-col md:flex-row md:items-center gap-2">
+      <div class="drag-handle flex items-center mr-1 text-muted">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grip-vertical" viewBox="0 0 16 16">
+          <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+        </svg>
+      </div>
       <template v-if="unit.isSupportAsset">
         <span class="roster-item-name font-semibold">{{ unit.type }}</span>
         <span class="roster-item-details text-sm text-muted">(Support Asset - {{ unit.totalUnitTonnage }}T)</span>
@@ -46,10 +61,18 @@ const props = defineProps({
   gameRules: {
     type: Object,
     required: true
+  },
+  index: {
+    type: Number,
+    required: true
+  },
+  dragging: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(['edit', 'remove']);
+defineEmits(['edit', 'remove', 'dragstart', 'dragover', 'dragenter', 'drop', 'dragend']);
 
 const baseTonnage = computed(() => {
   if (props.unit.isSupportAsset) return props.unit.totalUnitTonnage || 10;
@@ -59,3 +82,9 @@ const baseTonnage = computed(() => {
   return cls ? cls.baseTonnage : 0;
 });
 </script>
+
+<style scoped>
+.cursor-move {
+  cursor: move;
+}
+</style>

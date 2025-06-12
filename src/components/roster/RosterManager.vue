@@ -20,12 +20,19 @@
 
       <ul v-show="roster.length > 0" class="space-y-2" role="list">
         <RosterItem
-          v-for="unit in roster"
+          v-for="(unit, index) in roster"
           :key="unit.id"
           :unit="unit"
           :gameRules="gameRules"
+          :index="index"
+          :dragging="draggedItemIndex === index"
           @edit="onEditItem"
           @remove="onRemoveItem"
+          @dragstart="onDragStart(index, $event)"
+          @dragover.prevent="onDragOver(index, $event)"
+          @dragenter.prevent
+          @drop="onDrop(index)"
+          @dragend="onDragEnd"
         />
       </ul>
 
@@ -112,11 +119,20 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:rosterName', 'edit-unit', 'remove-unit', 'import-roster', 'export-roster', 'format-print']);
+const emit = defineEmits([
+  'update:rosterName',
+  'edit-unit',
+  'remove-unit',
+  'import-roster',
+  'export-roster',
+  'format-print',
+  'reorder-roster'
+]);
 
 const fileInputRef = ref(null);
 const toast = useToast();
 const rosterNameInput = ref(props.rosterName);
+const draggedItemIndex = ref(null);
 
 // Watch for roster name changes and emit to parent
 watch(rosterNameInput, (newVal) => {
@@ -160,6 +176,54 @@ const onEditItem = (unit) => {
  */
 const onRemoveItem = (unitId) => {
   emit('remove-unit', unitId);
+};
+
+/**
+ * Handle drag start event
+ * @param {number} index - Index of the dragged item
+ * @param {DragEvent} event - The drag event
+ */
+const onDragStart = (index, event) => {
+  draggedItemIndex.value = index;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.dropEffect = 'move';
+
+  // Required for Firefox
+  event.dataTransfer.setData('text/plain', index.toString());
+};
+
+/**
+ * Handle drag over event
+ * @param {number} index - Index of the item being dragged over
+ * @param {DragEvent} event - The drag over event
+ */
+const onDragOver = (index, event) => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+};
+
+/**
+ * Handle drop event
+ * @param {number} dropIndex - Index where the dragged item was dropped
+ */
+const onDrop = (dropIndex) => {
+  if (draggedItemIndex.value === null || draggedItemIndex.value === dropIndex) return;
+
+  // Emit the event to parent to handle the actual reordering
+  emit('reorder-roster', {
+    fromIndex: draggedItemIndex.value,
+    toIndex: dropIndex
+  });
+
+  // Reset drag state
+  draggedItemIndex.value = null;
+};
+
+/**
+ * Handle drag end event
+ */
+const onDragEnd = () => {
+  draggedItemIndex.value = null;
 };
 
 /**
@@ -301,3 +365,22 @@ const formatForPrint = () => {
   emit('format-print');
 };
 </script>
+
+<style scoped>
+.roster-item.dragging {
+  opacity: 0.5;
+  border-style: dashed;
+  border-color: var(--primary-color);
+}
+
+.roster-item.drop-target {
+  border-bottom: 2px dashed var(--primary-color);
+  padding-bottom: calc(0.75rem - 2px);
+}
+
+@media (hover: hover) {
+  .roster-item:hover {
+    background-color: var(--hover-bg);
+  }
+}
+</style>
