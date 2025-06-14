@@ -6,7 +6,7 @@ export const traitDefinitions = {
   Blast: 'Area Effect: All units (friend or foe) within (X) of the original target must also make a Defense Roll against this Attack at -1 to the Attack Pool (to a minimum of 1).',
   Disruptive: 'If a target model suffers any damage from a weapon with this Trait, the Active Player rolls 1D6. On a 5 or 6, mark the target unit with a Redlined marker.',
   Draining: 'If a model uses this Weapon System during an activation, mark it with a Redline marker as well as an Activated token when it has completed its Orders. This does not cause Structure damage. If a model has a Redlined token when it activates, it may not use Weapon Systems with this Trait.',
-  Flak: 'Reduce the number of dice in an attack from Mine Drones (Missiles or Rocket Packs by 2) to a minimum of 1 if this model doesn’t have a Redlined marker.',
+  Flak: 'Reduce the number of dice in an attack from Mine Drones, Missiles, or Rocket Packs by 2 to a minimum of 1 if this model doesn\'t have a Redlined marker.',
   Frag: 'Targets are -1 to Defense Rolls from attacks with this Trait.',
   Kinetic: 'If any damage is inflicted by this attack, roll 1D6. Add +1 to the roll for each Class Size larger the Active model is than the target model. Subtract -1 from the roll for each Class Size smaller the Active model is than the target model. On a result of 4+, rotate the target model 45° away from the Active Unit, in a direction chosen by the Active Player.',
   Light: 'This attack will cause 1 damage to Armor or Structure for every 2 hits that are not evaded, rounding down.',
@@ -22,14 +22,15 @@ export const traitDefinitions = {
   'Garrison': 'A Unit with this trait contains a number of its assigned units and tokens up to (X). If this unit is destroyed, all the units and tokens assigned to it are destroyed.',
   'Infantry': 'Units with this trait do not receive orders normally and are not eligible to activate. They will instead activate as part of the order issued to their Garrison using the Command trait.',
   'Inferno Gear': 'If 50% or more of the Units in a Squadron have this trait, the Squadron ignores the effect of the Disruptive Trait.',
-  'Magnetic Grapnels': 'When an enemy Unit attempts to move or jump out of contact with one or more Units with this Trait, before moving, that model rolls 1D6, adding +1 for each additional model with this Trait in contact after the first. On a 1-2 result, reduce the Speed distance that the Unit may move by 50%. On a 3-4 result, reduce the distance by 75%. On a 5-6 result, the Active Unit may only move 1” regardless of how far it would normally be allowed to go during that Order.',
+  'Magnetic Grapnels': 'When an enemy Unit attempts to move or jump out of contact with one or more Units with this Trait, before moving, that model rolls 1D6, adding +1 for each additional model with this Trait in contact after the first. On a 1-2 result, reduce the Speed distance that the Unit may move by 50%. On a 3-4 result, reduce the distance by 75%. On a 5-6 result, the Active Unit may only move 1" regardless of how far it would normally be allowed to go during that Order.',
   'Minefield': 'Once deployed, these Tokens operate in exactly the same way as those described in the Mine-Drone Barrage Support Asset from the Steel Rift Core Rulebook. The one exception is that the Fortification they are garrisoned-to is never affected by their Blast Trait.',
-  'Minesweeper': 'Using sophisticated drone systems to detect and destroy enemy Mines, a Unit with this Trait may perform the following Order: CLEAR MINEFIELD: Target a Mine Token of any type within 8” and Line of Sight of any active Units with the Minesweeper Trait. Roll 1D6, adding +1 for each additional Unit with the Minesweeper Trait if they are in a Squadron. On a roll of 4+, the Mine Token is neutralized and removed from play.',
-  'Outrider': 'If these Units are part of a mixed Squadron and the Squadron Leader is a different type of Unit from the Unit with this Trait, the range they must be deployed at and remain inside is 12” instead of 3”. However, all Units with this Trait in a formation must still be within 3” of each other. All Outrider units in a formation also must perform the same Orders, and remain inside that maximum distance.',
+  'Minesweeper': 'Using sophisticated drone systems to detect and destroy enemy Mines, a Unit with this Trait may perform the following Order: CLEAR MINEFIELD: Target a Mine Token of any type within 8" and Line of Sight of any active Units with the Minesweeper Trait. Roll 1D6, adding +1 for each additional Unit with the Minesweeper Trait if they are in a Squadron. On a roll of 4+, the Mine Token is neutralized and removed from play.',
+  'Outrider': 'If these Units are part of a mixed Squadron and the Squadron Leader is a different type of Unit from the Unit with this Trait, the range they must be deployed at and remain inside is 12" instead of 3". However, all Units with this Trait in a formation must still be within 3" of each other. All Outrider units in a formation also must perform the same Orders, and remain inside that maximum distance.',
   'Squadron': 'Squadrons move and attack as one. LoS applies to each figure. X refers to number of units that have LoS on that target. See rules for details around Smash orders and Blast damage.',
-  'Scramblers': 'No Unit, regardless of its Commander, within 6” of a model equipped with a Scrambler may be targeted by an Off-Table Support Asset or Target Designator. In addition they can not be the target of Lock On orders, or weapons using the SMART Trait.',
-  'Suppressive Fire': 'If an Active enemy Unit within 10” of a Unit with this Trait performs an Engage Order, the target of that Order receives +1 to their Defense Rolls.',
+  'Scramblers': 'No Unit, regardless of its Commander, within 6" of a model equipped with a Scrambler may be targeted by an Off-Table Support Asset or Target Designator. In addition they can not be the target of Lock On orders, or weapons using the SMART Trait.',
+  'Suppressive Fire': 'If an Active enemy Unit within 10" of a Unit with this Trait performs an Engage Order, the target of that Order receives +1 to their Defense Rolls.',
   'Ultra-Light': 'Units with this Trait receive a +2 on Defense Rolls versus Engage Orders, unless they have the Blast Trait, against which it only receives a +1. Regardless of modifiers, Units with this Trait targeted by a Weapon System with the Light Trait cancel the effects of that trait and will make a Defence Roll for each net success. Units with this Trait are always targeted as if from the Front Arc.',
+  'Vehicle': 'Units with this trait are more mobile than infantry but less armored than HE-Vs. They move at full speed over rough terrain and can perform any standard order.',
 }
 
 export const gameData = {
@@ -488,3 +489,95 @@ export const findUpgradeById = (id) => {
 
   return result;
 };
+
+// Ultra-Light Vehicle weapon system definitions
+export const ULV_WEAPONS = [
+  {
+    id: 'ulv-autocannon',
+    name: 'Vehicle Autocannon',
+    damage: '2 x (X)',
+    range: '12"',
+    traits: ['Kinetic']
+  },
+  {
+    id: 'ulv-missile',
+    name: 'Short Ranged Missile Pack',
+    damage: '3 x (X)',
+    range: '12"',
+    traits: ['Smart', 'Limited(2)']
+  },
+  {
+    id: 'ulv-rocket',
+    name: 'Rocket Pack',
+    damage: '2 x (X)',
+    range: 'UL',
+    traits: ['Smart', 'Blast(3")', 'Limited(2)']
+  },
+  {
+    id: 'ulv-submunitions',
+    name: 'Submunitions',
+    damage: '1 x (X)',
+    range: '6"',
+    traits: ['Flak']
+  }
+]
+
+// Ultra-Light Vehicle types
+export const ULV_TYPES = [
+  {
+    id: 'ulv-recon',
+    type: 'Recon',
+    speed: '12"',
+    armor: 1,
+    weapons: ['Submunitions'],
+    traits: [
+      'Ultra-Light',
+      'Squadron',
+      'Vehicle',
+      'Close Support',
+      'Outrider',
+      'Target Designator'
+    ]
+  },
+  {
+    id: 'ulv-fire-support',
+    type: 'Fire Support',
+    speed: '8"',
+    armor: 2,
+    weapons: ['Vehicle Autocannon', 'Rocket Pack / Missile Pack'],
+    traits: [
+      'Ultra-Light',
+      'Squadron',
+      'Vehicle',
+      'Close Support'
+    ]
+  },
+  {
+    id: 'ulv-tactical',
+    type: 'Tactical',
+    speed: '10"',
+    armor: 2,
+    weapons: ['Vehicle Autocannon'],
+    traits: [
+      'Ultra-Light',
+      'Squadron',
+      'Vehicle',
+      'Close Support',
+      'Suppressive Fire'
+    ]
+  },
+  {
+    id: 'ulv-engineering',
+    type: 'Engineering',
+    speed: '8"',
+    armor: 3,
+    weapons: ['Submunitions'],
+    traits: [
+      'Ultra-Light',
+      'Squadron',
+      'Vehicle',
+      'Close Support',
+      'Minesweeper'
+    ]
+  }
+]
