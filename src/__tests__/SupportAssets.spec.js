@@ -152,27 +152,26 @@ describe('SupportAssets', () => {
     wrapper.vm.selectedClass = 'ulv'
     await wrapper.vm.$nextTick()
 
-    // Add ULVs and set armor points
+    // Add ULVs
     const firstTypeId = ULV_TYPES[0].id
     const secondTypeId = ULV_TYPES[1].id
 
     // Add first ULV
     wrapper.vm.addUlv(firstTypeId)
-    expect(wrapper.vm.selectedUlvTypes).toContain(firstTypeId)
-    expect(wrapper.vm.selectedUlvArmorPoints[firstTypeId]).toBe(0)
-
-    // Add some armor points to first ULV
-    wrapper.vm.setUlvArmorPoints(firstTypeId, 3)
-    expect(wrapper.vm.selectedUlvArmorPoints[firstTypeId]).toBe(3)
+    expect(wrapper.vm.selectedUlvTypeCounts[firstTypeId]).toBe(1)
 
     // Add second ULV
     wrapper.vm.addUlv(secondTypeId)
-    expect(wrapper.vm.selectedUlvTypes).toContain(secondTypeId)
+    expect(wrapper.vm.selectedUlvTypeCounts[secondTypeId]).toBe(1)
 
-    // Total armor should be the sum of base armor + additional points
+    // Add another of the first ULV type
+    wrapper.vm.addUlv(firstTypeId)
+    expect(wrapper.vm.selectedUlvTypeCounts[firstTypeId]).toBe(2)
+
+    // Total armor should be the sum of base armor for all ULVs
     const firstULV = ULV_TYPES.find(t => t.id === firstTypeId)
     const secondULV = ULV_TYPES.find(t => t.id === secondTypeId)
-    const expectedTotal = firstULV.armor + 3 + secondULV.armor
+    const expectedTotal = (firstULV.armor * 2) + secondULV.armor
     expect(wrapper.vm.totalUlvArmorPoints).toBe(expectedTotal)
   })
 
@@ -184,7 +183,7 @@ describe('SupportAssets', () => {
     // Set up ULV squadron
     const firstTypeId = ULV_TYPES[0].id
     wrapper.vm.addUlv(firstTypeId)
-    wrapper.vm.setUlvArmorPoints(firstTypeId, 2)
+    wrapper.vm.addUlv(firstTypeId) // Add a second one of the same type
 
     // Call the method directly
     wrapper.vm.addUlvSquadron()
@@ -202,7 +201,6 @@ describe('SupportAssets', () => {
     expect(emitted[0][0].details.join(' ')).toContain('Armor:')
 
     // Check that selections were reset
-    expect(wrapper.vm.selectedUlvTypes).toHaveLength(0)
-    expect(Object.keys(wrapper.vm.selectedUlvArmorPoints)).toHaveLength(0)
+    expect(Object.keys(wrapper.vm.selectedUlvTypeCounts)).toHaveLength(0)
   })
 })

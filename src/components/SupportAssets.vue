@@ -123,12 +123,11 @@
           v-for="type in ulvTypes"
           :key="type.id"
           class="ulhev-card border rounded-lg p-4 w-64 flex flex-col items-start relative"
-          :class="selectedUlvTypes.includes(type.id) ? 'border-primary ring-2 ring-primary' : 'border-input-border'"
+          :class="selectedUlvTypeCounts[type.id] ? 'border-primary ring-2 ring-primary' : 'border-input-border'"
         >
           <div class="flex items-center w-full mb-2">
             <span class="font-semibold text-base">{{ type.type }}</span>
             <Button
-              v-if="!selectedUlvTypes.includes(type.id)"
               variant="primary"
               size="sm"
               class="ml-auto"
@@ -144,9 +143,13 @@
             <li><span><strong>Weapon Systems:</strong> {{ type.weapons.join(', ') }}</span></li>
             <li><span><strong>Traits:</strong> {{ type.traits.join(', ') }}</span></li>
           </ul>
-          <div v-if="selectedUlvTypes.includes(type.id)" class="mt-2 flex flex-wrap gap-1 w-full">
+          <div v-if="selectedUlvTypeCounts[type.id]" class="mt-2 flex flex-wrap gap-1 w-full">
             <div class="w-full flex items-center justify-between">
-              <span class="inline-block px-2 py-0.5 bg-primary text-white text-xs rounded">Selected</span>
+              <div class="flex flex-wrap gap-1">
+                <span v-for="n in selectedUlvTypeCounts[type.id]" :key="n" class="inline-block px-2 py-0.5 bg-primary text-white text-xs rounded">
+                  {{ n }}
+                </span>
+              </div>
               <Button
                 variant="danger"
                 size="sm"
@@ -154,22 +157,6 @@
               >
                 Remove
               </Button>
-            </div>
-            <div class="w-full mt-2">
-              <label class="text-xs font-medium">Additional Armor:</label>
-              <div class="flex gap-1 mt-1">
-                <Button
-                  v-for="n in 5"
-                  :key="n"
-                  size="sm"
-                  :variant="(selectedUlvArmorPoints[type.id] || 0) >= n ? 'primary' : 'outline-secondary'"
-                  :disabled="totalUlvArmorPoints - (selectedUlvArmorPoints[type.id] || 0) + n > 10"
-                  @click="() => setUlvArmorPoints(type.id, n)"
-                  class="px-2 py-0 text-xs min-w-6"
-                >
-                  {{ n }}
-                </Button>
-              </div>
             </div>
           </div>
         </div>
@@ -181,7 +168,7 @@
         </div>
         <Button
           variant="success"
-          :disabled="selectedUlvTypes.length === 0 || totalUlvArmorPoints > 10"
+          :disabled="Object.keys(selectedUlvTypeCounts).length === 0 || totalUlvArmorPoints > 10"
           @click="addUlvSquadron"
         >
           Add ULV Squadron to Roster
@@ -233,15 +220,15 @@ const selectedUpgradePod = computed(() => UL_HEV_UPGRADE_PODS.find(p => p.id ===
 
 // --- Ultra-Light Vehicle (ULV) Types ---
 const ulvTypes = ULV_TYPES
-const selectedUlvTypes = ref([])
-const selectedUlvArmorPoints = ref({})
+// Store a count of each ULV type instead of just IDs
+const selectedUlvTypeCounts = ref({})
 
 const totalUlvArmorPoints = computed(() => {
-  // Calculate total armor points from base armor + additional armor
-  return selectedUlvTypes.value.reduce((total, typeId) => {
+  // Calculate total armor points from all selected ULVs
+  return Object.entries(selectedUlvTypeCounts.value).reduce((total, [typeId, count]) => {
     const type = ulvTypes.find(t => t.id === typeId)
     if (!type) return total
-    return total + type.armor + (selectedUlvArmorPoints.value[typeId] || 0)
+    return total + (type.armor * count)
   }, 0)
 })
 
@@ -340,49 +327,43 @@ function addUltraLightSquadron() {
 
 // --- Ultra-Light Vehicle Functions ---
 function addUlv(typeId) {
-  if (!selectedUlvTypes.value.includes(typeId)) {
-    const type = ulvTypes.find(t => t.id === typeId)
-    if (type && totalUlvArmorPoints.value + type.armor <= 10) {
-      selectedUlvTypes.value.push(typeId)
-      // Initialize with 0 additional armor points
-      selectedUlvArmorPoints.value[typeId] = 0
+  const type = ulvTypes.find(t => t.id === typeId)
+  if (type) {
+    // Check if adding this ULV would exceed the 10 armor point limit
+    if (totalUlvArmorPoints.value + type.armor <= 10) {
+      // Initialize or increment the count for this type
+      selectedUlvTypeCounts.value[typeId] = (selectedUlvTypeCounts.value[typeId] || 0) + 1
     }
   }
 }
 
 function removeUlv(typeId) {
-  const idx = selectedUlvTypes.value.indexOf(typeId)
-  if (idx !== -1) {
-    selectedUlvTypes.value.splice(idx, 1)
-    // Remove armor points for this unit
-    delete selectedUlvArmorPoints.value[typeId]
-  }
-}
+  if (selectedUlvTypeCounts.value[typeId]) {
+    // Decrease count by 1
+    selectedUlvTypeCounts.value[typeId] -= 1
 
-function setUlvArmorPoints(typeId, points) {
-  const type = ulvTypes.find(t => t.id === typeId)
-  if (type) {
-    const baseArmor = type.armor
-    const otherUnitsArmor = totalUlvArmorPoints.value - baseArmor - (selectedUlvArmorPoints.value[typeId] || 0)
-
-    // Ensure we don't exceed 10 total armor points
-    if (otherUnitsArmor + baseArmor + points <= 10) {
-      selectedUlvArmorPoints.value[typeId] = points
+    // Remove the key if count reaches zero
+    if (selectedUlvTypeCounts.value[typeId] <= 0) {
+      delete selectedUlvTypeCounts.value[typeId]
     }
   }
 }
 
 function getUlvSquadronDetails() {
-  // Get all selected ULVs with their configuration
-  const squadron = selectedUlvTypes.value.map(typeId => {
-    const type = ulvTypes.find(t => t.id === typeId)
-    if (!type) return null
+  // Get all selected ULVs with their counts
+  const squadron = []
 
-    return {
-      ...type,
-      totalArmor: type.armor + (selectedUlvArmorPoints.value[typeId] || 0)
+  Object.entries(selectedUlvTypeCounts.value).forEach(([typeId, count]) => {
+    const type = ulvTypes.find(t => t.id === typeId)
+    if (type) {
+      // Add each ULV instance to the squadron
+      for (let i = 0; i < count; i++) {
+        squadron.push({
+          ...type
+        })
+      }
     }
-  }).filter(Boolean)
+  })
 
   return squadron
 }
@@ -405,7 +386,7 @@ function addUlvSquadron() {
   for (const unit of squadron) {
     details.push(`<u>${unit.type}</u>`);
     details.push(`<strong>Speed:</strong> ${unit.speed}`);
-    details.push(`<strong>Armor:</strong> ${unit.totalArmor}`);
+    details.push(`<strong>Armor:</strong> ${unit.armor}`);
     details.push(`<strong>Weapon Systems:</strong> ${unit.weapons.join(', ')}`);
     details.push(`<strong>Traits:</strong> ${unit.traits.join(', ')}`);
   }
@@ -421,8 +402,7 @@ function addUlvSquadron() {
   })
 
   // Reset selections
-  selectedUlvTypes.value = []
-  selectedUlvArmorPoints.value = {}
+  selectedUlvTypeCounts.value = {}
 }
 </script>
 
