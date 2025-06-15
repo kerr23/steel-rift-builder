@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import SupportAssets from '../components/SupportAssets.vue'
-import { UL_HEV_TYPES, UL_HEV_UPGRADE_PODS, OFF_TABLE_TYPES } from '../gameData.js'
+import { UL_HEV_TYPES, UL_HEV_UPGRADE_PODS, OFF_TABLE_TYPES, ULV_TYPES } from '../gameData.js'
 
 // Mock child components
 vi.mock('../components/ui/FormSelect.vue', () => ({
@@ -72,6 +72,16 @@ describe('SupportAssets', () => {
     expect(wrapper.findAll('.ulhev-card').length).toBe(UL_HEV_TYPES.length)
   })
 
+  it('displays ULV options when selected', async () => {
+    // Set the class selection to ulv
+    wrapper.vm.selectedClass = 'ulv'
+    await wrapper.vm.$nextTick()
+
+    // Check if ULV content is shown
+    expect(wrapper.html()).toContain('Select Ultra-Light Vehicles for Squadron')
+    expect(wrapper.findAll('.ulhev-card').length).toBe(ULV_TYPES.length)
+  })
+
   it('emits add-support-asset event when adding off-table support', async () => {
     // Setup component state
     wrapper.vm.selectedClass = 'off-table'
@@ -135,5 +145,62 @@ describe('SupportAssets', () => {
     // Check that selections were reset
     expect(wrapper.vm.selectedUltraLightTypes).toHaveLength(0)
     expect(wrapper.vm.selectedUpgradePodId).toBe('')
+  })
+
+  it('manages ULV armor point limits correctly', async () => {
+    // Setup component state
+    wrapper.vm.selectedClass = 'ulv'
+    await wrapper.vm.$nextTick()
+
+    // Add ULVs
+    const firstTypeId = ULV_TYPES[0].id
+    const secondTypeId = ULV_TYPES[1].id
+
+    // Add first ULV
+    wrapper.vm.addUlv(firstTypeId)
+    expect(wrapper.vm.selectedUlvTypeCounts[firstTypeId]).toBe(1)
+
+    // Add second ULV
+    wrapper.vm.addUlv(secondTypeId)
+    expect(wrapper.vm.selectedUlvTypeCounts[secondTypeId]).toBe(1)
+
+    // Add another of the first ULV type
+    wrapper.vm.addUlv(firstTypeId)
+    expect(wrapper.vm.selectedUlvTypeCounts[firstTypeId]).toBe(2)
+
+    // Total armor should be the sum of base armor for all ULVs
+    const firstULV = ULV_TYPES.find(t => t.id === firstTypeId)
+    const secondULV = ULV_TYPES.find(t => t.id === secondTypeId)
+    const expectedTotal = (firstULV.armor * 2) + secondULV.armor
+    expect(wrapper.vm.totalUlvArmorPoints).toBe(expectedTotal)
+  })
+
+  it('emits add-support-asset event when adding ULV squadron', async () => {
+    // Setup component state
+    wrapper.vm.selectedClass = 'ulv'
+    await wrapper.vm.$nextTick()
+
+    // Set up ULV squadron
+    const firstTypeId = ULV_TYPES[0].id
+    wrapper.vm.addUlv(firstTypeId)
+    wrapper.vm.addUlv(firstTypeId) // Add a second one of the same type
+
+    // Call the method directly
+    wrapper.vm.addUlvSquadron()
+
+    // Check emitted event
+    const emitted = wrapper.emitted('add-support-asset')
+    expect(emitted).toBeTruthy()
+    expect(emitted[0][0]).toHaveProperty('class', 'Ultra-Light Vehicle Squadron')
+
+    // Debug - log the details
+    console.log('EMITTED DETAILS:', JSON.stringify(emitted[0][0].details))
+
+    // Adjusted tests
+    expect(emitted[0][0].details).toContain('<strong>Tonnage:</strong> 10T')
+    expect(emitted[0][0].details.join(' ')).toContain('Armor:')
+
+    // Check that selections were reset
+    expect(Object.keys(wrapper.vm.selectedUlvTypeCounts)).toHaveLength(0)
   })
 })

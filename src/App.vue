@@ -1,4 +1,3 @@
-// filepath: /var/home/dmk/projects/steel-rift-builder/src/App.vue
 <script setup>
 import { ref, computed, watchEffect, nextTick } from 'vue'
 import HevCustomizer from './components/hevCustomizer.vue'
@@ -7,18 +6,20 @@ import RosterManager from './components/roster/RosterManager.vue'
 import TabNavigation from './components/ui/TabNavigation.vue'
 import DarkModeToggle from './components/ui/DarkModeToggle.vue'
 import Footer from './components/layout/Footer.vue'
-import { gameData as importedGameData, UL_HEV_WEAPONS, UL_HEV_UPGRADE_PODS } from './gameData.js'
+import { gameData as importedGameData, UL_HEV_WEAPONS, UL_HEV_UPGRADE_PODS, ULV_TYPES, ULV_WEAPONS } from './gameData.js'
 import { useToast } from 'vue-toastification'
 
 // --- App State ---
 const rosterName = ref('')
 const roster = ref([])
 const hevCustomizerRef = ref(null)
-// Add UL_HEV_WEAPONS and UL_HEV_UPGRADE_PODS to gameRulesData for print display
+// Add UL_HEV_WEAPONS, UL_HEV_UPGRADE_PODS, ULV_TYPES, and ULV_WEAPONS to gameRulesData for print display
 const gameRulesData = {
   ...importedGameData,
   UL_HEV_WEAPONS,
-  UL_HEV_UPGRADE_PODS
+  UL_HEV_UPGRADE_PODS,
+  ULV_TYPES,
+  ULV_WEAPONS
 }
 const versionTag = import.meta.env.VITE_GIT_COMMIT_SHA || 'dev'
 // Load dark mode preference from localStorage, default to false if not set

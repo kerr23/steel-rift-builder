@@ -114,6 +114,68 @@
       </div>
     </div>
 
+    <!-- Ultra Light Vehicle (ULV) Options -->
+    <div v-if="selectedClass === 'ulv'" class="mb-6">
+      <label class="block mb-2 font-medium text-text">Select Ultra-Light Vehicles for Squadron (Max 10 Armor Points Total):</label>
+
+      <div class="flex flex-wrap gap-4 mb-4">
+        <div
+          v-for="type in ulvTypes"
+          :key="type.id"
+          class="ulhev-card border rounded-lg p-4 w-64 flex flex-col items-start relative"
+          :class="selectedUlvTypeCounts[type.id] ? 'border-primary ring-2 ring-primary' : 'border-input-border'"
+        >
+          <div class="flex items-center w-full mb-2">
+            <span class="font-semibold text-base">{{ type.type }}</span>
+            <Button
+              variant="primary"
+              size="sm"
+              class="ml-auto"
+              :disabled="totalUlvArmorPoints + type.armor > 10"
+              @click="() => addUlv(type.id)"
+            >
+              Add
+            </Button>
+          </div>
+          <ul class="text-sm space-y-1">
+            <li><span><strong>Speed:</strong> {{ type.speed }}</span></li>
+            <li><span><strong>Armor:</strong> {{ type.armor }}</span></li>
+            <li><span><strong>Weapon Systems:</strong> {{ type.weapons.join(', ') }}</span></li>
+            <li><span><strong>Traits:</strong> {{ type.traits.join(', ') }}</span></li>
+          </ul>
+          <div v-if="selectedUlvTypeCounts[type.id]" class="mt-2 flex flex-wrap gap-1 w-full">
+            <div class="w-full flex items-center justify-between">
+              <div class="flex flex-wrap gap-1">
+                <span v-for="n in selectedUlvTypeCounts[type.id]" :key="n" class="inline-block px-2 py-0.5 bg-primary text-white text-xs rounded">
+                  {{ n }}
+                </span>
+              </div>
+              <Button
+                variant="danger"
+                size="sm"
+                @click="() => removeUlv(type.id)"
+              >
+                Remove
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 flex justify-between items-center">
+        <div class="text-sm">
+          <strong>Total Armor Points:</strong> <span :class="{'text-danger': totalUlvArmorPoints > 10}">{{ totalUlvArmorPoints }}/10</span>
+        </div>
+        <Button
+          variant="success"
+          :disabled="Object.keys(selectedUlvTypeCounts).length === 0 || totalUlvArmorPoints > 10"
+          @click="addUlvSquadron"
+        >
+          Add ULV Squadron to Roster
+        </Button>
+      </div>
+    </div>
+
     <!-- Support Asset Preview -->
     <div class="support-asset-list">
       <div v-if="selectedClass === 'off-table' && selectedOffTableType" class="support-asset-card border border-border rounded-lg p-4 mb-4">
@@ -129,7 +191,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { UL_HEV_UPGRADE_PODS, UL_HEV_TYPES, OFF_TABLE_TYPES } from '../gameData.js'
+import { UL_HEV_UPGRADE_PODS, UL_HEV_TYPES, OFF_TABLE_TYPES, ULV_TYPES } from '../gameData.js'
 import FormSelect from './ui/FormSelect.vue'
 import Button from './ui/Button.vue'
 
@@ -139,7 +201,7 @@ const emit = defineEmits(['add-support-asset'])
 const supportAssetClasses = [
   { value: 'off-table', label: 'Off Table Support' },
   { value: 'ultra-light', label: 'Ultra-Light HE-V' },
-  { value: 'light-vehicle', label: 'Light Vehicle' },
+  { value: 'ulv', label: 'Ultra-Light Vehicle' }, // Added ULV option
   { value: 'infantry-outpost', label: 'Infantry Outpost' },
 ]
 const selectedClass = ref(supportAssetClasses[0].value)
@@ -154,6 +216,20 @@ const selectedUltraLightTypes = ref([])
 const selectedUpgradePodId = ref('')
 
 const selectedUpgradePod = computed(() => UL_HEV_UPGRADE_PODS.find(p => p.id === selectedUpgradePodId.value) || null)
+
+// --- Ultra-Light Vehicle (ULV) Types ---
+const ulvTypes = ULV_TYPES
+// Store a count of each ULV type instead of just IDs
+const selectedUlvTypeCounts = ref({})
+
+const totalUlvArmorPoints = computed(() => {
+  // Calculate total armor points from all selected ULVs
+  return Object.entries(selectedUlvTypeCounts.value).reduce((total, [typeId, count]) => {
+    const type = ulvTypes.find(t => t.id === typeId)
+    if (!type) return total
+    return total + (type.armor * count)
+  }, 0)
+})
 
 // --- Ultra-Light Squadron Functions ---
 function getUltraLightSquadron() {
@@ -246,6 +322,86 @@ function addUltraLightSquadron() {
   // Reset selections
   selectedUltraLightTypes.value = []
   selectedUpgradePodId.value = ''
+}
+
+// --- Ultra-Light Vehicle Functions ---
+function addUlv(typeId) {
+  const type = ulvTypes.find(t => t.id === typeId)
+  if (type) {
+    // Check if adding this ULV would exceed the 10 armor point limit
+    if (totalUlvArmorPoints.value + type.armor <= 10) {
+      // Initialize or increment the count for this type
+      selectedUlvTypeCounts.value[typeId] = (selectedUlvTypeCounts.value[typeId] || 0) + 1
+    }
+  }
+}
+
+function removeUlv(typeId) {
+  if (selectedUlvTypeCounts.value[typeId]) {
+    // Decrease count by 1
+    selectedUlvTypeCounts.value[typeId] -= 1
+
+    // Remove the key if count reaches zero
+    if (selectedUlvTypeCounts.value[typeId] <= 0) {
+      delete selectedUlvTypeCounts.value[typeId]
+    }
+  }
+}
+
+function getUlvSquadronDetails() {
+  // Get all selected ULVs with their counts
+  const squadron = []
+
+  Object.entries(selectedUlvTypeCounts.value).forEach(([typeId, count]) => {
+    const type = ulvTypes.find(t => t.id === typeId)
+    if (type) {
+      // Add each ULV instance to the squadron
+      for (let i = 0; i < count; i++) {
+        squadron.push({
+          ...type
+        })
+      }
+    }
+  })
+
+  return squadron
+}
+
+function addUlvSquadron() {
+  const squadron = getUlvSquadronDetails()
+  if (squadron.length === 0 || totalUlvArmorPoints.value > 10) return
+
+  // Generate a fun name for the squadron
+  const funNames = [
+    'Lightning', 'Specter', 'Phantom', 'Swift', 'Wraith', 'Ghost', 'Viper', 'Cobra', 'Talon', 'Raptor',
+    'Saber', 'Razor', 'Mantis', 'Jaguar', 'Puma', 'Lynx', 'Scorpion', 'Raven', 'Hawk', 'Serpent'
+  ]
+  const funName = funNames[Math.floor(Math.random() * funNames.length)] + ' ULV Squadron'
+
+  // Create the details array
+  const details = [];
+
+  // Add unit-specific details
+  for (const unit of squadron) {
+    details.push(`<u>${unit.type}</u>`);
+    details.push(`<strong>Speed:</strong> ${unit.speed}`);
+    details.push(`<strong>Armor:</strong> ${unit.armor}`);
+    details.push(`<strong>Weapon Systems:</strong> ${unit.weapons.join(', ')}`);
+    details.push(`<strong>Traits:</strong> ${unit.traits.join(', ')}`);
+  }
+
+  // Add tonnage information as the last item
+  details.push('<strong>Tonnage:</strong> 10T');
+
+  // Create and emit the final squadron data
+  emit('add-support-asset', {
+    class: 'Ultra-Light Vehicle Squadron',
+    type: funName,
+    details: details
+  })
+
+  // Reset selections
+  selectedUlvTypeCounts.value = {}
 }
 </script>
 

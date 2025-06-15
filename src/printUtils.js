@@ -42,7 +42,9 @@ export function generatePrintHtml({
 
       // Determine if this is a weapon system or support asset
       const isWeaponSystem = unit.details?.some(line => (/Damage:/.test(line) || /Range:/.test(line))) || false
-      const isUltraLightSquad = unit.type?.includes('Squadron') || false      // Extract unique trait names for support assets
+      const isUltraLightSquad = unit.type?.includes('Squadron') || false
+
+      // Extract unique trait names for support assets
       const supportAssetTraitNames = new Set()
       if (Array.isArray(unit.details)) {
         unit.details.forEach(line => {
@@ -172,7 +174,7 @@ export function generatePrintHtml({
 
         // We'll add traits based on what's actually used in the HE-V details
 
-        // Create a nice table for the UL HE-V squadron
+        // Create an outer container for the UL HE-V squadron
         htmlBody += `<div class="squadron-container">`
 
         // Group UL HE-Vs and their details
@@ -262,108 +264,126 @@ export function generatePrintHtml({
           </div>
         </div>`
 
-        // Display each HE-V with its details and armor bubbles
-        htmlBody += `<div class="ultra-light-grid">`
+        // Group HE-Vs by type
+        const hevsByType = {};
         hevs.forEach(hev => {
-          // Extract weapon systems information
-          const weaponSystemsDetail = hev.details.find(detail => /Weapon Systems:/.test(detail))
-          let weaponNames = []
-          if (weaponSystemsDetail) {
-            const weaponText = weaponSystemsDetail.replace(/<strong>Weapon Systems:<\/strong>\s*/, '')
-            weaponNames = weaponText.split(/,\s*/).map(name => name.trim())
+          const typeName = hev.name;
+          if (!hevsByType[typeName]) {
+            hevsByType[typeName] = [];
           }
+          hevsByType[typeName].push(hev);
+        });
 
-          htmlBody += `<div class="ultra-light-card">
-            <div class="ultra-light-name">${hev.name}</div>
-            <div class="ultra-light-armor">
-              <span class="print-defense-label">Armor:</span>
-              <span class="bubble-display">
-                ${generateBubbleHtml(hev.armor || 3, false)}
-              </span>
+        // Display each type of HE-V with its details grouped together
+        htmlBody += `<div class="ulv-types-container">`
+
+        for (const typeName in hevsByType) {
+          const typeHevs = hevsByType[typeName];
+          // Get traits and speed from the first HEV of this type (should be consistent for all of same type)
+          const speedDetail = typeHevs[0].details.find(detail => /Speed:/.test(detail))
+          const traitsDetail = typeHevs[0].details.find(detail => /Traits:/.test(detail))
+
+          htmlBody += `<div class="ulv-type-container">
+            <div class="ulv-type-header">
+              <h4 class="ulv-type-name">${typeName}</h4>
+              ${speedDetail ? `<div class="ulv-type-speed">${speedDetail}</div>` : ''}
+              ${traitsDetail ? `<div class="ulv-type-traits">${traitsDetail}</div>` : ''}
             </div>
-            <ul class="ultra-light-details">`
-          hev.details.forEach(detail => {
-            // Skip armor line in details since we're showing it with bubbles above
-            // Skip weapon systems line since we'll display it in a table below
-            if (!detail.match(/<strong>Armor:<\/strong>/i) && !detail.match(/<strong>Weapon Systems:<\/strong>/i)) {
-              htmlBody += `<li>${detail}</li>`
+            <div class="ulv-instances-container">`
+
+          // Display individual ULV instances within this type
+          typeHevs.forEach(hev => {
+            // Extract weapon systems information
+            const weaponSystemsDetail = hev.details.find(detail => /Weapon Systems:/.test(detail))
+            let weaponNames = []
+            if (weaponSystemsDetail) {
+              const weaponText = weaponSystemsDetail.replace(/<strong>Weapon Systems:<\/strong>\s*/, '')
+              weaponNames = weaponText.split(/,\s*/).map(name => name.trim())
             }
-          })
-          htmlBody += `</ul>`
 
-          // Add weapon systems table if weapons exist
-          if (weaponNames.length > 0 && gameRulesData.UL_HEV_WEAPONS) {
-            htmlBody += `<div class="ultra-light-weapons">
-              <h5 class="weapons-heading">Weapon Systems</h5>
-              <table class="print-weapon-table print-ul-weapon-table">
-                <thead>
-                  <tr>
-                    <th>Weapon</th>
-                    <th>Range</th>
-                    <th>Damage</th>
-                    <th>Traits</th>
-                  </tr>
-                </thead>
-                <tbody>`
+            htmlBody += `<div class="ultra-light-card">
+              <div class="ultra-light-armor">
+                <span class="print-defense-label">Armor:</span>
+                <span class="bubble-display">
+                  ${generateBubbleHtml(hev.armor || 3, false)}
+                </span>
+              </div>`
 
-            weaponNames.forEach(weaponName => {
-              // Find the weapon data from the UL_HEV_WEAPONS array
-              const weaponData = gameRulesData.UL_HEV_WEAPONS.find(w =>
-                w.name.toLowerCase() === weaponName.toLowerCase() ||
-                weaponName.toLowerCase().includes(w.id.toLowerCase().replace('ul-', ''))
-              )
+            // Add weapon systems table if weapons exist
+            if (weaponNames.length > 0 && gameRulesData.UL_HEV_WEAPONS) {
+              htmlBody += `<div class="ultra-light-weapons">
+                <h5 class="weapons-heading">Weapon Systems</h5>
+                <table class="print-weapon-table print-ul-weapon-table">
+                  <thead>
+                    <tr>
+                      <th>Weapon</th>
+                      <th>Range</th>
+                      <th>Damage</th>
+                      <th>Traits</th>
+                    </tr>
+                  </thead>
+                  <tbody>`
 
-              if (weaponData) {
-                // Add weapon traits to the supportAssetTraitNames set for displaying definitions
-                if (weaponData.traits && weaponData.traits.length > 0) {
-                  weaponData.traits.forEach(trait => {
-                    // Parse trait name to extract the base name
-                    if (typeof trait !== 'string') return
+              weaponNames.forEach(weaponName => {
+                // Find the weapon data from the UL_HEV_WEAPONS array
+                const weaponData = gameRulesData.UL_HEV_WEAPONS.find(w =>
+                  w.name.toLowerCase() === weaponName.toLowerCase() ||
+                  (w.id && weaponName.toLowerCase().includes(w.id.toLowerCase().replace('ul-', '')))
+                )
 
-                    // Split the trait by spaces and extract the base trait names
-                    // Handle complex traits like "AP1 x (X)" and "Melee (X)"
-                    const parts = trait.split(' ')
-                    let baseTraitName = parts[0].trim()
+                if (weaponData) {
+                  // Add weapon traits to the supportAssetTraitNames set for displaying definitions
+                  if (weaponData.traits && weaponData.traits.length > 0) {
+                    weaponData.traits.forEach(trait => {
+                      // Parse trait name to extract the base name
+                      if (typeof trait !== 'string') return
 
-                    // Add the base trait name
-                    supportAssetTraitNames.add(baseTraitName)
+                      // Split the trait by spaces and extract the base trait names
+                      // Handle complex traits like "AP1 x (X)" and "Melee (X)"
+                      const parts = trait.split(' ')
+                      let baseTraitName = parts[0].trim()
 
-                    // For traits like "AP1 x (X)", also add AP1
-                    if (trait.includes('AP')) {
-                      const apMatch = trait.match(/AP(\d+)/i)
-                      if (apMatch) {
-                        supportAssetTraitNames.add('AP' + apMatch[1])
+                      // Add the base trait name
+                      supportAssetTraitNames.add(baseTraitName)
+
+                      // For traits like "AP1 x (X)", also add AP1
+                      if (trait.includes('AP')) {
+                        const apMatch = trait.match(/AP(\d+)/i)
+                        if (apMatch) {
+                          supportAssetTraitNames.add('AP' + apMatch[1])
+                        }
                       }
-                    }
-                  })
+                    })
+                  }
+
+                  const traitsHtml = weaponData.traits && weaponData.traits.length > 0
+                    ? weaponData.traits.join(', ')
+                    : 'None'
+
+                  htmlBody += `<tr>
+                    <td>${weaponData.name}</td>
+                    <td>${weaponData.range}</td>
+                    <td>${weaponData.damage}</td>
+                    <td>${traitsHtml}</td>
+                  </tr>`
+                } else {
+                  htmlBody += `<tr>
+                    <td>${weaponName}</td>
+                    <td class="text-center">-</td>
+                    <td class="text-center">-</td>
+                    <td><span class="text-muted">Unknown weapon system</span></td>
+                  </tr>`
                 }
+              })
 
-                const traitsHtml = weaponData.traits && weaponData.traits.length > 0
-                  ? weaponData.traits.join(', ')
-                  : 'None'
+              htmlBody += `</tbody></table>
+              </div>`
+            }
 
-                htmlBody += `<tr>
-                  <td>${weaponData.name}</td>
-                  <td>${weaponData.range}</td>
-                  <td>${weaponData.damage}</td>
-                  <td>${traitsHtml}</td>
-                </tr>`
-              } else {
-                htmlBody += `<tr>
-                  <td>${weaponName}</td>
-                  <td class="text-center">-</td>
-                  <td class="text-center">-</td>
-                  <td><span class="text-muted">Unknown weapon system</span></td>
-                </tr>`
-              }
-            })
-
-            htmlBody += `</tbody></table>
-            </div>`
-          }
-
+            htmlBody += `</div>`
+          })
           htmlBody += `</div>`
-        })
+        }
         htmlBody += `</div>`
 
         htmlBody += `</div></div>` // End squadron-container and equipment-section
@@ -435,7 +455,8 @@ export function generatePrintHtml({
             }
 
             htmlBody += `</div>
-            </div>`          } else {
+            </div>`
+          } else {
             // Fallback to the old method if the pod is not found in gameRulesData
             const upgradePodLine = unit.details?.find(line => line.startsWith('<strong>Upgrade Pod:</strong>'))
             const upgradePodName = upgradePodLine ? upgradePodLine.replace('<strong>Upgrade Pod:</strong>', '').trim() : ''
