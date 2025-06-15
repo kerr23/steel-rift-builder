@@ -195,6 +195,79 @@ body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; backgrou
 
 /* Ultra-Light Squadron Styles */
 .squadron-container { margin-top: 0.5rem; }
+
+/* New ULV type organization styles */
+.ulv-types-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.ulv-type-container {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--light-grey);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+  page-break-inside: avoid;
+}
+
+.ulv-type-header {
+  padding: 0.75rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ulv-type-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.ulv-type-speed, .ulv-type-traits {
+  font-size: 0.85rem;
+  margin: 0.25rem 0;
+}
+
+.ulv-instances-container {
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.ulv-instance {
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.75rem;
+  background-color: white;
+}
+
+/* Additional styling for the weapon systems display in ULV instances */
+.ulv-instance .ultra-light-weapons {
+  margin-top: 0.5rem;
+}
+
+.ulv-instance .weapons-heading {
+  font-size: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.ulv-instance .print-ul-weapon-table {
+  font-size: 0.75rem;
+}
+
+.ulv-instance .print-ul-weapon-table th,
+.ulv-instance .print-ul-weapon-table td {
+  padding: 0.2rem 0.3rem;
+}
+
+/* Legacy styles maintained for compatibility */
 .ultra-light-grid {
   display: flex;
   flex-direction: column; /* Changed to column to stack vertically */

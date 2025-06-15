@@ -30,7 +30,7 @@ export const traitDefinitions = {
   'Scramblers': 'No Unit, regardless of its Commander, within 6" of a model equipped with a Scrambler may be targeted by an Off-Table Support Asset or Target Designator. In addition they can not be the target of Lock On orders, or weapons using the SMART Trait.',
   'Suppressive Fire': 'If an Active enemy Unit within 10" of a Unit with this Trait performs an Engage Order, the target of that Order receives +1 to their Defense Rolls.',
   'Ultra-Light': 'Units with this Trait receive a +2 on Defense Rolls versus Engage Orders, unless they have the Blast Trait, against which it only receives a +1. Regardless of modifiers, Units with this Trait targeted by a Weapon System with the Light Trait cancel the effects of that trait and will make a Defence Roll for each net success. Units with this Trait are always targeted as if from the Front Arc.',
-  'Vehicle': 'Units with this trait are more mobile than infantry but less armored than HE-Vs. They move at full speed over rough terrain and can perform any standard order.',
+  'Vehicle': 'Units with this Trait may never perform the Smash Order. Units with this Trait receive -1 to Defense Rolls of any type (This supercedes the bonus from ultra-light). Units with this Trait are always targeted as if from the Front Arc',
 }
 
 export const gameData = {

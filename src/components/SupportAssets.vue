@@ -202,7 +202,6 @@ const supportAssetClasses = [
   { value: 'off-table', label: 'Off Table Support' },
   { value: 'ultra-light', label: 'Ultra-Light HE-V' },
   { value: 'ulv', label: 'Ultra-Light Vehicle' }, // Added ULV option
-  { value: 'light-vehicle', label: 'Light Vehicle' },
   { value: 'infantry-outpost', label: 'Infantry Outpost' },
 ]
 const selectedClass = ref(supportAssetClasses[0].value)
