@@ -240,7 +240,7 @@ export function generatePrintHtml({
                 <td>${weaponName}</td>
                 <td class="text-center">${damageValue}</td>
                 <td class="text-center">${rangeValue}</td>
-                <td>${traitsValue}</td>
+                <td>${renderLimitedTraitWithBubbles(traitsValue)}</td>
               </tr>
             </tbody>
           </table>
@@ -382,7 +382,7 @@ export function generatePrintHtml({
                 <td>${weapon.name}</td>
                 <td class="text-center">${weapon.damage}</td>
                 <td class="text-center">${weapon.range}</td>
-                <td>${weapon.traits}</td>
+                <td>${renderLimitedTraitWithBubbles(weapon.traits)}</td>
               </tr>`
             })
 
