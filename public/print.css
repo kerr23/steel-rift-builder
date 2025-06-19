@@ -135,10 +135,15 @@ body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; backgrou
   padding: 0;
   margin: 0;
   font-size: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 .ultra-light-details li {
-  margin-bottom: 0.2rem;
-  line-height: 1.3;
+  margin-bottom: 0.25rem;
+  padding: 0.15rem 0.25rem;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 /* Trait Definitions Section Styles */
@@ -451,4 +456,194 @@ body { font-family: system-ui, sans-serif; line-height: 1.4; margin: 0; backgrou
 .squadron-common-traits strong {
   color: var(--secondary-color);
   font-weight: 600;
+}
+
+/* Infantry Outpost Styles */
+.bunker-section {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.bunker-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: var(--dark-grey);
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 0.3rem;
+}
+
+.weapon-system-table {
+  margin-bottom: 1rem;
+}
+
+.infantry-group {
+  margin-bottom: 1.2rem;
+  padding-left: 0.5rem;
+  border-left: 3px solid var(--light-grey);
+}
+
+.infantry-group-title {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: var(--primary-color);
+}
+
+.infantry-group-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.infantry-units {
+  padding-left: 1rem;
+}
+
+.infantry-unit {
+  margin-bottom: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  background-color: var(--light-grey);
+}
+
+.infantry-unit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 0.2rem;
+}
+
+.infantry-unit-number {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+}
+
+.infantry-unit-structure {
+  display: flex;
+}
+
+.infantry-weapon-table {
+  font-size: 0.75rem;
+}
+
+.infantry-weapon-table th, .infantry-weapon-table td {
+  padding: 0.15rem 0.25rem;
+}
+
+.mine-drone-rules {
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 0.5rem;
+  background-color: var(--light-grey);
+  border: 1px dashed var(--border-color);
+  color: var(--text-muted);
+  border-radius: var(--border-radius);
+}
+
+.outpost-traits {
+  margin-top: 1rem;
+  font-weight: 600;
+  padding: 0.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Infantry Outpost styles */
+.bunker-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.bunker-section {
+  flex: 1;
+  min-width: 280px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.bunker-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.infantry-group {
+  margin-top: 0.75rem;
+}
+
+.infantry-group-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem 0;
+}
+
+.infantry-group-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.infantry-units-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+}
+
+.infantry-unit {
+  border: 1px solid var(--medium-grey);
+  border-radius: 0.25rem;
+  padding: 0.3rem;
+  font-size: 0.8rem;
+}
+
+.infantry-unit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.2rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.infantry-unit-number {
+  font-weight: 600;
+}
+
+.infantry-unit-structure {
+  display: flex;
+  align-items: center;
+}
+
+.infantry-weapon-table {
+  font-size: 0.7rem;
+}
+
+.infantry-weapon-table th,
+.infantry-weapon-table td {
+  padding: 0.15rem 0.3rem;
+}
+
+.mine-drone-rules {
+  font-size: 0.75rem;
+  margin: 0.2rem 0;
+}
+
+.outpost-traits {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.85rem;
 }
