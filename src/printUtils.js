@@ -40,7 +40,7 @@ export function generatePrintHtml({
 
       // Determine if this is a weapon system or support asset
       const isWeaponSystem = unit.details?.some(line => (/Damage:/.test(line) || /Range:/.test(line))) || false
-      const isUltraLightSquad = unit.type?.includes('Squadron') || false
+      const isUltraLightSquadron = unit.type?.includes('Squadron') || false
       const isInfantryOutpost = unit.type === 'Infantry Outpost' || false
 
       // Extract unique trait names for support assets
@@ -74,7 +74,7 @@ export function generatePrintHtml({
 
       if (isInfantryOutpost) {
         renderInfantryOutpost(unit, supportAssetTraitNames, generateBubbleHtml, gameRulesData)
-      } else if (isUltraLightSquad) {
+      } else if (isUltraLightSquadron) {
         renderUltraLightSquadron(unit, supportAssetTraitNames, generateBubbleHtml, gameRulesData)
       } else if (isWeaponSystem) {
         renderWeaponSystem(unit, supportAssetTraitNames, gameRulesData)
@@ -116,7 +116,7 @@ export function generatePrintHtml({
   </body>
   </html>`
 
-  // Helper function to render Limited trait with bubbles
+  // Helper function to render limited trait with bubble markers
   function renderLimitedTraitWithBubbles(traitsHtml) {
     // Replace Limited(N) with Limited and N bubbles
     return traitsHtml.replace(/Limited\((\d+)\)/g, (match, count) => {
@@ -126,6 +126,26 @@ export function generatePrintHtml({
       }
       return `Limited${bubbles ? `(${bubbles})` : ''}`
     })
+  }
+
+  // Helper function to generate HTML for structure bubbles with threshold dividers
+  function generateStructureBubbleHtml(value) {
+    if (!value || value <= 0) return '<span class="placeholder-text-inline italic text-text-muted text-xs pl-1">N/A</span>';
+    let html = '';
+    for (let n = 1; n <= value; n++) {
+      // Insert dividers after the correct pip, counting from left to right
+      if (n === value - Math.floor(value * 0.25) && value >= 4) {
+        html += '<span class="threshold-divider divider-green" style="display:inline-block;width:1.5px;height:10px;vertical-align:middle;background-color:var(--success-color);"></span>';
+      }
+      if (n === value - Math.floor(value * 0.5) && value >= 2) {
+        html += '<span class="threshold-divider divider-yellow" style="display:inline-block;width:1.5px;height:10px;vertical-align:middle;background-color:#b38600;"></span>';
+      }
+      if (n === value - Math.floor(value * 0.75) && value >= 1) {
+        html += '<span class="threshold-divider divider-red" style="display:inline-block;width:1.5px;height:10px;vertical-align:middle;background-color:var(--danger-color);"></span>';
+      }
+      html += '<span class="bubble" style="display:inline-block;width:9px;height:9px;border-radius:50%;border:1px solid #000;background:transparent;box-sizing:border-box;"></span>';
+    }
+    return html;
   }
 
   // Function to handle rendering Infantry Outpost
@@ -578,7 +598,7 @@ export function generatePrintHtml({
             // Find the weapon data from the UL_HEV_WEAPONS array
             const weaponData = gameRulesData.UL_HEV_WEAPONS.find(w =>
               w.name.toLowerCase() === weaponName.toLowerCase() ||
-              weaponName.toLowerCase().includes(w.id.toLowerCase().replace('ul-', ''))
+              (w.id && weaponName.toLowerCase().includes(w.id.toLowerCase().replace('ul-', '')))
             )
 
             if (weaponData) {
@@ -939,6 +959,229 @@ export function generatePrintHtml({
 
   // Placeholder for HE-V HTML generation
   function generateHevHtml(unit, rosterName, generateBubbleHtml, formatPrintTrait, gameRulesData) {
-    return `<div class="unit-card"><p>HE-V implementation placeholder</p></div>`
+    const totalRosterBaseTonnage = unit.rosterTonnage || ''
+    const getBaseTonnage = (unit) => unit.selectedClass?.tonnage || 0
+    if (!unit || !unit.selectedClass) return '<div class="unit-card"><p>Error: Invalid HE-V data</p></div>'
+
+    const unitClassName = unit.selectedClass.name
+    const unitBaseMovement = unit.selectedClass?.baseMovement ?? 0
+    const unitHasJumpJets = unit.selectedUpgrades?.some((upg) => upg.id === 'u3' || upg.id === 'u6') ?? false
+
+    let unitJumpMovement = 0
+    if (unitHasJumpJets) {
+      if (unitBaseMovement === 12) unitJumpMovement = 10
+      else if (unitBaseMovement === 10) unitJumpMovement = 8
+      else if (unitBaseMovement === 8) unitJumpMovement = 6
+      else if (unitBaseMovement === 6) unitJumpMovement = 4
+    }
+
+    const uniqueUnitTraitNames = new Set()
+    if (unit.selectedWeapons && unit.selectedWeapons.length > 0) {
+      unit.selectedWeapons.forEach((weaponInstance) => {
+        const weaponData = gameRulesData.weapons.find((w) => w.id === weaponInstance.id)
+        if (weaponData?.traits?.length) {
+          weaponData.traits.forEach((traitObj) => {
+            if (typeof traitObj === 'object' && traitObj !== null && traitObj.name) {
+              uniqueUnitTraitNames.add(traitObj.name)
+            } else if (typeof traitObj === 'string') {
+              uniqueUnitTraitNames.add(traitObj)
+            }
+          })
+        }
+      })
+    }
+
+    if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
+      unit.selectedUpgrades.forEach((upgradeInstance) => {
+        if (upgradeInstance?.traits?.length) {
+          upgradeInstance.traits.forEach((traitStr) => {
+            if (typeof traitStr === 'object' && traitStr !== null && traitStr.name) {
+              uniqueUnitTraitNames.add(traitStr.name)
+            } else if (typeof traitStr === 'string') {
+              uniqueUnitTraitNames.add(traitStr)
+            }
+          })
+        }
+      })
+    }
+
+    let html = `<div class="unit-card">`
+    html += `<h3 class="unit-title">
+      <span class="unit-title-hev-name">${unit.unitName || 'Unnamed HE-V'}</span>`
+
+    if (rosterName) {
+      html += `<span class="unit-title-roster-info">
+        <span class="unit-title-roster-name">(${rosterName})</span>
+        <span class="unit-title-total-tonnage">- ${totalRosterBaseTonnage}T Total</span>
+      </span>`
+    } else {
+      html += `<span class="unit-title-roster-info">
+        <span class="unit-title-total-tonnage">${totalRosterBaseTonnage}T Total</span>
+      </span>`
+    }
+
+    html += `</h3>`
+    html += `<div class="section-wrapper class-defense-wrapper">`
+    html += `<div class="form-section class-section">
+      <h4 class="section-title">Classification</h4>
+      <p><strong>Class:</strong> ${unitClassName}</p>
+      <p><strong>Motive:</strong> ${unit.selectedMotiveType?.name || 'Standard'}</p>
+      <p><strong>Movement:</strong> ${unitBaseMovement}"</p>`
+
+    if (unitHasJumpJets) {
+      html += `<p><strong>Jump:</strong> ${unitJumpMovement}"</p>`
+    }
+
+    html += `<p><strong>Unit Tonnage:</strong> ${getBaseTonnage(unit) || '?'}</p>`
+
+    if (unit.selectedMotiveType && unit.selectedMotiveType.description) {
+      html += `<div class="motive-description-section">
+        <h5 class="section-title">Motive Ability: ${unit.selectedMotiveType.name}</h5>
+        <p class="motive-description-text">${unit.selectedMotiveType.description}</p>
+      </div>`
+    }
+
+    html += `</div>`
+    html += `<div class="form-section defense-section">
+      <h4 class="section-title">Armor & Structure</h4>
+      <div class="print-defense-layout-container">
+        <div class="print-defense-row defense-roll-row">
+          <span class="print-defense-label">Defense:</span>
+          <span>${unit.selectedClass?.defenseRoll || '?'}</span>
+        </div>
+        <div class="print-defense-row armor-row">
+          <span class="print-defense-label">Armor:</span>
+          <span class="bubble-display">
+            ${generateBubbleHtml(
+              unit.armorBaseValue ?? unit.effectiveArmor ?? 0,
+              false
+            )}
+          </span>
+        </div>
+        <div class="print-defense-row structure-row">
+          <span class="print-defense-label">Structure:</span>
+          <span class="bubble-display">
+            ${generateStructureBubbleHtml(
+              unit.structureBaseValue ?? unit.effectiveStructure ?? 0
+            )}
+          </span>
+        </div>`
+
+    const structureValue = unit.structureBaseValue ?? unit.effectiveStructure ?? 0
+    if (structureValue > 0) {
+      const yellowThresholdPips = Math.floor(structureValue * 0.75)
+      const orangeThresholdPips = Math.floor(structureValue * 0.5)
+      const redThresholdPips = Math.floor(structureValue * 0.25)
+      const hasYellowThreshold = yellowThresholdPips < structureValue
+      const hasOrangeThreshold = orangeThresholdPips < structureValue
+      const hasRedThreshold = redThresholdPips < structureValue
+      if (hasYellowThreshold || hasOrangeThreshold || hasRedThreshold) {
+        html += `<div class="threshold-descriptions">`
+        if (hasYellowThreshold)
+          html += `<p class="threshold-desc-green"><strong>25% Dmg:</strong> All Move/Jump Orders -1</p>`
+        if (hasOrangeThreshold)
+          html += `<p class="threshold-desc-yellow"><strong>50% Dmg:</strong> Weapon Damage -1 (min 1)</p>`
+        if (hasRedThreshold)
+          html += `<p class="threshold-desc-red"><strong>75% Dmg:</strong> Only 1 Order per activation</p>`
+        html += `</div>`
+      }
+    }
+
+    if (unit.selectedClass && unit.selectedClass.special) {
+      html += `<div class="print-special-attribute"><strong>Special:</strong> ${unit.selectedClass.special}</div>`
+    }
+
+    html += `</div></div>`
+    html += `</div>`
+    html += `<div class="equipment-section">
+      <h4 class="section-title">Weapon Systems</h4>`
+
+    if (unit.selectedWeapons && unit.selectedWeapons.length > 0) {
+      html += `<table class="print-weapon-table">
+        <thead>
+          <tr>
+            <th>Weapon</th>
+            <th>Range</th>
+            <th>Damage</th>
+            <th>Traits</th>
+          </tr>
+        </thead>
+        <tbody>`
+
+      unit.selectedWeapons.forEach((weaponInstance) => {
+        const weaponData = gameRulesData.weapons.find((w) => w.id === weaponInstance.id)
+        if (weaponData) {
+          const damage = weaponData.damageRating?.[unitClassName] ?? '?'
+          const range = weaponData.rangeCategory || 'N/A'
+          const traitsHtml =
+            weaponData.traits
+              ?.map((traitObj) => formatPrintTrait(traitObj, unitClassName))
+              .join(', ') || 'None'
+
+          html += `<tr>
+            <td>${weaponData.name || 'Unknown'}</td>
+            <td>${range}</td>
+            <td>${damage}</td>
+            <td>${traitsHtml}</td>
+          </tr>`
+        } else {
+          html += `<tr>
+            <td><i>Unknown Weapon (ID: ${weaponInstance.id})</i></td>
+            <td>?</td>
+            <td>?</td>
+            <td>?</td>
+          </tr>`
+        }
+      })
+
+      html += `</tbody></table>`
+    } else {
+      html += `<table class="print-weapon-table"><tbody><tr class="placeholder-row"><td colspan="4"><i>No weapons equipped.</i></td></tr></tbody></table>`
+    }
+
+    html += `</div>`
+    html += `<div class="equipment-section"><h4 class="section-title">Upgrades</h4>`
+
+    if (unit.selectedUpgrades && unit.selectedUpgrades.length > 0) {
+      html += `<ul class="item-list">`
+      unit.selectedUpgrades.forEach((upgrade) => {
+        if (upgrade && upgrade.name) {
+          html += `<li>
+            <div class="item-info-line">
+              <span class="item-name">${upgrade.name}</span>`
+          html += `</div>`
+          if (upgrade.description) {
+            html += `<p class="upgrade-description">${upgrade.description}</p>`
+          }
+          html += `</li>`
+        } else {
+          html += `<li><i>Unknown Upgrade</i></li>`
+        }
+      })
+      html += `</ul>`
+    } else {
+      html += `<p class="placeholder-text-inline" style="text-align: center; padding: 0.5rem;"><i>None</i></p>`
+    }
+
+    html += `</div>`
+
+    if (uniqueUnitTraitNames.size > 0) {
+      html += `<div class="equipment-section trait-definitions-section">
+        <h4 class="section-title">Trait Definitions</h4>
+        <ul class="trait-list">`
+
+      const sortedTraitNames = Array.from(uniqueUnitTraitNames).sort()
+      sortedTraitNames.forEach((traitName) => {
+        // Only include traits that have definitions
+        if (gameRulesData.traitDefinitions?.[traitName]) {
+          html += `<li><strong>${traitName}:</strong> ${gameRulesData.traitDefinitions[traitName]}</li>`
+        }
+      })
+
+      html += `</ul></div>`
+    }
+
+    html += `</div>` // End unit-card
+    return html
   }
 }
