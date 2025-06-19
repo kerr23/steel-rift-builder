@@ -352,7 +352,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { UL_HEV_UPGRADE_PODS, UL_HEV_TYPES, OFF_TABLE_TYPES, ULV_TYPES, INFANTRY_OUTPOST_WEAPONS, INFANTRY_TYPES } from '../gameData.js'
+import { UL_HEV_UPGRADE_PODS, UL_HEV_TYPES, OFF_TABLE_TYPES, ULV_TYPES, INFANTRY_OUTPOST_WEAPONS, INFANTRY_TYPES, INFANTRY_WEAPONS } from '../gameData.js'
 import FormSelect from './ui/FormSelect.vue'
 import Button from './ui/Button.vue'
 
@@ -692,14 +692,17 @@ function getBunkerDetails(bunker) {
 
     // Store infantry type weapons (to avoid repeating for each unit)
     let infantryWeapons = []
-    if (id !== 'mine-drone' && infantryType.weapons) {
-      infantryType.weapons.forEach(weapon => {
-        infantryWeapons.push({
-          name: weapon.name,
-          damage: weapon.damage,
-          range: weapon.range,
-          traits: weapon.traits.join(', ')
-        })
+    if (id !== 'mine-drone' && infantryType.weaponIds) {
+      infantryType.weaponIds.forEach(weaponId => {
+        const weapon = INFANTRY_WEAPONS.find(w => w.id === weaponId)
+        if (weapon) {
+          infantryWeapons.push({
+            name: weapon.name,
+            damage: weapon.damage,
+            range: weapon.range,
+            traits: weapon.traits.join(', ')
+          })
+        }
       })
     }
 

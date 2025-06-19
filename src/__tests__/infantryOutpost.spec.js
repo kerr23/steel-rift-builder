@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { INFANTRY_OUTPOST_WEAPONS, INFANTRY_TYPES } from '../gameData'
+import { INFANTRY_OUTPOST_WEAPONS, INFANTRY_TYPES, INFANTRY_WEAPONS } from '../gameData'
 
 describe('Infantry Outpost Support Asset', () => {
   // Test data validation functions
@@ -30,19 +30,33 @@ describe('Infantry Outpost Support Asset', () => {
       expect(infantry.speed).toBeDefined()
       expect(Array.isArray(infantry.traits)).toBe(true)
 
-      // Regular infantry have weapons, mine drones have special rules
+      // Regular infantry have weaponIds, mine drones have special rules
       if (infantry.id === 'mine-drone') {
         expect(infantry.specialRules).toBeDefined()
       } else {
-        expect(Array.isArray(infantry.weapons)).toBe(true)
+        expect(Array.isArray(infantry.weaponIds)).toBe(true)
         expect(infantry.structure).toBeDefined()
-        infantry.weapons.forEach(weapon => {
-          expect(weapon.name).toBeDefined()
-          expect(weapon.damage).toBeDefined()
-          expect(weapon.range).toBeDefined()
-          expect(Array.isArray(weapon.traits)).toBe(true)
+        // Verify all weaponIds reference valid weapons in INFANTRY_WEAPONS
+        infantry.weaponIds.forEach(weaponId => {
+          const weaponExists = INFANTRY_WEAPONS.some(weapon => weapon.id === weaponId)
+          expect(weaponExists).toBe(true)
         })
       }
+    })
+  })
+
+  it('should have properly defined infantry weapons in gameData.js', () => {
+    expect(INFANTRY_WEAPONS).toBeDefined()
+    expect(Array.isArray(INFANTRY_WEAPONS)).toBe(true)
+    expect(INFANTRY_WEAPONS.length).toBeGreaterThan(0)
+
+    // Validate weapon structure
+    INFANTRY_WEAPONS.forEach(weapon => {
+      expect(weapon.id).toBeDefined()
+      expect(weapon.name).toBeDefined()
+      expect(weapon.damage).toBeDefined()
+      expect(weapon.range).toBeDefined()
+      expect(Array.isArray(weapon.traits)).toBe(true)
     })
   })
 

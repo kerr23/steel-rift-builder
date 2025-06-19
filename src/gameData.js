@@ -607,57 +607,61 @@ export const INFANTRY_OUTPOST_WEAPONS = [
   },
 ]
 
+export const INFANTRY_WEAPONS = [
+  {
+    id: 'infantry-rifles',
+    name: 'Infantry Rifles',
+    damage: '2 x (X)',
+    range: '6"',
+    traits: ['Light']
+  },
+  {
+    id: 'missile-pack',
+    name: 'Missile Pack',
+    damage: '3 x (X)',
+    range: '12"',
+    traits: ['Smart', 'Limited(2)']
+  }
+]
+
 export const INFANTRY_TYPES = [
   {
     id: 'engineers',
     name: 'Engineers',
     speed: '3"',
-    traits: ['Infantry', 'Minesweeper'],
-    weapons: [
-      {
-        name: 'Infantry Rifles',
-        damage: '1',
-        range: '12"',
-        traits: ['Light']
-      },
-    ],
+    traits: ['Minesweeper'],
+    weaponIds: ['infantry-rifles'],
     structure: 3
   },
   {
     id: 'rifle-squad',
     name: 'Rifle Squad',
-    speed: '5"',
+    speed: '3"',
     traits: ['Suppressive Fire'],
-    weapons: [
-      {
-        name: 'Infantry Rifles',
-        damage: '2',
-        range: '12"',
-        traits: ['Light']
-      }
-    ],
-    structure: 1
+    weaponIds: ['infantry-rifles'],
+    structure: 3
   },
   {
-    id: 'heavy-weapon-team',
-    name: 'Heavy Weapon Team',
-    speed: '4"',
-    traits: ['Infantry'],
-    weapons: [
-      {
-        name: 'Heavy Machine Gun',
-        damage: '3',
-        range: '18"',
-        traits: ['Light']
-      }
-    ],
-    structure: 1
+    id: 'recon-squad',
+    name: 'Recon Squad',
+    speed: '3"',
+    traits: ['Target Designator'],
+    weaponIds: ['infantry-rifles'],
+    structure: 3
+  },
+  {
+    id: 'anti-tank-squad',
+    name: 'Anti-Tank Squad',
+    speed: '3"',
+    traits: [],
+    weaponIds: ['infantry-rifles', 'missile-pack'],
+    structure: 3
   },
   {
     id: 'mine-drone',
     name: 'Mine Drone',
-    speed: '8"',
-    traits: ['Infantry', 'Ultra-Light'],
+    speed: 'N/A',
+    traits: ['Minefield'],
     specialRules: 'Deploy as per Mine-Drone Barrage Support Asset rules. Each drone can be deployed up to 12" away from the outpost, not within 6" of another mine token.'
   }
 ]
