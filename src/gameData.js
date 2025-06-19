@@ -581,3 +581,87 @@ export const ULV_TYPES = [
     ]
   }
 ]
+
+// Infantry Outpost data structures
+export const INFANTRY_OUTPOST_WEAPONS = [
+  {
+    id: 'io-auto-cannon',
+    name: 'Auto-Cannon Emplacement',
+    damage: '2',
+    range: '12"',
+    traits: ['Kinetic']
+  },
+  {
+    id: 'io-missile-Pack',
+    name: 'Missile Pack',
+    damage: '3',
+    range: 'Unlimited',
+    traits: ['Smart', 'Limited(2)']
+  },
+  {
+    id: 'io-rocket-Pack',
+    name: 'Rocket Pack',
+    damage: '2',
+    range: 'Unlimited',
+    traits: ['Smart', 'Blast(3")', 'Limited(2)']
+  },
+]
+
+export const INFANTRY_WEAPONS = [
+  {
+    id: 'infantry-rifles',
+    name: 'Infantry Rifles',
+    damage: '2 x (X)',
+    range: '6"',
+    traits: ['Light']
+  },
+  {
+    id: 'missile-pack',
+    name: 'Missile Pack',
+    damage: '3 x (X)',
+    range: '12"',
+    traits: ['Smart', 'Limited(2)']
+  }
+]
+
+export const INFANTRY_TYPES = [
+  {
+    id: 'engineers',
+    name: 'Engineers',
+    speed: '3"',
+    traits: ['Minesweeper','Infantry','Squadron','All-Terrain'],
+    weaponIds: ['infantry-rifles'],
+    structure: 3
+  },
+  {
+    id: 'rifle-squad',
+    name: 'Rifle Squad',
+    speed: '3"',
+    traits: ['Suppressive Fire', 'Infantry','Squadron','All-Terrain'],
+    weaponIds: ['infantry-rifles'],
+    structure: 3
+  },
+  {
+    id: 'recon-squad',
+    name: 'Recon Squad',
+    speed: '3"',
+    traits: ['Target Designator', 'Infantry','Squadron','All-Terrain'],
+    weaponIds: ['infantry-rifles'],
+    structure: 3
+  },
+  {
+    id: 'anti-tank-squad',
+    name: 'Anti-Tank Squad',
+    speed: '3"',
+    traits: ['Infantry','Squadron','All-Terrain'],
+    weaponIds: ['infantry-rifles', 'missile-pack'],
+    structure: 3
+  },
+  {
+    id: 'mine-drone',
+    name: 'Mine Drone',
+    speed: 'N/A',
+    traits: ['Minefield'],
+    specialRules: 'Deploy as per Mine-Drone Barrage Support Asset rules. Each drone can be deployed up to 12" away from the outpost, not within 6" of another mine token.'
+  }
+]
