@@ -629,7 +629,7 @@ export const INFANTRY_TYPES = [
     id: 'engineers',
     name: 'Engineers',
     speed: '3"',
-    traits: ['Minesweeper'],
+    traits: ['Minesweeper','Infantry','Squadron','All-Terrain'],
     weaponIds: ['infantry-rifles'],
     structure: 3
   },
@@ -637,7 +637,7 @@ export const INFANTRY_TYPES = [
     id: 'rifle-squad',
     name: 'Rifle Squad',
     speed: '3"',
-    traits: ['Suppressive Fire'],
+    traits: ['Suppressive Fire', 'Infantry','Squadron','All-Terrain'],
     weaponIds: ['infantry-rifles'],
     structure: 3
   },
@@ -645,7 +645,7 @@ export const INFANTRY_TYPES = [
     id: 'recon-squad',
     name: 'Recon Squad',
     speed: '3"',
-    traits: ['Target Designator'],
+    traits: ['Target Designator', 'Infantry','Squadron','All-Terrain'],
     weaponIds: ['infantry-rifles'],
     structure: 3
   },
@@ -653,7 +653,7 @@ export const INFANTRY_TYPES = [
     id: 'anti-tank-squad',
     name: 'Anti-Tank Squad',
     speed: '3"',
-    traits: [],
+    traits: ['Infantry','Squadron','All-Terrain'],
     weaponIds: ['infantry-rifles', 'missile-pack'],
     structure: 3
   },
