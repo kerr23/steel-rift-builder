@@ -179,7 +179,29 @@ export function generatePrintHtml({
     // Render each bunker
     bunkerSections.forEach(bunker => {
       htmlBody += `<div class="bunker-section">
-        <h4 class="bunker-title">${bunker.title}</h4>`
+        <h4 class="bunker-title">${bunker.title}</h4>
+        <div class="bunker-header">
+          <div class="bunker-armor defense-stat">
+            <span class="print-defense-label">Armor:</span>
+            <span class="bubble-display">
+              ${generateBubbleHtml(8, false)}
+            </span>
+          </div>
+        </div>
+        <div class="bunker-traits">
+          <table class="print-weapon-table">
+            <thead>
+              <tr>
+                <th>Traits</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Fortification, Garrison(6), Command(2)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>`
 
       // Find weapon system details
       const weaponLineIndex = bunker.details.findIndex(line => line.startsWith('<u>') && !line.includes('x '))
@@ -379,12 +401,6 @@ export function generatePrintHtml({
     })
 
     htmlBody += `</div>` // End bunker-container
-
-    // Add traits section at the bottom
-    htmlBody += `<div class="outpost-traits">
-      <p><strong>Traits:</strong> Fortification, Garrison(6), Command(2)</p>
-      <p><strong>Tonnage:</strong> 10T</p>
-    </div>`
 
     htmlBody += `</div>` // End equipment-section
 
