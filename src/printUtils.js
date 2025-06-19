@@ -960,7 +960,7 @@ export function generatePrintHtml({
   // Placeholder for HE-V HTML generation
   function generateHevHtml(unit, rosterName, generateBubbleHtml, formatPrintTrait, gameRulesData) {
     const totalRosterBaseTonnage = unit.rosterTonnage || ''
-    const getBaseTonnage = (unit) => unit.selectedClass?.tonnage || 0
+    // Use the getBaseTonnage function from the outer scope
     if (!unit || !unit.selectedClass) return '<div class="unit-card"><p>Error: Invalid HE-V data</p></div>'
 
     const unitClassName = unit.selectedClass.name
