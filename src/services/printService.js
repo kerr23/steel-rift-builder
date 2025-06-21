@@ -1,7 +1,10 @@
 // src/services/printService.js
 // Print functionality extracted into a service for better separation of concerns
 
-import { generatePrintHtml } from '../printUtils.js'
+import { generateHevHtml } from '../components/print/HevPrintable.js';
+import { generateSupportAssetHtml } from '../components/print/SupportAssetPrintable.js';
+import { generateUltraLightSquadronHtml } from '../components/print/UltraLightSquadronPrintable.js';
+import { generateInfantryOutpostHtml } from '../components/print/InfantryOutpostPrintable.js';
 
 /**
  * Opens a print window with formatted roster data
@@ -65,4 +68,118 @@ export function prepareRosterForPrint(roster, rosterName, totalRosterBaseTonnage
     console.error('Print preparation error:', error)
     return `<div class="error">Error preparing print: ${error.message}</div>`
   }
+}
+
+/**
+ * Generates HTML for printing the roster
+ *
+ * @param {Object} options - Options for generating print HTML
+ * @param {Array} options.roster - The roster data to print
+ * @param {String} options.rosterName - Name of the roster
+ * @param {Number} options.totalRosterBaseTonnage - Total tonnage of the roster
+ * @param {Function} options.getBaseTonnage - Function to get base tonnage
+ * @param {Function} options.generateBubbleHtml - Function to generate bubble HTML
+ * @param {Function} options.formatPrintTrait - Function to format print traits
+ * @param {Object} options.gameRulesData - Game rules data
+ * @returns {String} - Full HTML document for printing
+ */
+export function generatePrintHtml({
+  roster,
+  rosterName,
+  totalRosterBaseTonnage,
+  getBaseTonnage,
+  generateBubbleHtml,
+  formatPrintTrait,
+  gameRulesData
+}) {
+  // Validate essential game data
+  if (!gameRulesData.UL_HEV_WEAPONS) {
+    console.warn('UL_HEV_WEAPONS not found in gameRulesData')
+  }
+  if (!gameRulesData.UL_HEV_UPGRADE_PODS) {
+    console.warn('UL_HEV_UPGRADE_PODS not found in gameRulesData')
+  }
+
+  // Set up CSS and header
+  const cssLink = '<link rel="stylesheet" href="print.css">'
+  let htmlBody = `
+    <button class="no-print" onclick="window.print()">Print this page</button>
+  `
+
+  // Generate HTML for each unit in the roster
+  roster.forEach((unit) => {
+    if (unit.isSupportAsset) {
+      // Determine the type of support asset
+      const isUltraLightSquadron = unit.type?.includes('Squadron') || false
+      const isInfantryOutpost = unit.type === 'Infantry Outpost' || false
+
+      if (isInfantryOutpost) {
+        // Render infantry outpost
+        htmlBody += generateInfantryOutpostHtml(
+          unit,
+          rosterName,
+          totalRosterBaseTonnage,
+          generateBubbleHtml,
+          gameRulesData
+        )
+      } else if (isUltraLightSquadron) {
+        // Render ultra-light squadron
+        htmlBody += generateUltraLightSquadronHtml(
+          unit,
+          rosterName,
+          totalRosterBaseTonnage,
+          generateBubbleHtml,
+          gameRulesData
+        )
+      } else {
+        // Render regular support asset
+        htmlBody += generateSupportAssetHtml(
+          unit,
+          rosterName,
+          totalRosterBaseTonnage,
+          generateBubbleHtml,
+          formatPrintTrait,
+          gameRulesData
+        )
+      }
+    } else {
+      // Render regular HE-V unit
+      htmlBody += generateHevHtml(
+        unit,
+        rosterName,
+        totalRosterBaseTonnage,
+        getBaseTonnage,
+        generateBubbleHtml,
+        formatPrintTrait,
+        gameRulesData
+      )
+    }
+  })
+
+  // Assemble the full HTML document
+  return `<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steel Rift Force Builder - Print ${rosterName ? `- ${rosterName}` : ''}</title>
+    ${cssLink}
+    <style>
+      /* Add any additional in-page styles here */
+      @media print {
+        .no-print {
+          display: none;
+        }
+        /* Force background colors to print */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    ${htmlBody}
+  </body>
+  </html>`
 }
