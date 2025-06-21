@@ -122,6 +122,14 @@ The print system follows a modular component-based architecture:
    - Reuse shared helpers where possible
    - Maintain consistent HTML structure for proper CSS styling
 
+5. **Documentation Requirements**
+   - Maintain comprehensive JSDoc comments for all print-related functions
+   - Update the print system architecture documentation when adding new components
+   - Document the expected data structures for each unit type
+   - Include examples of correct HTML output in test files
+   - Keep README.md updated with any user-facing print system changes
+   - Document any special handling or edge cases for specific unit types
+
 ## Tailwind CSS
 - Use Tailwind utility classes for all styling.
 - Leverage the component classes in `src/assets/components.css`.
@@ -180,6 +188,13 @@ When implementing a new unit type, follow this pattern:
    - Test integration with the print service
    - Verify visual rendering with snapshot tests when appropriate
 
+5. **Documentation**
+   - Update JSDoc comments for any modified parsing or rendering functions
+   - Document the detection logic for specialized unit types (e.g., Engineers, Specialists)
+   - Maintain a list of supported infantry types in the component documentation
+   - Ensure test cases cover all supported unit types
+   - Document any special formatting requirements for unique unit types
+
 ## Error Handling
 - Use toast notifications for user feedback.
 - Add appropriate error handling for data operations.
@@ -196,6 +211,21 @@ When implementing a new unit type, follow this pattern:
   - Global errors in error boundaries
 - Display user-friendly error messages via toast notifications.
 - Log detailed errors for debugging.
+
+## Documentation Guidelines
+- Update documentation whenever code changes affect functionality, APIs, or architecture.
+- Keep JSDoc comments in sync with code changes to ensure accurate API documentation.
+- When adding new features, update the following documentation as appropriate:
+  - README.md for user-facing changes and setup instructions
+  - Component and function JSDoc comments
+  - Architecture diagrams or descriptions
+  - Print system documentation when modifying print components
+  - Unit type documentation when adding/modifying game units
+- Create dedicated documentation files for complex subsystems in their respective directories.
+- Document edge cases, limitations, and workarounds for known issues.
+- Include examples for non-obvious usage patterns.
+- Ensure documentation is clear, concise, and accessible to new developers.
+- Follow the established documentation style for consistency.
 
 ## Additional Notes
 - Use Vite for development and builds.

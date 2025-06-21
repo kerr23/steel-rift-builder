@@ -253,6 +253,20 @@ export const gameData = {
     },
   ],
   traitDefinitions,
+  supportAssets: [
+    {
+      name: "Bunker",
+      type: "Bunker",
+      armor: 8,
+      structure: 3,
+      traits: [
+        { name: "Command", value: 2 },
+        { name: "Fortification", value: null },
+        { name: "Garrison", value: 6 }
+      ],
+      description: "A reinforced bunker that can house and support infantry units."
+    }
+  ],
 }
 
 // Ultra-Light HE-V weapon system definitions for print and trait key rendering

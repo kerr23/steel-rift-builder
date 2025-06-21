@@ -116,10 +116,19 @@ function renderBunkerSection(bunker, generateBubbleHtml, gameRulesData, outpostT
   // Parse the bunker details
   const bunkerData = parseBunkerData(bunker.details);
 
+  // Render Armor and Structure bubbles for the bunker (Outpost stats)
+  html += `
+    <div class="bunker-stats flex flex-row items-center gap-4 mb-2">
+      <span class="font-semibold mr-1">Armor:</span>
+      ${generateBubbleHtml(8, false)}
+      <span class="font-semibold mx-2">Structure:</span>
+      ${generateBubbleHtml(3, true)}
+    </div>
+  `;
+
   // Render turret/weapon systems
   if (bunkerData.turrets.length > 0) {
     html += `<div class="bunker-turrets">
-      <h5 class="section-subtitle">Turret Weapons</h5>
       <table class="print-weapon-table">
         <thead>
           <tr>
