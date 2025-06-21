@@ -1,6 +1,6 @@
 // Infantry Outpost print renderer
 import { generateUnitTitleHtml, renderLimitedTraitWithBubbles, extractTraitNames, generateTraitDefinitionsHtml } from './printHelpers.js';
-import { INFANTRY_TYPES } from '../../gameData.js';
+import { INFANTRY_TYPES, INFANTRY_WEAPONS } from '../../gameData.js';
 
 /**
  * Generates HTML for an Infantry Outpost
@@ -397,18 +397,33 @@ function parseBunkerData(bunkerDetails) {
 
   // Look up structure from INFANTRY_TYPES if not found in parsed text
   data.infantryUnits.forEach(infantry => {
-    if (infantry.structure === null) {
-      // Find matching infantry type by name
-      const infantryTypeName = infantry.name.replace(/^\d+x\s+/, '').trim();
-      const infantryType = INFANTRY_TYPES.find(type => 
-        type.name === infantryTypeName || 
-        type.name.includes(infantryTypeName) || 
-        infantryTypeName.includes(type.name)
-      );
-      
-      if (infantryType && infantryType.structure) {
-        infantry.structure = infantryType.structure;
-      }
+    // Find matching infantry type by name (do this once for both structure and weapons)
+    const infantryTypeName = infantry.name.replace(/^\d+x\s+/, '').trim();
+    const infantryType = INFANTRY_TYPES.find(type =>
+      type.name === infantryTypeName ||
+      type.name.includes(infantryTypeName) ||
+      infantryTypeName.includes(type.name)
+    );
+
+    // Set structure if not already set
+    if (infantry.structure === null && infantryType && infantryType.structure) {
+      infantry.structure = infantryType.structure;
+    }
+
+    // Add weapons from weaponIds if no weapons parsed and infantryType has weaponIds
+    if (infantry.weapons.length === 0 && infantryType && infantryType.weaponIds && infantryType.weaponIds.length > 0) {
+      // Look up each weapon by ID and add to infantry weapons
+      infantryType.weaponIds.forEach(weaponId => {
+        const weapon = INFANTRY_WEAPONS.find(w => w.id === weaponId);
+        if (weapon) {
+          infantry.weapons.push({
+            name: weapon.name,
+            damage: weapon.damage,
+            range: weapon.range,
+            traits: Array.isArray(weapon.traits) ? weapon.traits.join(', ') : weapon.traits
+          });
+        }
+      });
     }
   });
 
