@@ -1,15 +1,17 @@
 // src/main.js
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
-import Toast from 'vue-toastification' // Import plugin
-import 'vue-toastification/dist/index.css' // Import the CSS
+import Toast from 'vue-toastification'
+import 'vue-toastification/dist/index.css'
+import { provideErrorService } from './services/errorService'
 
 // Import global styles and component styles
 import '@/assets/main.css'
 import './assets/tailwind.css'
 import './assets/components.css'
 
-// Configuration options for toasts (optional)
+// Configuration options for toasts
 const toastOptions = {
   position: 'top-right',
   timeout: 4000, // 4 seconds
@@ -28,6 +30,24 @@ const toastOptions = {
   newestOnTop: true,
 }
 
-createApp(App)
-  .use(Toast, toastOptions) // Use the plugin with options
-  .mount('#app')
+// Create app instance
+const app = createApp(App)
+
+// Setup Pinia store
+app.use(createPinia())
+app.use(Toast, toastOptions)
+
+// Setup global error handling
+const errorService = provideErrorService(app)
+
+// Global error handler for uncaught exceptions
+app.config.errorHandler = (error, instance, info) => {
+  errorService.handleError(error, {
+    context: info || 'Vue Error Handler',
+    type: 'runtime'
+  })
+  console.error('Global error:', error)
+}
+
+// Mount the app
+app.mount('#app')
