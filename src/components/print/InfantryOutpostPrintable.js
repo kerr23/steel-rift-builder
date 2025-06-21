@@ -239,8 +239,20 @@ function parseBunkerData(bunkerDetails) {
       // This is a weapon system or infantry squad
       currentItem = line.replace(/<\/?u>/g, '');
 
-      // Check if it's an infantry unit
-      if (currentItem.includes('Squad') || currentItem.includes('Team')) {
+      // Check if it's an infantry unit - comprehensive detection of all infantry types
+      // Common infantry keywords: Squad, Team, Engineer, Specialist, Command, Officer, etc.
+      if (currentItem.includes('Squad') ||
+          currentItem.includes('Team') ||
+          currentItem.includes('Engineer') ||
+          currentItem.includes('Specialist') ||
+          currentItem.includes('Command') ||
+          currentItem.includes('Officer') ||
+          currentItem.includes('Infantry') ||
+          currentItem.includes('Trooper') ||
+          currentItem.includes('Soldier') ||
+          currentItem.includes('Mechanic') ||
+          currentItem.includes('Medic') ||
+          currentItem.includes('Scout')) {
         itemType = 'infantry';
 
         // Extract count from name (e.g., "2x Rifle Squad")
