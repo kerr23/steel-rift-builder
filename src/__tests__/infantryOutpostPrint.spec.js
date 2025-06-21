@@ -57,9 +57,10 @@ describe('Infantry Outpost Print Format', () => {
     expect(html).toContain('Autocannon')
 
     // Check for infantry units
-    expect(html).toContain('Rifle Squad')
-    expect(html).toContain('Unit 1')
-    expect(html).toContain('Unit 2')
+    // Infantry names now come from the bunker details and should be preserved
+    expect(html).toContain('Combat Rifle')
+    expect(html).toContain('infantry-unit')
+    expect(html).toContain('infantry-stats')
 
     // Check for weapon display
     expect(html).toContain('Combat Rifle')

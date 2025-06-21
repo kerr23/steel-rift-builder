@@ -1,5 +1,6 @@
 // Infantry Outpost print renderer
 import { generateUnitTitleHtml, renderLimitedTraitWithBubbles, extractTraitNames, generateTraitDefinitionsHtml } from './printHelpers.js';
+import { INFANTRY_TYPES } from '../../gameData.js';
 
 /**
  * Generates HTML for an Infantry Outpost
@@ -179,7 +180,7 @@ function renderBunkerSection(bunker, generateBubbleHtml, gameRulesData, outpostT
     // Default bunker traits if not specified
     const defaultBunkerTraits = 'Command (2), Fortification, Garrison (6)';
     extractTraitNames(defaultBunkerTraits).forEach(trait => outpostTraitNames.add(trait));
-    
+
     html += `
       <div class="bunker-traits mb-3">
         <h5 class="section-subtitle">Bunker Traits</h5>
@@ -201,7 +202,7 @@ function renderBunkerSection(bunker, generateBubbleHtml, gameRulesData, outpostT
       <h5 class="section-subtitle">Infantry Units</h5>
       <div class="infantry-units-grid">`;
 
-    bunkerData.infantryUnits.forEach((infantry, index) => {
+    bunkerData.infantryUnits.forEach(infantry => {
       // Extract and add trait names to outpostTraitNames
       if (infantry.traits) {
         extractTraitNames(infantry.traits).forEach(trait => outpostTraitNames.add(trait));
@@ -209,7 +210,6 @@ function renderBunkerSection(bunker, generateBubbleHtml, gameRulesData, outpostT
 
       html += `<div class="infantry-unit">
         <div class="infantry-header">
-          <h6 class="infantry-name">${infantry.name} - Unit ${index + 1}</h6>
           <div class="infantry-stats">
             ${infantry.speed ? `<span class="infantry-speed"><strong>Speed:</strong> ${infantry.speed}</span>` : ''}
             ${infantry.structure ? `<span class="infantry-structure"><strong>Structure:</strong> ${generateBubbleHtml(infantry.structure, true)}</span>` : ''}
@@ -391,6 +391,23 @@ function parseBunkerData(bunkerDetails) {
             });
           }
         }
+      }
+    }
+  });
+
+  // Look up structure from INFANTRY_TYPES if not found in parsed text
+  data.infantryUnits.forEach(infantry => {
+    if (infantry.structure === null) {
+      // Find matching infantry type by name
+      const infantryTypeName = infantry.name.replace(/^\d+x\s+/, '').trim();
+      const infantryType = INFANTRY_TYPES.find(type => 
+        type.name === infantryTypeName || 
+        type.name.includes(infantryTypeName) || 
+        infantryTypeName.includes(type.name)
+      );
+      
+      if (infantryType && infantryType.structure) {
+        infantry.structure = infantryType.structure;
       }
     }
   });
