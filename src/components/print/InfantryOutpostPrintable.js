@@ -122,7 +122,7 @@ function renderBunkerSection(bunker, generateBubbleHtml, gameRulesData, outpostT
       <span class="font-semibold mr-1">Armor:</span>
       ${generateBubbleHtml(8, false)}
       <span class="font-semibold mx-2">Structure:</span>
-      ${generateBubbleHtml(3, true)}
+      ${generateBubbleHtml(3, false)}
     </div>
   `;
 
@@ -158,6 +158,42 @@ function renderBunkerSection(bunker, generateBubbleHtml, gameRulesData, outpostT
       </table>
     </div>`;
   }
+
+
+  // Render Bunker Traits
+  // Render Bunker Traits
+  if (bunkerData.bunkerTraits) {
+    html += `
+      <div class="bunker-traits mb-3">
+        <h5 class="section-subtitle">Bunker Traits</h5>
+        <table class="print-trait-table">
+          <tbody>
+            <tr>
+              <td colspan="2">${renderLimitedTraitWithBubbles(bunkerData.bunkerTraits)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else {
+    // Default bunker traits if not specified
+    const defaultBunkerTraits = 'Command (2), Fortification, Garrison (6)';
+    extractTraitNames(defaultBunkerTraits).forEach(trait => outpostTraitNames.add(trait));
+    
+    html += `
+      <div class="bunker-traits mb-3">
+        <h5 class="section-subtitle">Bunker Traits</h5>
+        <table class="print-trait-table">
+          <tbody>
+            <tr>
+              <td colspan="2">${renderLimitedTraitWithBubbles(defaultBunkerTraits)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
 
   // Render infantry units
   if (bunkerData.infantryUnits.length > 0) {
