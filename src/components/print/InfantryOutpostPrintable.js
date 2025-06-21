@@ -212,6 +212,8 @@ function renderBunkerSection(bunker, generateBubbleHtml, gameRulesData, outpostT
         <div class="infantry-header">
           <div class="infantry-stats">
             ${infantry.speed ? `<span class="infantry-speed"><strong>Speed:</strong> ${infantry.speed}</span>` : ''}
+          </div>
+          <div class="infantry-stats">
             ${infantry.structure ? `<span class="infantry-structure"><strong>Structure:</strong> ${generateBubbleHtml(infantry.structure, true)}</span>` : ''}
           </div>
         </div>`;
