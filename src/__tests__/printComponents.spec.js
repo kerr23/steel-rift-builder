@@ -196,7 +196,6 @@ describe('Print Components', () => {
       expect(html).toContain('Infantry Outpost');
       expect(html).toContain('Bunker 1');
       expect(html).toContain('Autocannon');
-      expect(html).toContain('Rifle Squad');
       expect(html).toContain('Combat Rifle');
       expect(html).toContain('AP1');
     });

@@ -1,5 +1,5 @@
 // Ultra-Light Squadron print renderer
-import { generateUnitTitleHtml, extractTraitNames, generateTraitDefinitionsHtml } from './printHelpers.js';
+import { generateUnitTitleHtml, generateTraitDefinitionsHtml } from './printHelpers.js';
 
 /**
  * Generates HTML for an Ultra-Light Squadron
