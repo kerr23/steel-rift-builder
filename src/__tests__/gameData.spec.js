@@ -1,5 +1,6 @@
 /* eslint-env jest */
-import { gameData, findClassByName, findWeaponById, findUpgradeById } from '../gameData.js'
+import { describe, it, expect } from 'vitest'
+import { findClassByName, findWeaponById, findUpgradeById } from '../gameData.js'
 
 describe('gameData helpers', () => {
   it('finds a class by name', () => {

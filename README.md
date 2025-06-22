@@ -11,6 +11,14 @@ A web application for building and managing rosters for the Steel Rift tabletop 
 - Stats calculation and validation
 - Import/export functionality
 
+## Code Quality
+
+This project uses:
+- **Prettier** for code formatting
+- **ESLint** and **Oxlint** for linting
+
+For detailed information about code quality tools, see [Code Quality Documentation](./docs/code-quality.md).
+
 ## Recent Enhancements
 
 ### Architecture & Maintainability
