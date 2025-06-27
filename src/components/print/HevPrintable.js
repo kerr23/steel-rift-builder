@@ -16,8 +16,16 @@ export function generateHevHtml(unit, rosterName, totalRosterBaseTonnage, getBas
   // Extract unit details
   const unitClassName = unit.selectedClass?.name || 'Unknown';
   const unitBaseMovement = unit.effectiveMovement || unit.selectedClass?.baseMovement || 4;
-  const unitHasJumpJets = unit.hasJumpJets || false;
-  const unitJumpMovement = unitHasJumpJets ? (unit.jumpMovement || unitBaseMovement) : 0;
+
+  // Check for jump jets by examining the selected upgrades
+  const unitHasJumpJets = unit.hasJumpJets ||
+    (Array.isArray(unit.selectedUpgrades) &&
+     unit.selectedUpgrades.some(upg => upg.id === 'u3' || upg.id === 'u6'));
+
+  // Calculate jump movement based on base movement speed
+  const unitJumpMovement = unitHasJumpJets ?
+    (unit.jumpMovement ||
+     ({12: 10, 10: 8, 8: 6, 6: 4}[unitBaseMovement] ?? 0)) : 0;
 
   // Extract unique trait names for defintiions
   const uniqueUnitTraitNames = new Set();
@@ -53,13 +61,8 @@ export function generateHevHtml(unit, rosterName, totalRosterBaseTonnage, getBas
     <h4 class="section-title">Classification</h4>
     <p><strong>Class:</strong> ${unitClassName}</p>
     <p><strong>Motive:</strong> ${unit.selectedMotiveType?.name || 'Standard'}</p>
-    <p><strong>Movement:</strong> ${unitBaseMovement}"</p>`;
-
-  if (unitHasJumpJets) {
-    html += `<p><strong>Jump:</strong> ${unitJumpMovement}"</p>`;
-  }
-
-  html += `<p><strong>Unit Tonnage:</strong> ${getBaseTonnage(unit) || '?'}</p>`;
+    <p><strong>Movement:</strong> ${unitBaseMovement}"${unitHasJumpJets ? ` / ${unitJumpMovement}" (Jump)` : ''}</p>
+    <p><strong>Unit Tonnage:</strong> ${getBaseTonnage(unit) || '?'}</p>`;
 
   if (unit.selectedMotiveType && unit.selectedMotiveType.description) {
     html += `<div class="motive-description-section">
