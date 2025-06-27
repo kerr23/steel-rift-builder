@@ -89,6 +89,44 @@ describe('Print Components', () => {
       const armorBubbles = (html.match(/<span class="bubble"/g) || []).length;
       expect(armorBubbles).toBe(10); // 6 armor + 4 structure
     });
+
+    it('displays jump value when jump jets are equipped', () => {
+      const hevWithJumpJets = {
+        ...baseHevUnit,
+        selectedClass: { name: 'Light', defenseRoll: '3+', baseMovement: 8 },
+        selectedUpgrades: [{ id: 'u6', name: 'Jump Jets' }]
+      };
+
+      const html = generateHevHtml(
+        hevWithJumpJets,
+        'Test Roster',
+        20,
+        () => 20,
+        generateBubbleHtml,
+        () => '',
+        mockGameRules
+      );
+
+      // Check that jump value is displayed on the same line as movement
+      expect(html).toContain('<strong>Movement:</strong> 8" / 6"J');
+    });
+
+    it('does not display jump value when no jump jets equipped', () => {
+      const html = generateHevHtml(
+        baseHevUnit,
+        'Test Roster',
+        20,
+        () => 20,
+        generateBubbleHtml,
+        () => '',
+        mockGameRules
+      );
+
+      // Check that jump value is not displayed and movement is shown normally
+      expect(html).not.toContain('/ ');
+      expect(html).not.toContain('"J');
+      expect(html).toContain('<strong>Movement:</strong>');
+    });
   });
 
   describe('SupportAssetPrintable', () => {
