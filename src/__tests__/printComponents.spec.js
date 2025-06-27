@@ -108,7 +108,7 @@ describe('Print Components', () => {
       );
 
       // Check that jump value is displayed on the same line as movement
-      expect(html).toContain('<strong>Movement:</strong> 8" / 6"J');
+      expect(html).toContain('<strong>Movement:</strong> 8" / 6" (Jump)');
     });
 
     it('does not display jump value when no jump jets equipped', () => {
@@ -124,7 +124,7 @@ describe('Print Components', () => {
 
       // Check that jump value is not displayed and movement is shown normally
       expect(html).not.toContain('/ ');
-      expect(html).not.toContain('"J');
+      expect(html).not.toContain('(Jump)');
       expect(html).toContain('<strong>Movement:</strong>');
     });
   });
