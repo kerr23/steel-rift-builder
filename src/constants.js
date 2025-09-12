@@ -5,11 +5,9 @@
  * Options for armor and structure modifications
  */
 export const MODIFICATION_OPTIONS = [
-  { value: 'ultralight', label: 'Ultra-Light (-4)' },
-  { value: 'lightweight', label: 'Light-Weight (-2)' },
+  { value: 'stripped', label: 'Stripped (-2)' },
   { value: 'standard', label: 'Standard' },
-  { value: 'enhanced', label: 'Enhanced (+2)' },
-  { value: 'reinforced', label: 'Reinforced (+4)' }
+  { value: 'reinforced', label: 'Reinforced (+2)' }
 ]
 
 /**

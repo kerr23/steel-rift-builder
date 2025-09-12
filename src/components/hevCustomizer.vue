@@ -58,6 +58,7 @@ const armorBaseValue = computed(() => {
   if (armorModification.value === 'reinforced') val += 2
   return Math.max(0, val)
 })
+
 const structureBaseValue = computed(() => {
   if (!selectedClass.value) return 0
   let val = baseStructure.value

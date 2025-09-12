@@ -161,14 +161,10 @@ function calculateModifiedValue(baseValue, modification) {
   if (!baseValue) return 0
 
   switch (modification) {
-    case 'enhanced':
-      return baseValue + 2
+    case 'stripped':
+      return baseValue - 2
     case 'reinforced':
-      return baseValue + 4
-    case 'lightweight':
-      return Math.max(1, baseValue - 2)
-    case 'ultralight':
-      return Math.max(1, baseValue - 4)
+      return baseValue + 2
     case 'standard':
     default:
       return baseValue
