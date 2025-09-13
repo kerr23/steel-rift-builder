@@ -97,7 +97,7 @@ export const gameData = {
       tonnage: { Light: 2, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
       damageRating: { Light: 2, Medium: 4, Heavy: 6, 'Ultra-Heavy': 8 },
       traits: [{ name: 'Plasma', value: 2 }],
-      rangeCategory: '18"',
+      rangeCategory: '12"',
     },
     {
       id: 'w_rail_gun',
