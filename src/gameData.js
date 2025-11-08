@@ -70,10 +70,10 @@ export const gameData = {
     {
       id: 'w_laser',
       name: 'Laser',
-      tonnage: { Light: 3, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
-      damageRating: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 },
-      traits: [{ name: 'AP', value: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 3 } }],
-      rangeCategory: '18+"',
+      tonnage: { Light: 3, Medium: 4, Heavy: 5, 'Ultra-Heavy': 7 },
+      damageRating: { Light: 2, Medium: 2, Heavy: 2, 'Ultra-Heavy': 2 },
+      traits: [{ name: 'AP', value: { Light: 2, Medium: 2, Heavy: 3, 'Ultra-Heavy': 4 } }],
+      rangeCategory: 'Unlimited"',
     },
     {
       id: 'w_melee_weapon',
@@ -94,18 +94,17 @@ export const gameData = {
     {
       id: 'w_particle_cannon',
       name: 'Particle Cannon',
-      tonnage: { Light: 2, Medium: 3, Heavy: 5, 'Ultra-Heavy': 6 },
-      damageRating: { Light: 2, Medium: 4, Heavy: 6, 'Ultra-Heavy': 8 },
-      traits: [{ name: 'Plasma', value: 2 }],
-      rangeCategory: '12"',
+      tonnage: { Light: 2, Medium: 3, Heavy: 4, 'Ultra-Heavy': 5 },
+      damageRating: { Light: 3, Medium: 4, Heavy: 6, 'Ultra-Heavy': 8 },
+      rangeCategory: '18"',
     },
     {
       id: 'w_rail_gun',
       name: 'Rail Gun',
-      tonnage: { Light: 1, Medium: 1, Heavy: 3, 'Ultra-Heavy': 4 },
+      tonnage: { Light: 2, Medium: 2, Heavy: 4, 'Ultra-Heavy': 5 },
       damageRating: { Light: 1, Medium: 1, Heavy: 1, 'Ultra-Heavy': 1 },
       traits: [
-        { name: 'AP', value: { Light: 1, Medium: 1, Heavy: 2, 'Ultra-Heavy': 3 } },
+        { name: 'AP', value: { Light: 2, Medium: 2, Heavy: 3, 'Ultra-Heavy': 4 } },
         { name: 'Kinetic' },
       ],
       rangeCategory: 'Unlimited',
