@@ -7,6 +7,7 @@ import FormSelect from './ui/FormSelect.vue'
 import Button from './ui/Button.vue'
 import MemoizedTraitFormatter from './ui/MemoizedTraitFormatter.vue'
 import { MODIFICATION_OPTIONS } from '../constants.js'
+import { hasJumpJets as _hasJumpJets } from '../utils/upgradeUtils.js'
 
 // --- Initialize Toast ---
 const toast = useToast()
@@ -90,13 +91,7 @@ const structureMarker_50_Percent = computed(() => getStructureMarker(0.5))
 const structureMarker_75_Percent = computed(() => getStructureMarker(0.25))
 
 const baseMovementSpeed = computed(() => selectedClass.value?.baseMovement ?? 0)
-const hasJumpJets = computed(() => {
-  if (!Array.isArray(selectedUpgrades.value)) return false
-  return selectedUpgrades.value.some((upg) => {
-    const id = typeof upg === 'string' ? upg : upg?.id
-    return id === 'u6'
-  })
-})
+const hasJumpJets = computed(() => _hasJumpJets(selectedUpgrades.value, {}))
 const jumpMovementSpeed = computed(() => {
   if (!hasJumpJets.value) return 0
   const baseMove = baseMovementSpeed.value

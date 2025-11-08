@@ -1,5 +1,6 @@
 // HE-V specific print renderer
 import { generateUnitTitleHtml, generateStructureBubbleHtml, generateTraitDefinitionsHtml } from './printHelpers.js';
+import { hasJumpJets as _hasJumpJets } from '../../utils/upgradeUtils.js'
 
 /**
  * Generates HTML for an HE-V unit
@@ -17,19 +18,12 @@ export function generateHevHtml(unit, rosterName, totalRosterBaseTonnage, getBas
   const unitClassName = unit.selectedClass?.name || 'Unknown';
   const unitBaseMovement = unit.effectiveMovement || unit.selectedClass?.baseMovement || 4;
 
-  // Only treat explicit 'u6' Jump Jets (or an explicit flag) as Jump Jets.
-  // Be tolerant of selectedUpgrades entries being strings (ids) or objects with an `id`.
-  const unitHasJumpJets = Boolean(unit.hasJumpJets) ||
-    (Array.isArray(unit.selectedUpgrades) &&
-      unit.selectedUpgrades.some((upg) => {
-        const id = typeof upg === 'string' ? upg : upg?.id;
-        return id === 'u6';
-      }));
+  // Use centralized helper for jump-jet detection (tolerant of string/object ids)
+  const unitHasJumpJets = Boolean(_hasJumpJets(unit.selectedUpgrades, unit));
 
   // Calculate jump movement based on base movement speed
   const unitJumpMovement = unitHasJumpJets ?
-    (unit.jumpMovement ||
-     ({12: 10, 10: 8, 8: 6, 6: 4}[unitBaseMovement] ?? 0)) : 0;
+    (unit.jumpMovement || ({12: 10, 10: 8, 8: 6, 6: 4}[unitBaseMovement] ?? 0)) : 0;
 
   // Extract unique trait names for defintiions
   const uniqueUnitTraitNames = new Set();
