@@ -17,10 +17,14 @@ export function generateHevHtml(unit, rosterName, totalRosterBaseTonnage, getBas
   const unitClassName = unit.selectedClass?.name || 'Unknown';
   const unitBaseMovement = unit.effectiveMovement || unit.selectedClass?.baseMovement || 4;
 
-  // Check for jump jets by examining the selected upgrades
-  const unitHasJumpJets = unit.hasJumpJets ||
+  // Only treat explicit 'u6' Jump Jets (or an explicit flag) as Jump Jets.
+  // Be tolerant of selectedUpgrades entries being strings (ids) or objects with an `id`.
+  const unitHasJumpJets = Boolean(unit.hasJumpJets) ||
     (Array.isArray(unit.selectedUpgrades) &&
-     unit.selectedUpgrades.some(upg => upg.id === 'u3' || upg.id === 'u6'));
+      unit.selectedUpgrades.some((upg) => {
+        const id = typeof upg === 'string' ? upg : upg?.id;
+        return id === 'u6';
+      }));
 
   // Calculate jump movement based on base movement speed
   const unitJumpMovement = unitHasJumpJets ?

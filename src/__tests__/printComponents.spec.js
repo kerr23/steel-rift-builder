@@ -111,6 +111,26 @@ describe('Print Components', () => {
       expect(html).toContain('<strong>Movement:</strong> 8" / 6" (Jump)');
     });
 
+    it('displays jump value when selectedUpgrades contains string id "u6"', () => {
+      const hevWithStringUpgradeId = {
+        ...baseHevUnit,
+        selectedClass: { name: 'Light', defenseRoll: '3+', baseMovement: 8 },
+        selectedUpgrades: ['u6']
+      };
+
+      const html = generateHevHtml(
+        hevWithStringUpgradeId,
+        'Test Roster',
+        20,
+        () => 20,
+        generateBubbleHtml,
+        () => '',
+        mockGameRules
+      );
+
+      expect(html).toContain('<strong>Movement:</strong> 8" / 6" (Jump)');
+    });
+
     it('does not display jump value when no jump jets equipped', () => {
       const html = generateHevHtml(
         baseHevUnit,

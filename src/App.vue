@@ -22,8 +22,10 @@ const gameRulesData = {
   ULV_WEAPONS
 }
 const versionTag = import.meta.env.VITE_GIT_COMMIT_SHA || 'dev'
+// Safe localStorage wrapper for environments (tests) where localStorage may be unavailable
+const _localStorage = (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function' && typeof localStorage.setItem === 'function') ? localStorage : null
 // Load dark mode preference from localStorage, default to false if not set
-const isDarkMode = ref(localStorage.getItem('isDarkMode') === 'true')
+const isDarkMode = ref(_localStorage ? _localStorage.getItem('isDarkMode') === 'true' : false)
 const toast = useToast()
 const activeTab = ref('hev')
 
@@ -216,20 +218,20 @@ const formatForPrint = () => {
 const initializeDarkMode = () => {
   // If localStorage already has a saved preference, we'll use that (handled in the ref initialization)
   // If no saved preference, check for system preference
-  if (localStorage.getItem('isDarkMode') === null) {
+  if (_localStorage && _localStorage.getItem('isDarkMode') === null) {
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
     isDarkMode.value = prefersDark
-    localStorage.setItem('isDarkMode', prefersDark)
+    _localStorage.setItem('isDarkMode', prefersDark)
   }
 
   // Add listener for system theme changes
-  if (window.matchMedia) {
+    if (window.matchMedia) {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     mediaQuery.addEventListener('change', (e) => {
       // Only update if user hasn't explicitly set a preference
-      if (localStorage.getItem('isDarkMode') === null) {
+      if (!_localStorage || _localStorage.getItem('isDarkMode') === null) {
         isDarkMode.value = e.matches
-        localStorage.setItem('isDarkMode', e.matches)
+        if (_localStorage) _localStorage.setItem('isDarkMode', e.matches)
       }
     })
   }
@@ -240,8 +242,8 @@ const initializeDarkMode = () => {
  */
 const toggleDarkMode = () => {
   isDarkMode.value = !isDarkMode.value
-  // Save preference to localStorage
-  localStorage.setItem('isDarkMode', isDarkMode.value)
+  // Save preference to localStorage if available
+  if (_localStorage) _localStorage.setItem('isDarkMode', isDarkMode.value)
 }
 
 // Call on component mount
@@ -256,8 +258,8 @@ watchEffect(() => {
     html.classList.remove('dark-theme')
   }
 
-  // Save the current state to localStorage whenever it changes
-  localStorage.setItem('isDarkMode', isDarkMode.value)
+  // Save the current state to localStorage whenever it changes (if available)
+  if (_localStorage) _localStorage.setItem('isDarkMode', isDarkMode.value)
 })
 
 // --- Helper Functions ---
