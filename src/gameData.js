@@ -53,6 +53,7 @@ export const gameData = {
     },
     {
       name: 'Kaiju', baseTonnage: 100, baseSlots: 5, baseArmor: 20, baseStructure: 20, baseMovement: 6, defenseRoll: '6+',
+      special: "Cannot claim cover. Ignore tiered penalties for structure loss."
     },
   ],
   weapons: [
@@ -158,7 +159,7 @@ export const gameData = {
       id: 'w_kaiju_breath',
       name: 'Breath Weapon',
       tonnage: { 'Kaiju': 25 },
-      damageRating: { 'Kaiju': 5 },
+      damageRating: { 'Kaiju': 8 },
       traits: [{ name: 'Kinetic' }, { name: 'AP(2)' }],
       rangeCategory: 'Unlimited',
     },
@@ -248,14 +249,14 @@ export const gameData = {
       name: 'Kaiju Shell',
       tonnage: { 'Kaiju': 10 },
       description:
-        'Withdraws into its shell for 1 turn. Only takes AP Damage.',
+        'Add +1 to Defense Rolls for thsi unit.',
     },
     {
       id: 'u14',
       name: 'Kaiju Flight',
       tonnage: { 'Kaiju': 10 },
       description:
-        'This Model Can Fly 10".',
+        'This Model Can Fly 10" ignoring all terrain.',
     },
     {
       id: 'u15',
