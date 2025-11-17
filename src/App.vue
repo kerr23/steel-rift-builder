@@ -22,8 +22,18 @@ const gameRulesData = {
   ULV_WEAPONS
 }
 const versionTag = import.meta.env.VITE_GIT_COMMIT_SHA || 'dev'
-// Safe localStorage wrapper for environments (tests) where localStorage may be unavailable
-const _localStorage = (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function' && typeof localStorage.setItem === 'function') ? localStorage : null
+// Safe localStorage wrapper for environments (tests) where accessing localStorage may throw
+let _localStorage = null
+try {
+  // Some test environments will throw or deny access when referencing `localStorage`.
+  // Wrap in try/catch and fall back to null when unavailable.
+  if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function' && typeof localStorage.setItem === 'function') {
+    _localStorage = localStorage
+  }
+} catch (e) {
+  _localStorage = null
+}
+
 // Load dark mode preference from localStorage, default to false if not set
 const isDarkMode = ref(_localStorage ? _localStorage.getItem('isDarkMode') === 'true' : false)
 const toast = useToast()

@@ -8,6 +8,7 @@ import Button from './ui/Button.vue'
 import MemoizedTraitFormatter from './ui/MemoizedTraitFormatter.vue'
 import { MODIFICATION_OPTIONS } from '../constants.js'
 import { hasJumpJets as _hasJumpJets } from '../utils/upgradeUtils.js'
+import { filterWeaponsForClass, filterUpgradesForClass } from '../utils/gameDataHelpers.js'
 
 // --- Initialize Toast ---
 const toast = useToast()
@@ -168,7 +169,13 @@ const formattedWeapons = computed(() => {
   selectedWeapons.value.forEach((w) => {
     if (w && w.id) currentCounts.set(w.id, (currentCounts.get(w.id) || 0) + 1)
   })
-  return props.gameRules.weapons.map((wpn) => {
+
+  // Only include weapons that declare a tonnage for the selected class.
+  const sourceWeapons = currentClassName
+    ? filterWeaponsForClass(props.gameRules.weapons || [], currentClassName)
+    : props.gameRules.weapons || []
+
+  return sourceWeapons.map((wpn) => {
     const currentQuantity = currentCounts.get(wpn.id) || 0
     const nextQuantityIndex = currentQuantity + 1
     const costToAddNext = calculateNthWeaponCost(wpn, nextQuantityIndex, currentClassName)
@@ -184,7 +191,12 @@ const formattedWeapons = computed(() => {
 const formattedUpgrades = computed(() => {
   const selectedUpgradeIds = new Set(selectedUpgrades.value.map((upg) => upg.id))
   const currentClassName = selectedClass.value?.name
-  return props.gameRules.upgrades
+
+  const sourceUpgrades = currentClassName
+    ? filterUpgradesForClass(props.gameRules.upgrades || [], currentClassName)
+    : props.gameRules.upgrades || []
+
+  return sourceUpgrades
     .filter((upg) => !selectedUpgradeIds.has(upg.id))
     .map((upg) => {
       let tonnageDisplay
