@@ -49,6 +49,9 @@ export const gameData = {
       name: 'Ultra-Heavy', baseTonnage: 50, baseSlots: 7, baseArmor: 12, baseStructure: 10, baseMovement: 6, defenseRoll: '6+',
       special: "Rolls 1D6 for each point of Structure Damage it has lost during this Attack. On a 5+, the Damage is ignored"
     },
+    {
+      name: 'Kaiju', baseTonnage: 100, baseSlots: 5, baseArmor: 20, baseStructure: 20, baseMovement: 6, defenseRoll: '6+',
+    },
   ],
   weapons: [
     {
@@ -141,6 +144,22 @@ export const gameData = {
       traits: [{ name: 'Flak' }],
       rangeCategory: '6"',
     },
+    {
+      id: 'w_kaiju_punch',
+      name: 'Punch',
+      tonnage: { 'Kaiju': 25 },
+      damageRating: { 'Kaiju': 10 },
+      traits: [{ name: 'Kockback' }],
+      rangeCategory: 'N/A',
+    },
+    {
+      id: 'w_kaiju_breath',
+      name: 'Breath Weapon',
+      tonnage: { 'Kaiju': 25 },
+      damageRating: { 'Kaiju': 5 },
+      traits: [{ name: 'Kinetic' }, { name: 'AP(2)' }],
+      rangeCategory: 'Unlimited',
+    },
   ],
   upgrades: [
     {
@@ -222,12 +241,33 @@ export const gameData = {
       description:
         'Once per turn, friendly models in the same force may use this vehicle to draw Line of Sight for Weapon Systems using the Smart trait. Use this model for determining the AttackPool and Line of Sight. Its use can be canceled by Electronic Counter measures.',
     },
+    {
+      id: 'u13',
+      name: 'Kaiju Shell',
+      tonnage: { 'Kaiju': 10 },
+      description:
+        'Withdraws into its shell for 1 turn. Only takes AP Damage.',
+    },
+    {
+      id: 'u14',
+      name: 'Kaiju Flight',
+      tonnage: { 'Kaiju': 10 },
+      description:
+        'This Model Can Fly 10".',
+    },
+    {
+      id: 'u15',
+      name: 'Kaiju Regeneration',
+      tonnage: { 'Kaiju': 20 },
+      description:
+        'Convert 1/2 damage delivered to target to structure on kill. Must be in base to base contact',
+    },
   ],
   motiveTypes: [
     {
       id: 'm1',
       name: 'Biped',
-      classApplicability: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy'],
+      classApplicability: ['Light', 'Medium', 'Heavy', 'Ultra-Heavy', 'Kaiju'],
       tonnageModifier: 0,
       slotModifier: 0,
       description: null,
