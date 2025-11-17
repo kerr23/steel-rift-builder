@@ -14,6 +14,7 @@ export const traitDefinitions = {
   Long: 'Weapon has a minimum effective firing distance, can only be fired at targets (X) inches or beyond.',
   Melee: 'Add (X) to the Attack Pool of this mech when it is performing a Smash Order (value depends on HE-V class). This model counts as one Class Size larger during a Smash order. This weapon System is not used in an Engage Order.',
   Smart: 'The Active Unit may use any friendly unit with a Target Designator for determining Line of Sight for attacks with this Weapon System.',
+  Knockback: 'Units hit by weapons with this trait are knocked 12" directy away from the attacking unit. If another HEV or Structure is hit use melee rules to determine additional damage.'
   // UL-HEV and support asset component traits
   'All-Terrain': 'Units with this trait ignore rough terrain.',
   'Close Support': 'If an HE-V of class light or larger performs an Engage or Smash order and there are friendly units with this trait within 6" of the target unit, add +1 to the damage rating of the order. (This bonus is only applied once regardless of how many friendly units are nearby.)',
@@ -149,7 +150,7 @@ export const gameData = {
       name: 'Punch',
       tonnage: { 'Kaiju': 25 },
       damageRating: { 'Kaiju': 10 },
-      traits: [{ name: 'Kockback' }],
+      traits: [{ name: 'Knockback' }],
       rangeCategory: 'N/A',
     },
     {
