@@ -249,7 +249,7 @@ export const gameData = {
       name: 'Kaiju Shell',
       tonnage: { 'Kaiju': 10 },
       description:
-        'Add +1 to Defense Rolls for thsi unit.',
+        'Add +1 to Defense Rolls for this unit.',
     },
     {
       id: 'u14',
