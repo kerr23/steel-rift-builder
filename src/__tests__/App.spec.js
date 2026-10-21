@@ -3,6 +3,16 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import App from '../App.vue'
 import { gameData } from '../gameData.js'
 
+// Mock toast
+vi.mock('vue-toastification', () => ({
+  useToast: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn() // Added missing info method
+  })
+}))
+
 describe('App.vue', () => {
   let wrapper;
 
@@ -17,16 +27,6 @@ describe('App.vue', () => {
       value: localStorageMock,
       writable: true
     });
-
-    // Mock toast
-    vi.mock('vue-toastification', () => ({
-      useToast: () => ({
-        success: vi.fn(),
-        error: vi.fn(),
-        warning: vi.fn(),
-        info: vi.fn() // Added missing info method
-      })
-    }))
 
     wrapper = mount(App, {
       global: {

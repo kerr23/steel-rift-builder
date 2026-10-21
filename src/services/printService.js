@@ -5,6 +5,7 @@ import { generateHevHtml } from '../components/print/HevPrintable.js';
 import { generateSupportAssetHtml } from '../components/print/SupportAssetPrintable.js';
 import { generateUltraLightSquadronHtml } from '../components/print/UltraLightSquadronPrintable.js';
 import { generateInfantryOutpostHtml } from '../components/print/InfantryOutpostPrintable.js';
+import { escapeHtml, escapeRosterData } from '../utils/escapeHtml.js';
 
 /**
  * Opens a print window with formatted roster data
@@ -84,14 +85,18 @@ export function prepareRosterForPrint(roster, rosterName, totalRosterBaseTonnage
  * @returns {String} - Full HTML document for printing
  */
 export function generatePrintHtml({
-  roster,
-  rosterName,
+  roster: rawRoster,
+  rosterName: rawRosterName,
   totalRosterBaseTonnage,
   getBaseTonnage,
   generateBubbleHtml,
   formatPrintTrait,
   gameRulesData
 }) {
+  // Roster data is user-supplied (typed or imported JSON); escape before interpolating into HTML
+  const roster = escapeRosterData(rawRoster)
+  const rosterName = rawRosterName ? escapeHtml(rawRosterName) : rawRosterName
+
   // Validate essential game data
   if (!gameRulesData.UL_HEV_WEAPONS) {
     console.warn('UL_HEV_WEAPONS not found in gameRulesData')

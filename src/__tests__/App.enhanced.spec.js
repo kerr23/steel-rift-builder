@@ -3,20 +3,20 @@ import App from '../App.vue';
 import { gameData } from '../gameData.js';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
+// Mock toast
+vi.mock('vue-toastification', () => ({
+  useToast: () => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn()
+  })
+}));
+
 describe('App.vue Enhanced Tests', () => {
   let wrapper;
 
   beforeEach(() => {
-    // Mock toast
-    vi.mock('vue-toastification', () => ({
-      useToast: () => ({
-        success: vi.fn(),
-        error: vi.fn(),
-        warning: vi.fn(),
-        info: vi.fn()
-      })
-    }));
-
     // Mock localStorage
     const localStorageMock = {
       storage: {},

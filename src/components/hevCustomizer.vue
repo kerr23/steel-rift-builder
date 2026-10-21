@@ -720,7 +720,7 @@ const formatTraitDisplay = (trait) => {
               <div class="item-info-line flex flex-wrap items-baseline gap-2 flex-grow overflow-hidden">
                 <span class="item-name font-medium text-dark-grey whitespace-nowrap mr-1">{{ weapon.name }}</span>
                 <span class="item-stats text-xs text-secondary whitespace-nowrap mr-1">(Damage: {{ weapon.damageRating?.[selectedClass?.name ?? ''] ?? '?' }}, Range: {{ weapon.rangeCategory || 'N/A' }})</span>
-                <span class="item-traits text-xs text-text-muted whitespace-normal" v-html="`Traits: [${weapon.traits?.map(formatTraitDisplay).join(', ') || 'None'}]`"></span>
+                <span class="item-traits text-xs text-text-muted whitespace-normal">Traits: [{{ weapon.traits?.map(formatTraitDisplay).join(', ') || 'None' }}]</span>
               </div>
               <button @click="removeWeapon(index)" class="btn btn-remove bg-danger text-white rounded-full w-5 h-5 leading-5 text-center font-bold cursor-pointer p-0 ml-2 flex-shrink-0 hover:bg-[#a71d2a]" title="Remove Weapon">
                 X
