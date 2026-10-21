@@ -6,10 +6,8 @@ import Toast from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
 import { provideErrorService } from './services/errorService'
 
-// Import global styles and component styles
+// Global styles (imports Tailwind)
 import '@/assets/main.css'
-import './assets/tailwind.css'
-import './assets/components.css'
 
 // Configuration options for toasts
 const toastOptions = {

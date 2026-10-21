@@ -7,7 +7,7 @@
       @change="handleChange($event)"
       :disabled="disabled"
       :required="required"
-      class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary"
+      class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-hidden focus:border-primary"
     >
       <slot></slot>
     </select>

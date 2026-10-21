@@ -1,6 +1,6 @@
 <template>
   <button
-    class="dark-mode-toggle btn bg-card-bg text-primary border border-border-color rounded px-4 py-1 text-base cursor-pointer transition-colors duration-200 hover:bg-primary hover:text-white shadow"
+    class="dark-mode-toggle btn bg-card-bg text-primary border border-border-color rounded px-4 py-1 text-base cursor-pointer transition-colors duration-200 hover:bg-primary hover:text-white shadow-sm"
     :aria-pressed="modelValue"
     aria-label="Toggle dark mode"
     @click="$emit('update:modelValue', !modelValue)"

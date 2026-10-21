@@ -1,6 +1,6 @@
 <template>
   <li
-    class="roster-item flex flex-col md:flex-row md:items-center justify-between bg-light-grey border border-border-color rounded p-3 cursor-move"
+    class="roster-item flex flex-col md:flex-row md:items-center justify-between bg-light-grey border [border-bottom-style:dashed] border-border-color rounded p-3 cursor-move"
     role="listitem"
     draggable="true"
     :class="{ 'opacity-50': dragging, 'border-dashed border-primary': dragging }"

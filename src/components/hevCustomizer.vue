@@ -592,7 +592,7 @@ const formatTraitDisplay = (trait) => {
         <h3 class="section-title text-lg text-secondary border-b border-border pb-1 mb-3 font-medium">Classification & Movement</h3>
         <div class="form-group mb-3">
           <label for="hevName" class="block mb-2 font-medium text-text">HE-V Name:</label>
-          <input type="text" id="hevName" v-model="unitName" placeholder="Enter name for this HE-V" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary" />
+          <input type="text" id="hevName" v-model="unitName" placeholder="Enter name for this HE-V" class="block w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-hidden focus:border-primary" />
         </div>
         <FormSelect
           id="hevClass"
@@ -645,7 +645,7 @@ const formatTraitDisplay = (trait) => {
           <div class="flex flex-row items-center justify-between min-h-5">
             <BubbleDisplay label="Armor" :value="armorBaseValue" />
             <div class="flex items-center gap-2 min-w-32 justify-end">
-              <select class="modification-select px-2 py-1 text-xs w-24 min-w-[4.5rem] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="armorModification">
+              <select class="modification-select px-2 py-1 text-xs w-24 min-w-18 shrink-0 rounded border border-input-border focus:outline-hidden focus:border-primary" v-model="armorModification">
                 <option v-for="opt in modificationOptions" :key="`armor-mod-${opt.value}`" :value="opt.value" :disabled="(opt.value === 'stripped' && !canStripArmor) || (opt.value === 'reinforced' && !canReinforceArmor)">
                   {{ opt.label }}
                 </option>
@@ -656,7 +656,7 @@ const formatTraitDisplay = (trait) => {
           <div class="flex flex-row items-center justify-between min-h-5">
             <BubbleDisplay label="Structure" :value="structureBaseValue" :isStructure="true" />
             <div class="flex items-center gap-2 min-w-32 justify-end">
-              <select class="modification-select px-2 py-1 text-xs w-24 min-w-[4.5rem] flex-shrink-0 rounded border border-input-border focus:outline-none focus:border-primary" v-model="structureModification">
+              <select class="modification-select px-2 py-1 text-xs w-24 min-w-18 shrink-0 rounded border border-input-border focus:outline-hidden focus:border-primary" v-model="structureModification">
                 <option v-for="opt in modificationOptions" :key="`struct-mod-${opt.value}`" :value="opt.value" :disabled="(opt.value === 'stripped' && !canStripStructure) || (opt.value === 'reinforced' && !canReinforceStructure)">
                   {{ opt.label }}
                 </option>
@@ -665,9 +665,9 @@ const formatTraitDisplay = (trait) => {
             </div>
           </div>
           <div class="threshold-descriptions mt-1 pt-2 border-t border-dashed border-border text-xs leading-tight w-full">
-            <p v-if="structureMarker_25_Percent > 1" class="threshold-desc-green my-0 p-0 flex items-start"><strong class="min-w-14 text-right flex-shrink-0 inline-block font-bold mr-1 text-success">25% Dmg:</strong> All Move/Jump Orders -1</p>
-            <p v-if="structureMarker_50_Percent > 1" class="threshold-desc-yellow my-0 p-0 flex items-start"><strong class="min-w-14 text-right flex-shrink-0 inline-block font-bold mr-1 text-amber-600">50% Dmg:</strong> Weapon Damage -1 (min 1)</p>
-            <p v-if="structureMarker_75_Percent > 1" class="threshold-desc-red my-0 p-0 flex items-start"><strong class="min-w-14 text-right flex-shrink-0 inline-block font-bold mr-1 text-danger">75% Dmg:</strong> Only 1 Order per activation</p>
+            <p v-if="structureMarker_25_Percent > 1" class="threshold-desc-green my-0 p-0 flex items-start"><strong class="min-w-14 text-right shrink-0 inline-block font-bold mr-1 text-success">25% Dmg:</strong> All Move/Jump Orders -1</p>
+            <p v-if="structureMarker_50_Percent > 1" class="threshold-desc-yellow my-0 p-0 flex items-start"><strong class="min-w-14 text-right shrink-0 inline-block font-bold mr-1 text-amber-600">50% Dmg:</strong> Weapon Damage -1 (min 1)</p>
+            <p v-if="structureMarker_75_Percent > 1" class="threshold-desc-red my-0 p-0 flex items-start"><strong class="min-w-14 text-right shrink-0 inline-block font-bold mr-1 text-danger">75% Dmg:</strong> Only 1 Order per activation</p>
           </div>
         </div>
       </div>
@@ -685,7 +685,7 @@ const formatTraitDisplay = (trait) => {
             @change="handleWeaponAdd"
             :disabled="!selectedClass || usedSlots >= maxSlots"
             ref="weaponSelectRef"
-            class="mb-1 w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary"
+            class="mb-1 w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-hidden focus:border-primary"
           >
             <option value="" disabled selected>-- Add Weapon --</option>
             <option
@@ -710,19 +710,19 @@ const formatTraitDisplay = (trait) => {
             Maximum slots used ({{ usedSlots }}/{{ maxSlots }}).
           </p>
         </div>
-        <div class="selection-list-container flex-2 min-w-72">
+        <div class="selection-list-container min-w-72">
           <ul class="item-list list-none p-0 m-0 max-h-40 overflow-y-auto border border-medium-grey rounded bg-white min-h-9">
             <li
               v-for="(weapon, index) in selectedWeapons"
               :key="'selWpn-' + index + '-' + weapon.id"
               class="selected-item single-line-item flex justify-between items-center gap-2 border-b border-medium-grey px-3 py-2 text-sm"
             >
-              <div class="item-info-line flex flex-wrap items-baseline gap-2 flex-grow overflow-hidden">
+              <div class="item-info-line flex flex-wrap items-baseline gap-2 grow overflow-hidden">
                 <span class="item-name font-medium text-dark-grey whitespace-nowrap mr-1">{{ weapon.name }}</span>
                 <span class="item-stats text-xs text-secondary whitespace-nowrap mr-1">(Damage: {{ weapon.damageRating?.[selectedClass?.name ?? ''] ?? '?' }}, Range: {{ weapon.rangeCategory || 'N/A' }})</span>
                 <span class="item-traits text-xs text-text-muted whitespace-normal">Traits: [{{ weapon.traits?.map(formatTraitDisplay).join(', ') || 'None' }}]</span>
               </div>
-              <button @click="removeWeapon(index)" class="btn btn-remove bg-danger text-white rounded-full w-5 h-5 leading-5 text-center font-bold cursor-pointer p-0 ml-2 flex-shrink-0 hover:bg-[#a71d2a]" title="Remove Weapon">
+              <button @click="removeWeapon(index)" class="btn btn-remove bg-danger text-white rounded-full w-5 h-5 leading-5 text-center font-bold cursor-pointer p-0 ml-2 shrink-0 hover:bg-[#a71d2a]" title="Remove Weapon">
                 X
               </button>
             </li>
@@ -740,7 +740,7 @@ const formatTraitDisplay = (trait) => {
             @change="handleUpgradeAdd"
             :disabled="!selectedClass || usedSlots >= maxSlots || formattedUpgrades.length === 0"
             ref="upgradeSelectRef"
-            class="mb-1 w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-none focus:border-primary"
+            class="mb-1 w-full px-3 py-2 text-base font-normal text-text bg-input-bg border border-input-border rounded focus:outline-hidden focus:border-primary"
           >
             <option value="" disabled selected>-- Add Upgrade --</option>
             <option
@@ -777,14 +777,14 @@ const formatTraitDisplay = (trait) => {
             All available upgrades added.
           </p>
         </div>
-        <div class="selection-list-container flex-2 min-w-72">
+        <div class="selection-list-container min-w-72">
           <ul class="item-list list-none p-0 m-0 max-h-40 overflow-y-auto border border-medium-grey rounded bg-white min-h-9">
             <li
               v-for="(upgrade, index) in selectedUpgrades"
               :key="'selUpg-' + index + '-' + upgrade.id"
               class="selected-item single-line-item flex justify-between items-center gap-2 border-b border-medium-grey px-3 py-2 text-sm"
             >
-              <div class="item-info-line flex flex-wrap items-baseline gap-2 flex-grow overflow-hidden">
+              <div class="item-info-line flex flex-wrap items-baseline gap-2 grow overflow-hidden">
                 <span class="item-name font-medium text-dark-grey whitespace-nowrap mr-1">{{ upgrade.name }}</span>
                 <span class="item-stats text-xs text-secondary whitespace-nowrap mr-1">
                   (Cost:
@@ -800,7 +800,7 @@ const formatTraitDisplay = (trait) => {
                   }}T)
                 </span>
               </div>
-              <button @click="removeUpgrade(index)" class="btn btn-remove bg-danger text-white rounded-full w-5 h-5 leading-5 text-center font-bold cursor-pointer p-0 ml-2 flex-shrink-0 hover:bg-[#a71d2a]" title="Remove Upgrade">
+              <button @click="removeUpgrade(index)" class="btn btn-remove bg-danger text-white rounded-full w-5 h-5 leading-5 text-center font-bold cursor-pointer p-0 ml-2 shrink-0 hover:bg-[#a71d2a]" title="Remove Upgrade">
                 X
               </button>
             </li>

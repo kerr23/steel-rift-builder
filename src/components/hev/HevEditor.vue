@@ -10,7 +10,7 @@
           id="unitName"
           type="text"
           v-model="unitName"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-xs dark:bg-gray-700 dark:border-gray-600"
           placeholder="Enter HE-V name"
           required
         />
@@ -240,6 +240,8 @@ function getModificationClass(type) {
 </script>
 
 <style scoped>
+@reference "../../assets/main.css";
+
 .hev-editor {
   @apply max-w-4xl mx-auto p-4;
 }

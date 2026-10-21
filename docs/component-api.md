@@ -258,7 +258,7 @@ Standard pattern for form controls:
 
 ## Custom CSS Classes
 
-See `src/assets/components.css` for all available helper classes:
+See `src/assets/tailwind.css` for all available helper classes:
 
 - `.btn` variants: primary, secondary, success, danger, warning, info, outline-secondary
 - `.card` for card containers

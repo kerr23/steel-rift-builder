@@ -32,7 +32,7 @@
 
     <div v-else class="selected-upgrades">
       <div v-for="(upgrade, index) in selectedUpgrades" :key="index" class="upgrade-item">
-        <div class="flex justify-between items-start p-3 mb-2 bg-white dark:bg-gray-700 rounded-md shadow-sm">
+        <div class="flex justify-between items-start p-3 mb-2 bg-white dark:bg-gray-700 rounded-md shadow-xs">
           <div class="upgrade-details">
             <div class="font-medium">{{ upgrade.name }}</div>
             <div class="flex items-center mt-1 text-sm">
@@ -163,6 +163,8 @@ function removeUpgrade(index) {
 </script>
 
 <style scoped>
+@reference "../../assets/main.css";
+
 .upgrades-selector {
   @apply bg-gray-50 dark:bg-gray-800 p-3 rounded-md;
 }

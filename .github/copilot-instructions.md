@@ -130,11 +130,12 @@ The print system follows a modular component-based architecture:
    - Keep README.md updated with any user-facing print system changes
    - Document any special handling or edge cases for specific unit types
 
-## Tailwind CSS
+## Tailwind CSS (v4)
 - Use Tailwind utility classes for all styling.
-- Leverage the component classes in `src/assets/components.css`.
-- Avoid custom CSS unless necessary; extend Tailwind via configuration.
-- Keep Tailwind config changes in `tailwind.config.js`.
+- Leverage the component classes in `src/assets/tailwind.css`.
+- Avoid custom CSS unless necessary; extend Tailwind via the `@theme` block in `src/assets/tailwind.css`.
+- `src/assets/main.css` is the stylesheet entry; its import order sets precedence: `base.css` (global styles) < preflight < `tailwind.css` (component classes) < utilities. Tailwind is imported unlayered.
+- Vue `<style>` blocks using `@apply` require `@reference "<relative path>/assets/main.css";`.
 - Use CSS variables for theming (dark mode support).
 
 ## Performance Optimizations

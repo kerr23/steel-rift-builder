@@ -118,6 +118,8 @@ function updateClass(chassisClass) {
 </script>
 
 <style scoped>
+@reference "../../assets/main.css";
+
 .chassis-details {
   @apply bg-gray-50 dark:bg-gray-800 p-3 rounded-md;
 }

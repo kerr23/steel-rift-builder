@@ -194,6 +194,8 @@ function getModificationClass(type) {
 </script>
 
 <style scoped>
+@reference "../../assets/main.css";
+
 .modification-selector {
   @apply bg-gray-50 dark:bg-gray-800 p-3 rounded-md;
 }

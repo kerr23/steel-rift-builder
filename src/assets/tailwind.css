@@ -1,3 +1,153 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* src/assets/tailwind.css — Tailwind theme and reusable component classes (imported by main.css) */
+
+@theme {
+  --color-primary: var(--primary-color);
+  --color-secondary: var(--secondary-color);
+  --color-success: var(--success-color);
+  --color-danger: var(--danger-color);
+  --color-warning: var(--warning-color);
+  --color-info: var(--info-color);
+  --color-black: var(--black-color);
+  --color-bg: var(--bg-color);
+  --color-card-bg: var(--card-bg-color);
+  --color-text: var(--text-color);
+  --color-text-muted: var(--text-muted-color);
+  --color-border: var(--border-color);
+  --color-input-bg: var(--input-bg-color);
+  --color-input-border: var(--input-border-color);
+  --color-medium-grey: var(--medium-grey);
+  --color-light-grey: var(--light-grey);
+  --color-dark-grey: var(--dark-grey);
+
+  --radius: var(--border-radius);
+
+  /* Fixed line heights for text-* utilities; custom CSS overrides font-size on some text-* elements */
+  --text-xs--line-height: 1rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+
+  /* sRGB palette values for shades referenced in templates */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-red-100: #fee2e2;
+  --color-red-200: #fecaca;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+  --color-red-900: #7f1d1d;
+  --color-green-400: #4ade80;
+  --color-green-600: #16a34a;
+  --color-amber-400: #fbbf24;
+  --color-amber-600: #d97706;
+  --color-blue-400: #60a5fa;
+  --color-blue-600: #2563eb;
+}
+
+/* Default border color: gray-200 (preflight default is currentcolor) */
+*,
+::after,
+::before,
+::backdrop,
+::file-selector-button {
+  border-color: var(--color-gray-200, currentcolor);
+}
+
+/* Native form field backgrounds (preflight sets transparent); bg-* utilities still override */
+input,
+select,
+textarea {
+  background-color: revert;
+}
+
+/* Buttons */
+.btn {
+  @apply px-4 py-2 rounded transition;
+}
+
+.btn-primary {
+  @apply bg-primary text-white hover:brightness-90;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-white hover:brightness-90;
+}
+
+.btn-success {
+  @apply bg-success text-white hover:brightness-90;
+}
+
+.btn-danger {
+  @apply bg-danger text-white hover:bg-black;
+}
+
+.btn-warning {
+  @apply bg-warning text-black hover:brightness-90;
+}
+
+.btn-info {
+  @apply bg-info text-black hover:brightness-90;
+}
+
+.btn-outline-secondary {
+  @apply border border-secondary text-secondary hover:bg-secondary hover:text-white;
+}
+
+.btn-sm {
+  @apply px-2 py-1 text-sm;
+}
+
+/* Cards */
+.card {
+  @apply p-4 border border-border rounded bg-card-bg shadow-sm;
+}
+
+/* Form controls */
+.form-control {
+  @apply block w-full px-3 py-2 text-text bg-input-bg border border-input-border rounded focus:outline-hidden focus:border-primary;
+}
+
+.form-label {
+  @apply block mb-2 font-medium text-text;
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+/* Section titles */
+.section-title {
+  @apply text-secondary border-b border-border pb-1 mb-3 font-medium;
+}
+
+/* Item lists */
+.item-list {
+  @apply list-none p-0 m-0 border border-medium-grey rounded bg-white;
+}
+
+.selected-item {
+  @apply flex justify-between items-center gap-2 border-b border-medium-grey px-3 py-2 text-sm;
+}
+
+/* Summary sections */
+.summary-item {
+  @apply flex justify-between;
+}
+
+/* Defense display */
+.defense-row {
+  @apply flex items-center gap-2 min-h-[20px];
+}

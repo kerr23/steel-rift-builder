@@ -85,6 +85,8 @@ const valueClass = computed(() => {
 </script>
 
 <style scoped>
+@reference "../../assets/main.css";
+
 .stat-display {
   padding: 0.5rem;
   border-radius: 0.375rem;

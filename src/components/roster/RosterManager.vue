@@ -8,7 +8,7 @@
         id="rosterName"
         v-model="rosterNameInput"
         placeholder="Enter Roster Name"
-        class="input input-bordered w-full md:w-1/2 px-3 py-2 rounded border border-border-color focus:outline-none focus:ring-2 focus:ring-primary"
+        class="input input-bordered w-full md:w-1/2 px-3 py-2 rounded border border-border-color focus:outline-hidden focus:ring-2 focus:ring-primary"
         aria-label="Roster Name"
       />
     </div>

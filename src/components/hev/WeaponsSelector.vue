@@ -32,7 +32,7 @@
 
     <div v-else class="selected-weapons">
       <div v-for="(weapon, index) in selectedWeapons" :key="index" class="weapon-item">
-        <div class="flex justify-between items-start p-3 mb-2 bg-white dark:bg-gray-700 rounded-md shadow-sm">
+        <div class="flex justify-between items-start p-3 mb-2 bg-white dark:bg-gray-700 rounded-md shadow-xs">
           <div class="weapon-details">
             <div class="font-medium">{{ weapon.name }}</div>
             <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm">
@@ -173,6 +173,8 @@ function removeWeapon(index) {
 </script>
 
 <style scoped>
+@reference "../../assets/main.css";
+
 .weapons-selector {
   @apply bg-gray-50 dark:bg-gray-800 p-3 rounded-md;
 }
